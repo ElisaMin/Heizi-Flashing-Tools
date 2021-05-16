@@ -1,13 +1,13 @@
-import androidx.compose.foundation.BorderStroke
+package lib.status
+
+import lib.Style
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,12 +22,10 @@ import lib.ChipCheckBox
 import lib.mutableStateFlowOf
 import lib.toState
 import me.heizi.kotlinx.logger.debug
-import me.heizi.kotlinx.logger.println
 import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.shell
-import java.awt.image.BufferedImage
 import java.io.File
 
 /**
@@ -61,7 +59,7 @@ sealed class Statues {
         override val view: @Composable ColumnScope.() -> Unit =  {
             title = file.name
             subtitle = "你想要刷入哪个分区里面?"
-            var partitions by remember { Launcher.partitions }
+            var partitions by remember { partitions }
             var errorText by remember { mutableStateOf("") }
             errorText = when {
                 partitions.contains("_",) -> {
@@ -123,7 +121,7 @@ sealed class Statues {
         """.trimMargin()
 
         private fun nextStep(mode: Modes) {
-            Statues.mode = mode
+            Companion.mode = mode
             current = WaitForDevice
         }
     }
@@ -227,7 +225,7 @@ sealed class Statues {
 
 
 
-    object Info :Statues() {
+    object Info : Statues() {
 
         val partition get() = Launcher.partitions.value
         val _a get() =  Launcher._a.value
@@ -236,7 +234,7 @@ sealed class Statues {
         val filltedDevice = WaitForDevice.selected
 
         override val view: @Composable ColumnScope.() -> Unit = {
-            val emptyBlock = {it:String->}
+            val emptyBlock = { _:String->}
             val modifier = Modifier.fillMaxWidth()
             OutlinedTextField(onValueChange = emptyBlock,value = file.path,label = {Text("💿文件")},enabled = false,modifier = modifier)
             OutlinedTextField(onValueChange = emptyBlock,value = WaitForDevice.devices
@@ -299,6 +297,7 @@ sealed class Statues {
         private val _progressing = MutableStateFlow(0f)
         var progressing by mutableStateFlowOf(_progressing)
 
+        @OptIn(ExperimentalCoroutinesApi::class)
         val job = GlobalScope.launch (start = CoroutineStart.ATOMIC) {
             delay(1000)
             _progressing.emit(0.11f)
@@ -341,7 +340,7 @@ sealed class Statues {
             else LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }
-    class Result(val result:CommandResult,message:String):Statues() {
+    class Result(val result:CommandResult,message:String): Statues() {
         override val view: @Composable ColumnScope.() -> Unit = {
             val result = if (result is CommandResult.Success) "成功"  else "失败"
             title = "执行完成"
@@ -388,7 +387,7 @@ sealed class Statues {
         @Composable
         fun face(file:File) {
 
-            this.file = file
+            Companion.file = file
 
             val state1 = _current.toState()
             val state2 = _title.toState()

@@ -136,8 +136,8 @@ object PlatformTools{
 //        infix fun pull (dir: String):CommandResult = adb(arrayListOf("pull","${dir}"))
 //        infix fun push (dirs: Pair<String,String> ):CommandResult = adb(arrayListOf("push","${dirs.first}","${dirs.second}"))
 //
-//        infix fun server (status :Boolean):CommandResult = platformTool adb if (status)"start-server" else "kill-server"
-//        infix fun reconnect (status:Boolean?):CommandResult= platformTool adb arrayListOf("reconnect", when (status) { null -> "";true ->"device"; false -> "offline" } )
+//        infix fun server (lib.status :Boolean):CommandResult = platformTool adb if (lib.status)"start-server" else "kill-server"
+//        infix fun reconnect (lib.status:Boolean?):CommandResult= platformTool adb arrayListOf("reconnect", when (lib.status) { null -> "";true ->"device"; false -> "offline" } )
 //
 //        enum class BootableMode(index:Int) {
 //            Android(0),
