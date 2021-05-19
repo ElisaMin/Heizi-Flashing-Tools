@@ -8,7 +8,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,19 +38,19 @@ fun <T> StateFlow<T>.toState(): State<T> {
     return collectAsState()
 }
 
+
 @Composable
 fun ChipCheckBox (
+    check:Boolean,
     text:String?=null,
     modifier: Modifier = Modifier,
-    enable: MutableState<Boolean> = mutableStateOf(false),
-    onStateChange:(Boolean)->Unit = {},
+    onCheck:(Boolean)->Unit = {},
 ) {
-    var enableState by remember { enable }
     OutlinedButton(
         colors = object: ButtonColors {
             @Composable
             override fun backgroundColor(enabled: Boolean): State<Color>
-                    = rememberUpdatedState(if (enableState) Color.LightGray else Color.LightGray.copy(alpha = 0.3f))
+                    = rememberUpdatedState(if (check) Color.LightGray else Color.LightGray.copy(alpha = 0.3f))
             @Composable
             override fun contentColor(enabled: Boolean): State<Color>
                     = rememberUpdatedState(
@@ -58,12 +61,11 @@ fun ChipCheckBox (
         shape = CircleShape,
         modifier = modifier,
         onClick = {
-            enableState =!enableState
-            onStateChange(enableState)
+            onCheck(check)
         },border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.3f))
     ) {
         Box(Modifier.width(24.dp).height(20.dp)) {
-            Text( if(enableState)"\uD83D\uDC4C" else "\uD83D\uDC4B",modifier = Modifier,
+            Text( if(check)"\uD83D\uDC4C" else "\uD83D\uDC4B",modifier = Modifier,
 //                fontSize = 12.sp
             )
         }

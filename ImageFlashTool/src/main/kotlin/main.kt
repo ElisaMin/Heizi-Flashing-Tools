@@ -1,15 +1,10 @@
 
+//import lib.status.Statues
 import androidx.compose.desktop.Window
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.window.Dialog
 import lib.Style
-import lib.status.Statues
 import me.heizi.kotlinx.logger.println
-import me.heizi.kotlinx.shell.Khell
 import java.io.File
-import kotlin.reflect.KProperty
 
 
 val types get() = arrayOf("bin","img")
@@ -30,7 +25,7 @@ fun window(file: File) = Window(
 //
 //        }
 //    }
-    Statues.face(file)
+//    Statues.face(file)
 } }
 
 

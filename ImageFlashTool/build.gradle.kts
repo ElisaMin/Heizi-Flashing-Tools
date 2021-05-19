@@ -1,5 +1,4 @@
 import org.jetbrains.compose.compose
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("jvm")
@@ -19,6 +18,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":khell"))
     implementation(project(":logger"))
+    implementation(project(":compose.desktopx.core"))
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
 }

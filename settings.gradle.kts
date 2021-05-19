@@ -9,3 +9,4 @@ rootProject.name = "HeiziToolX"
 include("khell")
 include("logger")
 include("ImageFlashTool")
+include("compose.desktopx.core")
