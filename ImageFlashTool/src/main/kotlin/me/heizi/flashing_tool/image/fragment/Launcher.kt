@@ -14,6 +14,27 @@ import androidx.compose.ui.Modifier
 import lib.ChipCheckBox
 import lib.Style
 
+
+class Launcher:LauncherViewModel,CheckboxesViewModel,Fragment<LauncherViewModel>(_content = @Composable {
+    launcherScreen(viewModel)
+}) {
+    override val partition: MutableState<String> = mutableStateOf("")
+    override val error: MutableState<String> = mutableStateOf("")
+    override val _a: MutableState<Boolean> = mutableStateOf(false)
+    override val _b: MutableState<Boolean> = mutableStateOf(false)
+    override val disableAVB: MutableState<Boolean> = mutableStateOf(false)
+    override fun onNextStepBtnClick() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onBootBtnClick() {
+        TODO("Not yet implemented")
+    }
+
+    override val checkbox: CheckboxesViewModel = this
+    override val viewModel: LauncherViewModel = this
+}
+
 @Composable
 fun launcherScreen(viewModel: LauncherViewModel){
     var input by remember { viewModel.partition }
@@ -50,7 +71,7 @@ fun launcherScreen(viewModel: LauncherViewModel){
         }
     }
 }
-interface LauncherViewModel {
+interface LauncherViewModel:ViewModel {
     val partition: MutableState<String>
     val error: State<String>
     val checkbox:CheckboxesViewModel
