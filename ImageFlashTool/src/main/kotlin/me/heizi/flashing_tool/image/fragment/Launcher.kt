@@ -11,41 +11,81 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import lib.ChipCheckBox
-import lib.Style
+import me.heizi.flashing_tool.image.Style
+import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 
 
-class Launcher:LauncherViewModel,CheckboxesViewModel,Fragment<LauncherViewModel>(_content = @Composable {
+class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel>(_content =  @Composable {
+    title = file.name
+    subtitle = "你想要刷入哪个分区里面?"
+    viewModel.checkInput()
     launcherScreen(viewModel)
 }) {
-    override val partition: MutableState<String> = mutableStateOf("")
+
+
+    override var partition by mutableStateOf("")
+
     override val error: MutableState<String> = mutableStateOf("")
+    override var hasNext: Boolean by mutableStateOf(false)
+
     override val _a: MutableState<Boolean> = mutableStateOf(false)
     override val _b: MutableState<Boolean> = mutableStateOf(false)
     override val disableAVB: MutableState<Boolean> = mutableStateOf(false)
+
+
+    @Composable
+    override fun checkInput() {
+        error.value = when {
+            partition.contains("_",) -> {
+                "错误!包含'_'字符"
+            }
+            partition.contains(",",) -> {
+                "错误!包含','字符"
+            }
+            partition.contains(" ",) -> {
+                "错误!包含' '字符"
+            }
+            else -> { "" }
+        }
+        hasNext = partition.isNotEmpty() && error.value.isEmpty()
+    }
+
     override fun onNextStepBtnClick() {
-        TODO("Not yet implemented")
+        toNextPage(true)
     }
 
     override fun onBootBtnClick() {
-        TODO("Not yet implemented")
+        toNextPage(false)
+    }
+    fun toNextPage(isNextStep:Boolean) = (if (isNextStep) arrayOf(
+        "launchMode" to "flash",
+        "partition" to partition,
+        "_a" to _a.value,
+        "_b" to _b.value,
+        "disable_avb" to disableAVB.value,
+    ) else arrayOf("launchMode" to "boot")).let {
+        handler.go(DeviceSelector::class,*it)
+
     }
 
     override val checkbox: CheckboxesViewModel = this
     override val viewModel: LauncherViewModel = this
 }
-
+//@Composable
+//fun check
 @Composable
 fun launcherScreen(viewModel: LauncherViewModel){
-    var input by remember { viewModel.partition }
-    val errorText by remember { viewModel.error }
-    val hasNext = errorText.isEmpty()
+    val errorText = viewModel.error.value
+    val hasNext = viewModel.hasNext
+
+
+
     Column {
         TextField(
-            input,
+            viewModel.partition,
             modifier = Modifier.fillMaxWidth(),
             isError = errorText.isNotEmpty(),
-            onValueChange = { input = it },
+            onValueChange = { viewModel.partition= it },
             label = { Text("分区名称") },
         )
 
@@ -57,7 +97,7 @@ fun launcherScreen(viewModel: LauncherViewModel){
         Button(
             onClick = { if (hasNext) viewModel.onNextStepBtnClick() },
             modifier = Style.Padding.vertical.align(Alignment.End),
-            enabled = errorText.isEmpty()&&input.isNotEmpty()
+            enabled = hasNext
         ) {
             Text("下一步")
         }
@@ -72,9 +112,12 @@ fun launcherScreen(viewModel: LauncherViewModel){
     }
 }
 interface LauncherViewModel:ViewModel {
-    val partition: MutableState<String>
+    var partition: String
     val error: State<String>
+    val hasNext:Boolean
     val checkbox:CheckboxesViewModel
+    @Composable
+    fun checkInput()
     fun onNextStepBtnClick()
     fun onBootBtnClick()
 }

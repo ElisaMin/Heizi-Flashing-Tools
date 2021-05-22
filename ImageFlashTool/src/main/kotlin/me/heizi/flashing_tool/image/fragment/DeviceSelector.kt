@@ -11,38 +11,77 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import lib.ChipCheckBox
-import lib.Style
+import me.heizi.flashing_tool.image.Style
+import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.compose.desktop.core.fragment.Event
+import me.heizi.kotlinx.logger.debug
+import me.heizi.kotlinx.shell.CommandResult
+import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
+import me.heizi.kotlinx.shell.shell
 
 
 class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Composable {
+    title = "选择设备"
+    subtitle = "你要把文件刷入的那个设备里面?"
     waitingScreen(viewModel)
 }) {
-
     override val isWaiting = mutableStateOf(true)
-    override val isEnable = mutableStateOf(true)
+    override val isEnable get() = devices.containsValue(true)
     override val devices = mutableStateMapOf<String, Boolean>()
     override val viewModel: WaitingViewModel = this
 
     val job = GlobalScope.launch {
-        TODO()
+        var isWaiting by isWaiting
+        while (true) {
+            delay(2000)
+            if (isWaiting) isWaiting = false
+            shell(prefix = arrayOf("cmd", "/c", "fastboot devices"), isWindows_keep = false).waitForResult {
+                if (it is CommandResult.Success) it.runCatching {
+//                    val list = arrayListOf<String>()
+                    for (line in message.lines()) {
+                        val test = line.split("\t")
+                        "device".debug(test, line)
+                        if (test.size != 2 && test[1] != "fastboot") break
+//                        list.add(test[0])
+                        devices[test[0]] = devices[test[0]] ?: false
+                        "device".debug(test, line)
+                    }
+                    "device".debug(devices.map { "${it.key} is ${it.value}" }.joinToString(","))
+//                    list.map { s ->
+//                        s to devices[s]!!
+//                    }.let {
+//                        devices.clear()
+//                        devices.putAll(it)
+//                    }
+                }
+            }
+            isWaiting = false
+        }
     }
 
     init {
-        on(Event.Create) { job.start() }
+        on(Event.Create) {
+            job.start()
+        }
         on(Event.Destroy) { job.cancel() }
     }
     override fun onNextStepBtnChecked() {
-        args["nextStep"]
-        TODO("Not yet implemented")
+        val boot = when(val mode = args["launchMode"]) {
+            "flash"-> InfoFragment::class
+            "boot" -> InvokeCommand::class
+            else -> throw IllegalStateException("unknown mode $mode")
+        }
+        val devices = this.devices.filter { it.value }.keys
+
+        handler.go(boot,*args.toList().toTypedArray(),"devices" to devices)
     }
 }
 
 interface WaitingViewModel:ViewModel {
     val isWaiting: State<Boolean>
-    val isEnable: State<Boolean>
+    val isEnable: Boolean
     val devices: SnapshotStateMap<String, Boolean>
     fun onNextStepBtnChecked()
 }
@@ -50,7 +89,8 @@ interface WaitingViewModel:ViewModel {
 @Composable
 fun waitingScreen(viewModel: WaitingViewModel) {
     val isWaiting by remember { viewModel.isWaiting }
-    val isEnable by remember { viewModel.isEnable }
+//    val isEnable by remember { viewModel.isEnable }
+
     Column {
         if (isWaiting) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -64,8 +104,8 @@ fun waitingScreen(viewModel: WaitingViewModel) {
         }
         Box(Style.Padding.bottom)
         Button(
-            onClick = { if (isEnable) viewModel.onNextStepBtnChecked() },
-            enabled = isEnable && !isWaiting, modifier = Modifier.align(Alignment.End)
+            onClick = { if (viewModel.isEnable) viewModel.onNextStepBtnChecked() },
+            enabled = viewModel.isEnable && !isWaiting, modifier = Modifier.align(Alignment.End)
         ) {
             Text("下一步")
         }

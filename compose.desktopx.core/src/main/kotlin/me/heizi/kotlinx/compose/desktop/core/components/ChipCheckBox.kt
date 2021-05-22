@@ -1,4 +1,4 @@
-package lib
+package me.heizi.kotlinx.compose.desktop.core.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
@@ -10,34 +10,10 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlin.reflect.KProperty
-
-class mutableStateFlowOf<T:Any?>(
-    private val flow: MutableStateFlow<T>
-) {
-    constructor(any:T) : this(MutableStateFlow(any))
-    operator fun getValue(any: Any, property: KProperty<*>): T  {
-        return flow.value
-    }
-
-    operator fun setValue(any: Any, property: KProperty<*>, value: T) {
-        flow.value = value
-    }
-
-}
-
-@Composable
-fun <T> StateFlow<T>.toState(): State<T> {
-    return collectAsState()
-}
-
 
 @Composable
 fun ChipCheckBox (

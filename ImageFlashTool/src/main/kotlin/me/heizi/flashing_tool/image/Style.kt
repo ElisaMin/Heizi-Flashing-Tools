@@ -1,4 +1,4 @@
-package lib
+package me.heizi.flashing_tool.image
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier

@@ -2,35 +2,54 @@ package me.heizi.flashing_tool.image.fragment
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import lib.Style
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import me.heizi.flashing_tool.image.Style
+import me.heizi.kotlinx.compose.desktop.core.fragment.Event
 
 @Suppress("UNCHECKED_CAST")
 class InfoFragment :InfoViewModel, Fragment<InfoViewModel>(_content = @Composable {
     showInfoScreen(viewModel)
 }) {
 
-    override val viewModel: InfoViewModel = this
-    override val bools: Triple<Boolean, Boolean, Boolean> =
-    Triple(
-        args["_a"] as Boolean,
-        args["_b"] as Boolean,
-        args["disable_avb"] as Boolean
-    )
-    override val partition: String = args["partition"] as String
-    override val device: List<String> = args["devices"] as List<String>
-    override val file: String = args["file"] as String
+    override var bools: Triple<Boolean, Boolean, Boolean> by mutableStateOf(Triple(false,false,false))
+    override var partition: String by mutableStateOf("")
+    override var device =  mutableListOf<String>()
+    override val file: String = Fragment.file.toString()
+
+    init {
+        on(Event.Create) {
+            GlobalScope.launch {
+                delay(300)
+                bools = Triple(
+                    args["_a"] as Boolean,
+                    args["_b"] as Boolean,
+                    args["disable_avb"] as Boolean
+                )
+                partition = args["partition"] as String
+                device.addAll(
+                    args["devices"] as Iterable<String>
+                )
+            }
+        }
+    }
 
     override fun onNextStepBtnClicked() {
-        TODO("Not yet implemented")
+        handler.go(InvokeCommand::class,*args.toList().toTypedArray(),"bools" to bools)
     }
+
+    override val viewModel: InfoViewModel = this
 }
 
 interface InfoViewModel:ViewModel {

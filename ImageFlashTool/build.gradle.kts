@@ -49,6 +49,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
 }
 
+
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 
@@ -60,3 +61,4 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "11"
 }
 
+tasks.getByName("build").dependsOn("clean")

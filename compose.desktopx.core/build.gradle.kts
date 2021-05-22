@@ -15,5 +15,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(project(":logger"))
     implementation(compose.desktop.currentOs)
+    implementation(kotlin("reflect"))
 }
+
+tasks.getByName("build").dependsOn("clean")

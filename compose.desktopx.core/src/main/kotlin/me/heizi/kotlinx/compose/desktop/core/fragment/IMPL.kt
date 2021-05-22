@@ -1,8 +1,11 @@
 package me.heizi.kotlinx.compose.desktop.core.fragment
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import me.heizi.kotlinx.logger.debug
 
 
 /**
@@ -14,6 +17,11 @@ import androidx.compose.runtime.mutableStateOf
 abstract class AbstractFragment(
     vararg args: Pair<String, Any>
 ):FragmentINTF {
+
+    internal var _handler: FragmentHandler? = null
+    final override val handler: FragmentHandler
+        get() = _handler ?: throw IllegalAccessException("handler not exist")
+
     /**
      * mutable argument and it just a map
      */
@@ -22,7 +30,7 @@ abstract class AbstractFragment(
     /**
      * public argument getter
      */
-    final override val args get() = _args.toMap()
+    final override val args get() = _args
 
     /**
      * event and block
@@ -38,7 +46,18 @@ abstract class AbstractFragment(
         events[event] = block
     }
 }
-
+fun <T,R:Comparable<R>> ArrayList<Pair<R,T>>.hashUp() {
+    val lastOne = hashMapOf<R,Int>()
+    map { it.first }.forEachIndexed { index, s ->
+        lastOne[s] = index
+    }
+    lastOne.toList().sortedBy {
+        it.second
+    }.map { this[it.second] }.let {
+        this.clear()
+        this.addAll(it)
+    }
+}
 /**
  * FragmentOwner
  *
@@ -46,19 +65,27 @@ abstract class AbstractFragment(
  * @param fragments key and getFragment
  */
 internal class FragmentOwner(
-    fragments: Array<out Pair<String, @Composable () -> FragmentINTF>>,
+    fragments: Array<out Pair<String, GetFragment>>,
 ):FragmentManager,FragmentHandler {
 
     /**
-     * Fragment any key
+     * Fragments 获取所有getFragment block
+     *
+     * @see FragmentManager.fragments
      */
-    private val fragmentAnyKey: HashMap<String,()-> FragmentINTF> = hashMapOf(*fragments)
+    override val fragments: ArrayList<Pair<String, GetFragment>> = arrayListOf<Pair<String,GetFragment>>().apply {
+        fragments.forEach(::add)
+        hashUp()
+    }
+
+
 
     /**
      * nullable _current
      */
     private var _current: FragmentINTF? = null
 
+    var lock = false
     /**
      * 启动Fragment by key
      *
@@ -66,17 +93,36 @@ internal class FragmentOwner(
      * @param args
      * @see FragmentHandler.go
      */
-    override fun go(key: String, vararg args: Pair<String, Any>) {
-        if (_current != null) {
-            require(_current is AbstractFragment) {
-                "${_current?.javaClass} is not Abstract Fragment"
+    override fun go(key: String, vararg args: Pair<String, Any>):Unit {
+        GlobalScope.launch {
+            while (lock) { delay(1)}
+
+            lock = true
+            "Fragment".debug("go","$currentKey to $key")
+            //event invoke onDestroy
+            if (_current != null) {
+                require(_current is AbstractFragment) {
+                    "${_current?.javaClass} is not Abstract Fragment"
+                }
+                (_current as AbstractFragment).events[Event.Destroy]?.invoke()
             }
-            (_current as AbstractFragment).events[Event.Destroy]?.invoke()
-        }
-        fragmentAnyKey.keys.indexOf(key).let {
-            currentIndex.value = it
-            (_current as AbstractFragment)._args.putAll(args)
-            (_current as AbstractFragment).events[Event.Create]?.invoke()
+            GlobalScope.launch {
+                //event invoke onCreate
+                val current = current
+                launch {
+                    currentIndex.value = key
+                }
+                while (current == _current )
+                    delay(1)
+
+                (_current as AbstractFragment).run {
+                    debug("args putting  ",_args,args.map { "${it.first}:${it.second}" }.joinToString(","))
+                    _args.putAll(args)
+                    debug("args",this.args)
+                    events[Event.Create]?.invoke()
+                }
+                lock = false
+            }
         }
     }
 
@@ -86,14 +132,8 @@ internal class FragmentOwner(
      *
      * @see FragmentManager.currentIndex
      */
-    override val currentIndex: MutableState<Int>  = mutableStateOf(0)
+    override val currentIndex: MutableState<String> = mutableStateOf(this.fragments[0].first)
 
-    /**
-     * Fragments 获取所有getFragment block
-     *
-     * @see FragmentManager.fragments
-     */
-    override val fragments: List<() -> FragmentINTF> get() = fragmentAnyKey.values.toList()
 
     /**
      * Current 选中的Fragment
@@ -110,5 +150,5 @@ internal class FragmentOwner(
      *
      * @see FragmentHandler.current
      */
-    override val currentKey: String get() = fragmentAnyKey.keys.toList()[currentIndex.value]
+    override val currentKey: String get() = currentIndex.value
 }

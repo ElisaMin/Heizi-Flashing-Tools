@@ -3,6 +3,19 @@ package me.heizi.kotlinx.compose.desktop.core.fragment
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import me.heizi.kotlinx.logger.debug
+import kotlin.reflect.KClass
+
+/**
+ * Get Fragment function
+ */
+typealias GetFragment = @Composable () -> FragmentINTF
+
+internal operator fun String.invoke(vararg string: String) {
+    "Fragment".debug(this,*string)
+}
+
+
 
 /**
  * Create a fragment
@@ -17,6 +30,7 @@ fun Fragment(vararg args: Pair<String, Any>,content:@Composable ()->Unit,):Fragm
  */
 @Composable
 fun FragmentContainer(handler: FragmentHandler) {
+    "Container func called"()
     (handler as FragmentManager).setContent()
 }
 
@@ -25,10 +39,29 @@ fun FragmentContainer(handler: FragmentHandler) {
  *
  * @param fragments key to getFragment
  */
-//TODO FIXME: 2021/5/20 HashMap has sort
+@Composable
 fun handlerOf(
     vararg fragments: Pair<String,@Composable ()->FragmentINTF>,
 ):FragmentHandler = FragmentOwner(fragments)
+
+@Composable
+fun getFragment(t:KClass<out FragmentINTF>):FragmentINTF =
+    (t.constructors.find { it is Function0<*> } as Function0<FragmentINTF>?)?.invoke()
+        ?: throw IllegalStateException("FragmentCreator need zero args constructor !!!!")
+
+@Composable
+fun handlerOf(
+    vararg fragments: KClass<out FragmentINTF>,
+):FragmentHandler {
+
+
+
+    return fragments.map<KClass<out FragmentINTF>,Pair<String,GetFragment>> {
+        it.simpleName!! to {
+            getFragment(it)
+        }
+    }.toTypedArray().let(::FragmentOwner)
+}
 
 /**
  * Event
@@ -46,6 +79,7 @@ enum class Event {
  * @see me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
  */
 interface FragmentINTF {
+    val handler:FragmentHandler
     val args:Map<String,Any>
     val content:@Composable ()->Unit
     fun on(event: Event,block:()->Unit)
@@ -75,17 +109,32 @@ interface FragmentHandler {
      * @param args
      */
     fun go(key:String, vararg args:Pair<String,Any>)
+    fun go(clz:KClass<out FragmentINTF>, vararg args:Pair<String,Any>) {
+        go(clz.simpleName!!,*args)
+    }
 }
 
 
-internal interface FragmentManager {
-    val fragments:List<()->FragmentINTF>
-    val currentIndex: State<Int>
-    var current:FragmentINTF
+internal interface FragmentManager:FragmentHandler {
+    val fragments:List<Pair<String,GetFragment>>
+    val currentIndex: State<String>
+    override var current:FragmentINTF
+
     @Composable
     fun setContent() {
-        current = (fragments[currentIndex.value] as (@Composable  ()->FragmentINTF ))()
-        current.content()
+        val r = fragments.find{it.first == currentIndex.value}
+        "$r is ready to In"()
+        if (r!=null) {
+            "$r is not null"()
+            current = (r.second as GetFragment) ()
+            (current as AbstractFragment).run {
+                _handler = this@FragmentManager
+
+            }
+            "current is ${current.javaClass}"()
+            current.content()
+            "content seted"()
+        }
     }
 }
 
