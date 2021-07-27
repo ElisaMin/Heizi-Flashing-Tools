@@ -10,3 +10,6 @@ include("khell")
 include("logger")
 include("ImageFlashTool")
 include("compose.desktopx.core")
+include("fastbootFakeDevice")
+include("nativeFileDialog")
+findProject(":nativeFileDialog")?.name = "fileDialog"

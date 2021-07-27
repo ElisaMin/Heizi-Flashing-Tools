@@ -1,3 +1,4 @@
+@file:JvmName("Main")
 package me.heizi.flashing_tool.image
 
 import me.heizi.flashing_tool.image.fragment.Fragment.Companion.start

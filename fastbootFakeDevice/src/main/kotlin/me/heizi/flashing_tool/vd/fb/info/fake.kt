@@ -1,4 +1,4 @@
-package me.heizi.flashing_tool.vd.fb
+//package me.heizi.flashing_tool.vd.fb
 
 
 //object FakeDeviceInfo: DeviceInfo("LMG710ULM785d0fea") {

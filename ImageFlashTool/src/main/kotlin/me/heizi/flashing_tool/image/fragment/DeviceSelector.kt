@@ -36,7 +36,7 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
         var isWaiting by isWaiting
         while (true) {
             delay(2000)
-            if (isWaiting) isWaiting = false
+            isWaiting = devices.isEmpty()
             shell(prefix = arrayOf("cmd", "/c", "fastboot devices"), isWindows_keep = false).waitForResult {
                 if (it is CommandResult.Success) it.runCatching {
 //                    val list = arrayListOf<String>()
@@ -57,7 +57,6 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
 //                    }
                 }
             }
-            isWaiting = false
         }
     }
 

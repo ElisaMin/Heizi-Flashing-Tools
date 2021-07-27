@@ -1,4 +1,4 @@
- package me.heizi.flashing_tool.image.fragment
+package me.heizi.flashing_tool.image.fragment
 
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.layout.Box
@@ -15,10 +15,17 @@ import me.heizi.kotlinx.compose.desktop.core.fragment.FragmentContainer
 import me.heizi.kotlinx.compose.desktop.core.fragment.handlerOf
 import java.io.File
 
- interface ViewModel
-
-
- abstract class Fragment <VM:ViewModel> (
+/**
+ * 程序片里面的界面和数据交流的对象 通常里面存在很多State
+ * 并且对象实例是接近单例的
+ */
+interface ViewModel
+/**
+ * Fragment 程序片
+ *
+ * @param _content 程序片展示的内容
+ */
+abstract class Fragment <VM:ViewModel> (
     _content:@Composable Fragment<VM>.() -> Unit
 ) : AbstractFragment() {
     var title by _title
@@ -31,11 +38,15 @@ import java.io.File
     }
 
     companion object {
-
         lateinit var file:File
+        /**
+         * 启动窗口
+         *
+         * @param file 要刷入的文件的完整路径 非相对路径
+         */
         fun start(file: File) {
             this.file = file
-            Window {
+            Window(title = "",icon = Style.Image.flashable) {
                 MaterialTheme {
                     FragmentContainer(handlerOf(
                         Launcher::class,
@@ -50,6 +61,11 @@ import java.io.File
         private val _title: MutableState<String> = mutableStateOf("")
         private val _subtitle: MutableState<String> = mutableStateOf("")
 
+        /**
+         * Fragment的标题和副标题
+         *
+         * @param block
+         */
         @Composable
         private fun contentContainer(block:@Composable ()->Unit) = Column(
             Modifier.padding(16.dp)

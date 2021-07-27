@@ -1,18 +1,14 @@
 package me.heizi.flashing_tool.image.fragment
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import me.heizi.flashing_tool.image.Style
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
+import me.heizi.kotlinx.logger.debug
 
 
 class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel>(_content =  @Composable {
@@ -27,6 +23,7 @@ class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel
 
     override val error: MutableState<String> = mutableStateOf("")
     override var hasNext: Boolean by mutableStateOf(false)
+    override var isDropDown: Boolean by mutableStateOf(true)
 
     override val _a: MutableState<Boolean> = mutableStateOf(false)
     override val _b: MutableState<Boolean> = mutableStateOf(false)
@@ -79,15 +76,39 @@ fun launcherScreen(viewModel: LauncherViewModel){
     val hasNext = viewModel.hasNext
 
 
-
     Column {
-        TextField(
-            viewModel.partition,
+        Column (
             modifier = Modifier.fillMaxWidth(),
-            isError = errorText.isNotEmpty(),
-            onValueChange = { viewModel.partition= it },
-            label = { Text("分区名称") },
-        )
+        ){
+            TextField(
+                viewModel.partition,
+                modifier = Modifier.fillMaxWidth(),
+                isError = errorText.isNotEmpty(),
+                onValueChange = { viewModel.partition= it },
+                label = { Text("分区名称") },
+                trailingIcon = {
+                    val text = if (viewModel.isDropDown)
+                        "▼" else "◀"
+                    TextButton(onClick = { with(viewModel){isDropDown = !isDropDown}
+                        "Extent".debug("clicked",viewModel.isDropDown) },) {
+                        Text(text)
+                    }
+                }
+            )
+
+            DropdownMenu(viewModel.isDropDown,{
+                viewModel.isDropDown = false
+            },modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),) {
+                for (s in arrayOf("system", "boot", "vbmeta", "vendor")) {
+                    DropdownMenuItem(onClick = {
+                        viewModel.partition = s
+                        viewModel.isDropDown = false
+                    }) {
+                        Text(s)
+                    }
+                }
+            }
+        }
 
         if (!hasNext) Text(errorText)
         Box(Style.Padding.bottom)
@@ -99,7 +120,7 @@ fun launcherScreen(viewModel: LauncherViewModel){
             modifier = Style.Padding.vertical.align(Alignment.End),
             enabled = hasNext
         ) {
-            Text("下一步")
+            Text("选择设备刷入")
         }
 
         //-----------
@@ -116,6 +137,7 @@ interface LauncherViewModel:ViewModel {
     val error: State<String>
     val hasNext:Boolean
     val checkbox:CheckboxesViewModel
+    var isDropDown:Boolean
     @Composable
     fun checkInput()
     fun onNextStepBtnClick()

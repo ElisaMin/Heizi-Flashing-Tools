@@ -26,7 +26,8 @@ fun Fragment(vararg args: Pair<String, Any>,content:@Composable ()->Unit,):Fragm
     }
 
 /**
- * Create a container
+ * Create a container that can switch the fragments
+ * usually we take first fragment that handler 标记 to be launcher fragment
  */
 @Composable
 fun FragmentContainer(handler: FragmentHandler) {

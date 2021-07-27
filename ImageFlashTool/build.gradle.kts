@@ -2,8 +2,8 @@ import org.jetbrains.compose.compose
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.compose") version "0.3.1"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("org.jetbrains.compose")
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "me.heizi.flashing_tool.image"
@@ -24,7 +24,7 @@ dependencies {
 }
 val shadowJar: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar by tasks
 shadowJar.apply {
-    manifest.attributes["Main-Class"] = "MainKt"
+    manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.image.Main"
 }
 
 compose.desktop {
@@ -43,10 +43,6 @@ compose.desktop {
 
 tasks.test {
     useJUnit()
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
-    kotlinOptions.jvmTarget = "11"
 }
 
 
