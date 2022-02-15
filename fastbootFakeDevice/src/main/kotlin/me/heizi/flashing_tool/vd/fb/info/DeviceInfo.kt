@@ -2,17 +2,16 @@ package me.heizi.flashing_tool.vd.fb.info
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.vd.fb.FastbootDevice
 import me.heizi.flashing_tool.vd.fb.fastboot.FastbootCommandViewModel
 import me.heizi.flashing_tool.vd.fb.scope
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
-import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
-import me.heizi.kotlinx.shell.shell
+import me.heizi.kotlinx.shell.Shell
 import java.text.DecimalFormat
+import kotlin.coroutines.EmptyCoroutineContext
 
 open class DeviceInfo(
     override val serialID: String
@@ -30,16 +29,18 @@ open class DeviceInfo(
     private var _isUnlocked = mutableStateOf(false)
     private var _isMultipleSlot = mutableStateOf(false)
 
-    override fun refreshInfo() {
-        refreshInfo {  }
+    override fun refreshInfo()
+        = refreshInfo {  }
+
+    open suspend fun getvarAll() = Shell("fastboot -s $serialID getvar all",isMixingMessage = true, runCommandOnPrefix = true).await().let {
+        if (it is CommandResult.Success) onGetvarMessage(it.message)
     }
 
-    fun refreshInfo(onDone: () -> Unit) {
+
+    open fun refreshInfo(onDone: () -> Unit) :Job {
         debug("refresh called")
-        scope.launch {
-            shell("fastboot -s $serialID getvar all",isMixingMessage = true).waitForResult(onResult = {
-                if (it is CommandResult.Success) onGetvarMessage(it.message)
-            })
+        return scope.launch {
+            getvarAll()
             _currentSlotA.value = when (val slot = asMap["current-slot"]) {
                 null -> null
                 "a" -> true
@@ -55,7 +56,9 @@ open class DeviceInfo(
         fastbootCommandPipe.emit(FastbootCommandViewModel(command, serialID,onDone = onDone))
     }
 
-    open fun onGetvarMessage(message:String) {
+    fun onGetvarMessage(message:String) {
+
+        debug("dealing message",message.count { it == '\n'  })
 
         val formatter = DecimalFormat("0.00")
         val cache = HashMap<String,Pair<String,Long>>()
@@ -104,9 +107,10 @@ open class DeviceInfo(
         cache.map {(name,data)->
             val (type,sizes) = data
             val size = formatter.format(sizes.toFloat()/(1024f*1024f)).toFloat()
-            val pType = when(type.toLowerCase()) {
+            val pType = when(type.lowercase()) {
                 "ext4" -> PartitionType.EXT4
                 "raw" -> PartitionType.RAW
+                "f2fs" -> PartitionType.F2FS
                 else -> error(type)
             }
             PartitionInfo(name, pType, size, this)
@@ -117,13 +121,28 @@ open class DeviceInfo(
         }
     }
 
-    init {
-        scope.launch {
-            while(true) {
-                delay(30000)
-                refreshInfo()
-            }
+    fun getvarLoop() = CoroutineScope(EmptyCoroutineContext).launch {
+        while (isActive) {
+            refreshInfo {
+                debug("refresh done")
+            }.join()
+            delay(30000)
         }
+    }
+
+    init {
+        getvarLoop()
+//        scope.launch {
+//
+//            launch {
+//
+//            }
+//            while(true) {
+//                delay(30000)
+//
+//                refreshInfo()
+//            }
+//        }
     }
 
 }

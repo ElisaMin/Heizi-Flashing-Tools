@@ -1,18 +1,47 @@
-package me.heizi.flashing_tool.vd.fb
+package me.heizi.flashing_tool.fastboot.screen
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.window.Window
+import fastbootIconBuffered
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.heizi.flashing_tool.vd.fb.FastbootDevice
 import me.heizi.flashing_tool.vd.fb.fastboot.FastbootCommandViewModel
 import me.heizi.flashing_tool.vd.fb.fastboot.fastbootCommand
 import me.heizi.flashing_tool.vd.fb.info.DeviceInfo
+import me.heizi.flashing_tool.vd.fb.scope
+
+@Composable
+fun DeviceManagerWindow(
+    viewModel: DeviceManagerViewModel,
+    onExit:()->Unit,
+) {
+    Window(onExit,title = viewModel.device.serialID,icon = fastbootIconBuffered.toPainter()) {
+        DeviceManagerScreen(viewModel)
+    }
+}
+interface DeviceManagerViewModel {
+
+    val device: FastbootDevice
+    val isSlotA: Boolean?
+    val deviceSimpleInfo: Map<String, String>
+    @Composable
+    fun collectPipe()
+    @Composable fun setUpSimpleInfo()
+    fun switchPartition(isSlotA: Boolean)
+
+}
+
+annotation class FastbootOperate(val name:String)
 
 
-class ViewModelImpl(
+
+open class DeviceManagerViewModelImpl(
     serialID: String
-): ViewModel {
+): DeviceManagerViewModel {
 
 
     private var fastbootCommandBuffer: MutableState<FastbootCommandViewModel?> = mutableStateOf(null)
@@ -39,12 +68,21 @@ class ViewModelImpl(
         }
     }
 
+    @FastbootOperate("OEM解锁") fun oemUnlock() {
+        device run "oem unlock"
+    }
     @FastbootOperate("重启") fun reboot() {
         device run "reboot"
     }
     @FastbootOperate("重置") fun wipe() {
         device run "-w"
     }
+    @FastbootOperate("重启到Fastbootd") fun rebootToFastbootd() {
+        device run "reboot fastboot"
+    }
+    //    @FastbootOperate("重启到Rec") fun rebootToFastbootd() {
+//        device run "reboot fastboot"
+//    }
     //        println("boot")
     @Composable
     override fun collectPipe() {
@@ -66,16 +104,3 @@ class ViewModelImpl(
 
 }
 
-interface ViewModel {
-
-    val device: FastbootDevice
-    val isSlotA: Boolean?
-    val deviceSimpleInfo: Map<String, String>
-    @Composable
-    fun collectPipe()
-    @Composable fun setUpSimpleInfo()
-    fun switchPartition(isSlotA: Boolean)
-
-}
-
-annotation class FastbootOperate(val name:String)

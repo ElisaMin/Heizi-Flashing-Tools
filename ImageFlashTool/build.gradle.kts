@@ -6,24 +6,27 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-group = "me.heizi.flashing_tool.image"
-version = "1.0"
-
 repositories {
+    google()
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
 }
 
 dependencies {
+    implementation("com.arkivanov.decompose:extensions-compose-jetbrains:0.5.0")
     implementation(kotlin("stdlib"))
     implementation(project(":khell"))
     implementation(project(":logger"))
     implementation(project(":compose.desktopx.core"))
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
+    @Suppress("UNCHECKED_CAST")
+    (project.extra.get("kotlinCoroutineDependency")!! as DependencyHandler.()->Unit)()
 }
-val shadowJar: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar by tasks
-shadowJar.apply {
+
+group = "me.heizi.flashing_tool.image"
+version = "1.0"
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.image.Main"
 }
 

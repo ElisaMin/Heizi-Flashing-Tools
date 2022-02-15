@@ -6,6 +6,7 @@ pluginManagement {
 
 }
 rootProject.name = "HeiziToolX"
+
 include("khell")
 include("logger")
 include("ImageFlashTool")

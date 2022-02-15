@@ -3,6 +3,7 @@ import org.jetbrains.compose.compose
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "me.heizi.flashing_tool"
@@ -14,14 +15,16 @@ repositories {
 }
 
 dependencies {
+    @Suppress("UNCHECKED_CAST")
+    (project.extra.get("kotlinCoroutineDependency")!! as DependencyHandler.()->Unit)()
     implementation(kotlin("stdlib"))
     implementation(project(":khell"))
     implementation(project(":logger"))
     implementation(project(":fileDialog"))
     implementation(project(":compose.desktopx.core"))
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3-native-mt")
     implementation(kotlin("reflect"))
+//    implementation(kotlin("kotlinx-coroutines-core"))
 }
 
 
@@ -29,6 +32,9 @@ tasks.test {
     useJUnit()
 }
 
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.vd.fb.Main"
+}
 
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks

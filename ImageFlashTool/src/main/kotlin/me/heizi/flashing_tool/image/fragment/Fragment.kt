@@ -1,6 +1,6 @@
 package me.heizi.flashing_tool.image.fragment
 
-import androidx.compose.desktop.Window
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -8,7 +8,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.singleWindowApplication
 import me.heizi.flashing_tool.image.Style
 import me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
 import me.heizi.kotlinx.compose.desktop.core.fragment.FragmentContainer
@@ -46,7 +48,7 @@ abstract class Fragment <VM:ViewModel> (
          */
         fun start(file: File) {
             this.file = file
-            Window(title = "",icon = Style.Image.flashable) {
+            singleWindowApplication(title = "",icon = Style.Image.flashable.toPainter()) {
                 MaterialTheme {
                     FragmentContainer(handlerOf(
                         Launcher::class,

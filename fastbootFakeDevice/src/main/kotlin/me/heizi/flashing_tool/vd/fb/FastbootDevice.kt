@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.vd.fb
 
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.vd.fb.fastboot.FastbootCommandViewModel
@@ -21,7 +22,7 @@ interface FastbootDevice {
     fun run(command: String,onDone: () -> Unit) = runBlocking {
         executeFastboot(command,onDone)
     }
-    fun refreshInfo()
+    fun refreshInfo():Job
 //    suspend fun flash(partitionInfo: PartitionInfo,file:File) =
 //        executeFastboot("flash ${partitionInfo.name} $file ")
 
