@@ -20,6 +20,7 @@ internal operator fun String.invoke(vararg string: String) {
 /**
  * Create a fragment
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 fun Fragment(vararg args: Pair<String, Any>,content:@Composable ()->Unit,):FragmentINTF
     = object : AbstractFragment(*args) {
         override val content: @Composable () -> Unit = content
@@ -29,6 +30,7 @@ fun Fragment(vararg args: Pair<String, Any>,content:@Composable ()->Unit,):Fragm
  * Create a container that can switch the fragments
  * usually we take first fragment that handler 标记 to be launcher fragment
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 @Composable
 fun FragmentContainer(handler: FragmentHandler) {
     "Container func called"()
@@ -40,16 +42,19 @@ fun FragmentContainer(handler: FragmentHandler) {
  *
  * @param fragments key to getFragment
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 @Composable
 fun handlerOf(
     vararg fragments: Pair<String,@Composable ()->FragmentINTF>,
 ):FragmentHandler = FragmentOwner(fragments)
 
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 @Composable
 fun getFragment(t:KClass<out FragmentINTF>):FragmentINTF =
     (t.constructors.find { it is Function0<*> } as Function0<FragmentINTF>?)?.invoke()
         ?: throw IllegalStateException("FragmentCreator need zero args constructor !!!!")
 
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 @Composable
 fun handlerOf(
     vararg fragments: KClass<out FragmentINTF>,
@@ -69,6 +74,7 @@ fun handlerOf(
  *
  * Fragment的启动和摧毁事件
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 enum class Event {
     Create,
     Destroy,
@@ -79,6 +85,7 @@ enum class Event {
  *
  * @see me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 interface FragmentINTF {
     val handler:FragmentHandler
     val args:Map<String,Any>
@@ -92,6 +99,7 @@ interface FragmentINTF {
  * 实例创建：
  * @see handlerOf
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 interface FragmentHandler {
     /**
      * Current
@@ -115,7 +123,7 @@ interface FragmentHandler {
     }
 }
 
-
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 internal interface FragmentManager:FragmentHandler {
     val fragments:List<Pair<String,GetFragment>>
     val currentIndex: State<String>

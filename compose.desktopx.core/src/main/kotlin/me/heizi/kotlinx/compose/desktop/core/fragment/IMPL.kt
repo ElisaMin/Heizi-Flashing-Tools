@@ -14,6 +14,7 @@ import me.heizi.kotlinx.logger.debug
  * 默认的Fragment Impl
  * @param args for default args
  */
+@Deprecated("remove on next version", ReplaceWith("Decompose"))
 abstract class AbstractFragment(
     vararg args: Pair<String, Any>
 ):FragmentINTF {
@@ -64,6 +65,7 @@ fun <T,R:Comparable<R>> ArrayList<Pair<R,T>>.hashUp() {
  * implement of [FragmentManager] & [FragmentHandler]
  * @param fragments key and getFragment
  */
+@Deprecated("remove on next version",ReplaceWith("Decompose"))
 internal class FragmentOwner(
     fragments: Array<out Pair<String, GetFragment>>,
 ):FragmentManager,FragmentHandler {
