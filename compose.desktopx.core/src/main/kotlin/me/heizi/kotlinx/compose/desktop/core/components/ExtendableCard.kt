@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
 @Composable
 fun ExtendableCard(
     initExtend: Boolean = false,
@@ -19,17 +18,26 @@ fun ExtendableCard(
     elevation: Dp = 3.dp,
     title:@Composable ()->Unit,
     content:@Composable ()->Unit
+)  {
+    ExtendableCard(mutableStateOf(initExtend),modifier,elevation, title, content)
+}
+@Composable
+fun ExtendableCard(
+    states:MutableState<Boolean> = mutableStateOf(false),
+    modifier: Modifier = Modifier,
+    elevation: Dp = 3.dp,
+    title:@Composable ()->Unit,
+    content:@Composable ()->Unit
 ) {
-    var state by remember { mutableStateOf(initExtend) }
+    var state by remember { states }
     val padding = Modifier.padding(8.dp)
 
     Card(modifier = padding.defaultMinSize(minWidth = 127.dp).then(modifier)
         .width(180.dp),elevation = elevation) {
         Column(modifier = padding.fillMaxWidth()) {
-
-            Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Box(contentAlignment = Alignment.CenterStart,modifier = padding.fillMaxWidth()) {
                 title()
-                TextButton(onClick = {state=!state}) { Text(if (!state)"◀" else "▼") }
+                TextButton(onClick = {state=!state},modifier = Modifier.padding(end = 2.dp).align(Alignment.CenterEnd)) { Text(if (!state)"◀" else "▼") }
             }
             if (state) {
                 content()
