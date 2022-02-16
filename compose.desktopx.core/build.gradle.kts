@@ -1,4 +1,5 @@
 import me.heizi.gradle.Libs
+import me.heizi.gradle.Versions
 import org.jetbrains.compose.compose
 
 plugins {
@@ -7,7 +8,7 @@ plugins {
 }
 
 group = "me.heizi.kotlinx"
-version = "1.0"
+version = Versions.HFT
 
 repositories {
     google()

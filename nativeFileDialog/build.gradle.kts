@@ -1,9 +1,11 @@
+import me.heizi.gradle.Libs
+import me.heizi.gradle.Versions
 plugins {
     kotlin("jvm")
 }
 
 group = "me.heizi.kotlinx"
-version = "1.0"
+version = Versions.HFT
 
 repositories {
     mavenCentral()
@@ -12,6 +14,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":logger"))
-    implementation("net.java.dev.jna:jna:5.8.0")
-    implementation("net.java.dev.jna:jna-platform:5.8.0")
+    implementation(Libs.JNA.self)
+    implementation(Libs.JNA.platform)
 }

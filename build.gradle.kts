@@ -1,5 +1,5 @@
 group = "me.heizi.flashing_tool"
-version = "1.0"
+version = me.heizi.gradle.Versions.HFT
 
 
 

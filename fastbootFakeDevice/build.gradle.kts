@@ -1,4 +1,6 @@
+
 import me.heizi.gradle.Libs
+import me.heizi.gradle.Versions
 import org.jetbrains.compose.compose
 
 plugins {
@@ -8,7 +10,7 @@ plugins {
 }
 
 group = "me.heizi.flashing_tool"
-version = "1.0"
+version = Versions.HFT
 
 repositories {
     mavenCentral()
@@ -34,6 +36,7 @@ tasks.test {
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.vd.fb.Main"
+
 }
 
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks

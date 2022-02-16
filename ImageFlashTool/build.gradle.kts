@@ -1,4 +1,6 @@
+
 import me.heizi.gradle.Libs
+import me.heizi.gradle.Versions
 import org.jetbrains.compose.compose
 
 plugins {
@@ -25,23 +27,10 @@ dependencies {
 }
 
 group = "me.heizi.flashing_tool.image"
-version = "1.0"
+version = Versions.HFT
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.image.Main"
-}
-
-compose.desktop {
-    application {
-        javaHome = "D:\\jdk\\jdk-14"
-        mainClass = "MainKt"
-        nativeDistributions {
-            targetFormats( org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
-            packageName = "HeiziToolX"
-            packageVersion = "1.0.0"
-        }
-    }
 }
 
 
