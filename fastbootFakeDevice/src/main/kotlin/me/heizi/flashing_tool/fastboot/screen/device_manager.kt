@@ -116,7 +116,7 @@ fun DeviceGetVarInfo(vars:List<Array<String>>,onClose: () -> Unit) {
 fun DeviceManagerViewModel.DeviceManagerScreen() {
     collectPipe()
     setUpSimpleInfo()
-//    if (isOpenDetail)
+    if (isOpenDetail)
         DeviceGetVarInfo(device.cache) { isOpenDetail = false}
     Scaffold(Modifier.fillMaxSize(), topBar = {
         SmallTopAppBar(title = { Text(device.serialID, style = MaterialTheme.typography.displayLarge) })
