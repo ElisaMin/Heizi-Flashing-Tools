@@ -6,19 +6,19 @@ import Resources
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.singleWindowApplication
+import androidx.compose.ui.window.*
 import kotlinx.coroutines.*
 import me.heizi.flashing_tool.fastboot.screen.*
 import me.heizi.flashing_tool.vd.fb.info.DeviceInfo
 import me.heizi.kotlinx.logger.debug
-import java.awt.Dimension
 import javax.imageio.ImageIO
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -59,26 +59,25 @@ fun main() {
         singleWindowApplication(
             title = "提示", icon = withContext(Dispatchers.IO) {
                 ImageIO.read(Resources.Urls.fastboot!!)
-            }.toPainter()
+            }.toPainter(), state = WindowState(size = DpSize(400.dp,200.dp))
         ) {
-            this.window.size = Dimension(400,200)
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("欢迎使用预览版HFT-Fastboot设备管理器",  modifier = Modifier.padding(bottom = 8.dp))
+                Text("欢迎使用预览版HFT-Fastboot设备管理器",  modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
                 Text("软件已经启动，在状态栏内可以找到软件的图标，该软件会在后台三秒一次轮询检测Fastboot设备，在使用完成请及时退出（关闭本窗口不可关闭程序）" +
                         "。在您的Fastboot设备电脑插入后，可以双击图标启动Fastboot设备管理器。")
             }
         }
     }
 
-
-
-
-
     runBlocking {
         delay(10)
     }
 
     application {
+        val welcomeNotifications = rememberNotification(
+            "欢迎使用预览版HFT-Fastboot设备管理器", "软件已经启动，在状态栏内可以找到软件的图标，该软件会在后台三秒一次轮询检测Fastboot设备，在使用完成请及时退出（关闭本窗口不可关闭程序）" +
+                    "。在您的Fastboot设备电脑插入后，可以双击图标启动Fastboot设备管理器。", Notification.Type.Info
+        )
 
         if (openedDeviceDialog.isNotEmpty()) DialogOpen()
         var isScannerDialogShow by remember { mutableStateOf(false) }
@@ -110,6 +109,9 @@ fun main() {
         isConnected = deviceList.isNotEmpty()
         trays.Render()
 
+        trays.state.sendNotification(
+            welcomeNotifications
+        )
 
     }
 }

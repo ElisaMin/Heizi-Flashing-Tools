@@ -1,3 +1,4 @@
+import me.heizi.gradle.Libs
 import org.jetbrains.compose.compose
 
 plugins {
@@ -13,14 +14,14 @@ repositories {
 }
 
 dependencies {
-    implementation("com.arkivanov.decompose:extensions-compose-jetbrains:0.5.0")
     implementation(kotlin("stdlib"))
     implementation(project(":khell"))
     implementation(project(":logger"))
     implementation(project(":compose.desktopx.core"))
     implementation(compose.desktop.currentOs)
-    @Suppress("UNCHECKED_CAST")
-    (project.extra.get("kotlinCoroutineDependency")!! as DependencyHandler.()->Unit)()
+    implementation(Libs.Decompose)
+    implementation(Libs.M3)
+    implementation(Libs.Coroutine)
 }
 
 group = "me.heizi.flashing_tool.image"

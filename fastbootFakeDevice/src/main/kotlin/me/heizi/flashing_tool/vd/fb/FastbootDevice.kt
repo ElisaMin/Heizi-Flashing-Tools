@@ -12,8 +12,9 @@ interface FastbootDevice {
     val partitions:List<PartitionInfo>
     val isUnlocked:Boolean
     val isMultipleSlot:Boolean
+    val isFastbootd:Boolean?
     val currentSlotA:Boolean?
-    val asMap:Map<String,String>
+    val cache:List<Array<String>>
     val fastbootCommandPipe: SharedFlow<FastbootCommandViewModel>
     suspend fun executeFastboot(command:String,onDone: () -> Unit ={})
     infix fun run(command: String) = runBlocking {
@@ -23,6 +24,7 @@ interface FastbootDevice {
         executeFastboot(command,onDone)
     }
     fun refreshInfo():Job
+    operator fun  get(s: String): String?
 //    suspend fun flash(partitionInfo: PartitionInfo,file:File) =
 //        executeFastboot("flash ${partitionInfo.name} $file ")
 

@@ -5,16 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.vd.fb.scope
+import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.println
 import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
 
 
-private val debugScope = CoroutineScope(Dispatchers.IO)
 
 class FastbootCommandViewModel(
     val command: String,val serialID: String,var onDone:()->Unit = {}
@@ -46,21 +45,28 @@ class FastbootCommandViewModel(
             }
         )
     }
-    operator fun invoke() =scope.launch {
+
+    operator fun invoke() = scope.launch {
         isRunning = true
         Shell("fastboot -s $serialID $command", runCommandOnPrefix = true).collect { r -> when(r) {
             is ProcessingResults.CODE -> log += "\n\n指令执行似乎" + if (r.code!=0) "失败了" else "成功了"
             is ProcessingResults.Closed -> {
+                "executor".debug("result",log)
                 isRunning = null
                 onDone()
             }
-            is ProcessingResults.Error -> log+="${r.message}\n"
+            is ProcessingResults.Error -> {
+                log += "${r.message}\n"
+                "executor".debug("error",r.message)
+            }
             is ProcessingResults.Message -> r.message.let {
-                println("message on shell waiting result",it)
+                "executor".debug("msg",r.message)
                 log+="$it\n"
             }
         } }
-
+    }
+    companion object {
+        private val debugScope = CoroutineScope(Dispatchers.IO)
 
     }
 }

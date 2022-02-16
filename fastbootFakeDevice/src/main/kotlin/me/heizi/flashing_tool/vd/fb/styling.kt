@@ -1,10 +1,9 @@
 package me.heizi.flashing_tool.vd.fb
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import java.awt.image.BufferedImage
 
 //fun main() = Window {
 ////    fastbootCommand(FastbootCommandViewModel("ping google.com",FakeDeviceInfo.serialID))
@@ -12,7 +11,7 @@ import java.awt.image.BufferedImage
 //    fileInput(path,modifier = Modifier.fillMaxWidth().padding(16.dp)) {path = it }
 //}
 
-val emptyIcon = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).also { it.setRGB(0, 0, 0) }
+//val emptyIcon = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).also { it.setRGB(0, 0, 0) }
 //val dialogProperties = DialogProperties(
 //    title = "",
 //    size = IntSize(500, 700),
@@ -38,7 +37,7 @@ val emptyIcon = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).also { it.setRG
 
 @Composable
 fun Title(text:String) {
-    Text(text, style = MaterialTheme.typography.h5)
+    Text(text, style = MaterialTheme.typography.titleLarge)
 }
 
 

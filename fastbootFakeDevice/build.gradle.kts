@@ -1,3 +1,4 @@
+import me.heizi.gradle.Libs
 import org.jetbrains.compose.compose
 
 plugins {
@@ -15,16 +16,15 @@ repositories {
 }
 
 dependencies {
-    @Suppress("UNCHECKED_CAST")
-    (project.extra.get("kotlinCoroutineDependency")!! as DependencyHandler.()->Unit)()
     implementation(kotlin("stdlib"))
     implementation(project(":khell"))
     implementation(project(":logger"))
     implementation(project(":fileDialog"))
     implementation(project(":compose.desktopx.core"))
+    implementation(Libs.Coroutine)
+    implementation(Libs.M3)
     implementation(compose.desktop.currentOs)
     implementation(kotlin("reflect"))
-//    implementation(kotlin("kotlinx-coroutines-core"))
 }
 
 

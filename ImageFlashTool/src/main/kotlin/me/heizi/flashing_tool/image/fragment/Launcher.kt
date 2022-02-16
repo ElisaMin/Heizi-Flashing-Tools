@@ -1,7 +1,13 @@
 package me.heizi.flashing_tool.image.fragment
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.TextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,7 +105,7 @@ fun launcherScreen(viewModel: LauncherViewModel){
             DropdownMenu(viewModel.isDropDown,{
                 viewModel.isDropDown = false
             },modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),) {
-                for (s in arrayOf("system", "boot", "vbmeta", "vendor")) {
+                for (s in arrayOf("system", "boot", "vbmeta", "vendor","recovery")) {
                     DropdownMenuItem(onClick = {
                         viewModel.partition = s
                         viewModel.isDropDown = false

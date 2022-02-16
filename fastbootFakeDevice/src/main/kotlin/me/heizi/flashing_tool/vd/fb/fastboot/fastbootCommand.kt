@@ -2,7 +2,14 @@ package me.heizi.flashing_tool.vd.fb.fastboot
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,7 +45,6 @@ fun main() = application {
 @Composable
 fun fastbootCommand(viewModel: FastbootCommandViewModel, onDismiss:()->Unit={}) {
 
-    val log = remember { viewModel.log }
 
     AlertDialog({},title = {
         Text("设备:${viewModel.serialID}")
@@ -47,7 +53,7 @@ fun fastbootCommand(viewModel: FastbootCommandViewModel, onDismiss:()->Unit={}) 
             Text(text = "正在请求执行:\n${viewModel.command}",modifier = Modifier.padding(vertical = 6.dp).alpha(
                 ContentAlpha.medium))
             if (viewModel.isRunning==true) LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 6.dp))
-            if (viewModel.isRunning!=false) Text(log,modifier = Modifier.padding(vertical = 6.dp).alpha(
+            if (viewModel.isRunning!=false) Text(viewModel.log,modifier = Modifier.padding(vertical = 6.dp).alpha(
                 ContentAlpha.medium))
         }
     },confirmButton = {

@@ -1,3 +1,4 @@
+import me.heizi.gradle.Libs
 import org.jetbrains.compose.compose
 
 plugins {
@@ -18,6 +19,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":logger"))
     implementation(compose.desktop.currentOs)
+    implementation(Libs.M3)
     implementation(kotlin("reflect"))
 }
 

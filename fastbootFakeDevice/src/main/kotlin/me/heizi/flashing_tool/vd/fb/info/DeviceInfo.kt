@@ -1,7 +1,9 @@
 package me.heizi.flashing_tool.vd.fb.info
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import me.heizi.flashing_tool.vd.fb.FastbootDevice
@@ -19,15 +21,22 @@ open class DeviceInfo(
 
 
     override val partitions: MutableList<PartitionInfo> = mutableStateListOf()
-    override val isUnlocked: Boolean get() = _isUnlocked.value
-    override val isMultipleSlot: Boolean get() = _isMultipleSlot.value
-    override val currentSlotA: Boolean? get() = _currentSlotA.value
-    override val asMap:HashMap<String,String> = hashMapOf()
+    override var isUnlocked: Boolean by mutableStateOf(false)
+    override var isMultipleSlot: Boolean by mutableStateOf(false)
+    override var isFastbootd: Boolean? by mutableStateOf(null)
+    override var currentSlotA: Boolean? by mutableStateOf<Boolean?>(null)
     override val fastbootCommandPipe: MutableSharedFlow<FastbootCommandViewModel> = MutableSharedFlow()
 
-    private var _currentSlotA = mutableStateOf<Boolean?>(null)
-    private var _isUnlocked = mutableStateOf(false)
-    private var _isMultipleSlot = mutableStateOf(false)
+    override val cache = ArrayList<Array<String>>()
+    override fun get(s: String): String? {
+        for (strings in cache) {
+            if (strings.size == 2 && strings[0] == s) return strings[1]
+            else if (strings.dropLast(1).joinToString(":") == s) return strings.last()
+        }
+        return null
+    }
+
+
 
     override fun refreshInfo()
         = refreshInfo {  }
@@ -41,14 +50,6 @@ open class DeviceInfo(
         debug("refresh called")
         return scope.launch {
             getvarAll()
-            _currentSlotA.value = when (val slot = asMap["current-slot"]) {
-                null -> null
-                "a" -> true
-                "b" -> false
-                else -> throw IllegalStateException("设备的current slot不在ab里:$slot")
-            }
-            _isMultipleSlot.value = asMap["slot-count"] == "2"
-            _isUnlocked.value = asMap["unlocked"] == "yes"
             onDone()
         }
     }
@@ -56,56 +57,54 @@ open class DeviceInfo(
         fastbootCommandPipe.emit(FastbootCommandViewModel(command, serialID,onDone = onDone))
     }
 
-    fun onGetvarMessage(message:String) {
+    private fun updateFiled() {
+        isFastbootd = this["is-userspace"] == "yes"
 
-        debug("dealing message",message.count { it == '\n'  })
-
+        currentSlotA = when (val slot = this["current-slot"]) {
+            null -> null
+            "a" -> true
+            "b" -> false
+            else -> throw IllegalStateException("设备的current slot不在ab里:$slot")
+        }
+        isMultipleSlot = (this["slot-count"]?.toIntOrNull() ?: -1) > 2
+        isUnlocked = this["unlocked"] == "yes"
+    }
+    private fun updatePartitions() {
         val formatter = DecimalFormat("0.00")
-        val cache = HashMap<String,Pair<String,Long>>()
-
-
-        message.lineSequence().map {
-            it.replaceFirst("(bootloader) ","").split(":")
-        }.filter {
-            it.size >= 2
-        }.forEach { list ->
-
-            if (list.size == 2) {
-                asMap[list[0]] = list[1]
-            } else {
-                val key = list.subList(0, list.lastIndex - 1).joinToString(":")
-                asMap[key] = list.last()
-            }
-            //分区名称
-            if (list[0].startsWith("partition-")) {
-                val ptsName = list[1]
-                val value = list[2].trim()
-                val info = cache[ptsName]
-                when (list[0].replace("partition-", "")) {
-                    "type" -> {
-                        cache[ptsName] = when {
-                            info == null -> {
-                                value to Long.MAX_VALUE
-                            }
-                            info.first == "Nothings!" -> info.copy(first = value)
-                            else -> error("$ptsName $value")
-                        }
+        val pCache = HashMap<String,Triple<String,Long,Boolean?>>()
+        for (it in cache) {
+            val prefix = it[0]
+            val ptsName = it.getOrNull(1)
+            val data = it.getOrNull(2)
+            if (ptsName==null) continue
+            val info = pCache[ptsName]
+            if (isFastbootd == true && prefix == "is-logical") {
+                val isLogical:Boolean? = when (data) {
+                    "yes" -> true
+                    "no" -> false
+                    "",null-> null
+                    else -> {
+                        println("unexpected filed $data isLogical ")
+                        null
                     }
-                    "size" -> {
-                        val value = java.lang.Long.parseLong(value.drop(2), 16)
-                        cache[ptsName] = when {
-                            info == null -> {
-                                "Nothings!" to Long.MAX_VALUE
-                            }
-                            info.second == Long.MAX_VALUE -> info.copy(second = value)
-                            else -> error("$ptsName $value")
-                        }
+                }
+                pCache[ptsName] = pCache[ptsName]?.copy(third = isLogical) ?: Triple("Nothings!",Long.MAX_VALUE,isLogical)
+
+            } else if (prefix.startsWith("partition-")) when(prefix.replace("partition-", "")) {
+                "type" -> {
+                    pCache[ptsName] = info?.copy(first = data!!) ?: Triple(data!!,Long.MAX_VALUE,false)
+                }
+                "size" -> {
+                    java.lang.Long.parseLong(data!!.drop(2), 16).let {
+                        pCache[ptsName] = info?.copy(second = it) ?:Triple("Nothings!", Long.MAX_VALUE,false)
                     }
+
                 }
             }
         }
-        cache.map {(name,data)->
-            val (type,sizes) = data
+
+        pCache.map { (name,data,) ->
+            val (type,sizes,isLogic) = data
             val size = formatter.format(sizes.toFloat()/(1024f*1024f)).toFloat()
             val pType = when(type.lowercase()) {
                 "ext4" -> PartitionType.EXT4
@@ -113,12 +112,26 @@ open class DeviceInfo(
                 "f2fs" -> PartitionType.F2FS
                 else -> error(type)
             }
-            PartitionInfo(name, pType, size, this)
+            PartitionInfo(name, pType, size, this,isLogic)
         }.let {
             partitions.clear()
             partitions.addAll(it)
             partitions.sortBy { it.name }
+            debug("partition count",partitions.size)
         }
+    }
+    fun onGetvarMessage(message:String) {
+        debug("dealing message",message.count { it == '\n'  })
+        cache.clear()
+        message.lineSequence().map {
+            it.replaceFirst("(bootloader)","").split(":")
+        }.filter {
+            it.size >= 2
+        }.forEach { list ->
+            cache.add(list.map { it.trim() }.toTypedArray())
+        }
+        updateFiled()
+        updatePartitions()
     }
 
     fun getvarLoop() = CoroutineScope(EmptyCoroutineContext).launch {
@@ -132,17 +145,7 @@ open class DeviceInfo(
 
     init {
         getvarLoop()
-//        scope.launch {
-//
-//            launch {
-//
-//            }
-//            while(true) {
-//                delay(30000)
-//
-//                refreshInfo()
-//            }
-//        }
+
     }
 
 }

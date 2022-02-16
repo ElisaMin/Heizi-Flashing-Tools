@@ -2,13 +2,17 @@ package me.heizi.flashing_tool.fastboot.screen
 
 import Resources
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Tray
+import androidx.compose.ui.window.TrayState
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import me.heizi.flashing_tool.vd.fb.deviceList
 import me.heizi.flashing_tool.vd.fb.scope
 import me.heizi.kotlinx.logger.debug
@@ -18,6 +22,7 @@ import me.heizi.kotlinx.shell.Shell
 import javax.imageio.ImageIO
 
 abstract class TraysViewModel {
+    val state = TrayState()
     val connectedState = mutableStateOf(false)
     val loopActiveState = mutableStateOf(true)
     var error by mutableStateOf("")
@@ -104,11 +109,13 @@ abstract class Trays(
 
 @Composable
 private fun TraysViewModel.Trays(applicationScope: ApplicationScope) {
+    val trayState = remember { state }
     val isConnected by remember { connectedState }
     val iconTray = ImageIO.read( if (isConnected) Resources.Urls.connected else Resources.Urls.disconnect).toPainter()
     val tooltip = if (isConnected) "设备已连接" else "Fastboot未连接设备"
+
     applicationScope.Tray(
-        icon = iconTray,tooltip = tooltip, onAction = ::onTrayIconSelected
+        state = trayState, icon = iconTray,tooltip = tooltip, onAction = ::onTrayIconSelected
     ) {
 
         Item("Start Collection", enabled = !isLoopJobActive) {

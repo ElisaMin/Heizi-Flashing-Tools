@@ -29,10 +29,10 @@ sealed class PartitionType {
 //    }
 }
 
-data class PartitionInfo(
+data class PartitionInfo (
     val name:String,
     val type: PartitionType,
-    //M
     val size:Float,
-    val device: FastbootDevice
+    val device: FastbootDevice,
+    val isLogic:Boolean? = null
 )

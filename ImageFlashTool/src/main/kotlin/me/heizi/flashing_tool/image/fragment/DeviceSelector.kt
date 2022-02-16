@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.ListItem
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -35,7 +39,7 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
     val job = GlobalScope.launch {
         var isWaiting by isWaiting
         while (true) {
-            delay(2000)
+            delay(200)
             isWaiting = devices.isEmpty()
             shell(prefix = arrayOf("cmd", "/c", "fastboot devices"), isWindows_keep = false).waitForResult {
                 if (it is CommandResult.Success) it.runCatching {
@@ -55,8 +59,10 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
 //                        devices.clear()
 //                        devices.putAll(it)
 //                    }
+
                 }
             }
+            delay(2000)
         }
     }
 

@@ -23,7 +23,7 @@ import me.heizi.flashing_tool.vd.fb.info.PartitionType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun panelPartition(list:List<PartitionInfo>,fastbootDevice: FastbootDevice) {
+fun panelPartition(partitionInfos:List<PartitionInfo>, fastbootDevice: FastbootDevice) {
     val isDialogShow = mutableStateOf(false)
     var type by remember { mutableStateOf("") }
     if (type.contains('\n')) {
@@ -31,13 +31,14 @@ fun panelPartition(list:List<PartitionInfo>,fastbootDevice: FastbootDevice) {
         isDialogShow.value = true
     }
 
+
     dialogOfFlashing(
         mutableStateOf(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice)).value
         ,isDialogShow)
 
     Column(
         modifier = Modifier.padding(top=8.dp).padding(horizontal = 8.dp)
-            .fillMaxWidth()
+            .fillMaxSize()
     ) {
         OutlinedTextField(type, onValueChange = { type = it }, modifier = Modifier.fillMaxWidth().background(Color.White), placeholder = {
             Text("搜索分区或输入分区名称")
@@ -49,18 +50,39 @@ fun panelPartition(list:List<PartitionInfo>,fastbootDevice: FastbootDevice) {
             }
         })
         Box(Modifier.padding(top = 8.dp))
-//        Box(modifier = Modifier.().scrollable(scroll,Orientation.Vertical)) {
-//            FlowRow  {
+//        var scrollstate by remember { mutableStateOf(0f) }
+//        Box(
+//            modifier = Modifier.fillMaxSize()
+//                .scrollable(ScrollableState { scrollstate }, Orientation.Vertical)
+//                .border(3.dp,Color.LightGray)
+//        ) {
+//            val other = type.lowercase().replace(" ", "_")
+//            FlowRow(
+//                modifier = Modifier
+//                    .border(6.dp,Color.Black).matchParentSize()
+////                .scrollable(rememberScrollState(), Orientation.Vertical)
+//            )  {
 //                for (it in list.filter { it.name.lowercase().contains(other) }) { partition(it) }
 //                if (type.isNotEmpty()) partition(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice))
 //            }
 //        }
 
 
-        LazyVerticalGrid(GridCells.Adaptive(132.dp)) {
-            val other = type.lowercase().replace(" ", "_")
-            items(list.filter { it.name.lowercase().contains(other,)  }) { partition(it) }
-            if (type.isNotEmpty()) item { partition(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice)) }
+
+        LazyVerticalGrid(GridCells.Adaptive(if (fastbootDevice.isFastbootd == true) 160.dp else 132.dp)) {
+
+            val displayingPartitions = type.lowercase().replace(" ", "_").trim().let { other->
+                var dps = partitionInfos.filter { it.name.lowercase().contains(other)  }
+                if (other.isNotEmpty()) dps = buildList {
+                    dps.forEach(::add)
+                    add(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice))
+                }
+                dps
+            }
+
+            items(displayingPartitions) {
+                partition(it, Modifier.animateItemPlacement())
+            }
         }
     }
 }
@@ -86,7 +108,7 @@ fun partition(info: PartitionInfo, modifier: Modifier = Modifier,) {
         Row(Modifier.padding(8.dp)) {
             Column {
                 Text(info.name, fontWeight = FontWeight.Bold)
-                Text("${info.size}MB ${info.type}")
+                Text("${info.size}MB ${info.type} ${if (info.isLogic==true) "动态分区" else ""}")
                 DropdownMenu(extend, onDismissRequest = { extend = false }) {
                     Text(info.name, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, top = 4.dp, end = 4.dp))
                     DropdownMenuItem({
@@ -104,9 +126,7 @@ fun partition(info: PartitionInfo, modifier: Modifier = Modifier,) {
                 }
             }
 
-//            Column(Modifier.weight(1f, false)) {
-//
-//            }
+
         }
 
     }
