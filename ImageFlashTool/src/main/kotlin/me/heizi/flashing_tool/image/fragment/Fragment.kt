@@ -9,7 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import me.heizi.flashing_tool.image.Style
 import me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
@@ -48,7 +50,7 @@ abstract class Fragment <VM:ViewModel> (
          */
         fun start(file: File) {
             this.file = file
-            singleWindowApplication(title = "",icon = Style.Image.flashable.toPainter()) {
+            singleWindowApplication(title = "",icon = Style.Image.flashable.toPainter(), state = WindowState(size = DpSize(600.dp,460.dp))) {
                 MaterialTheme {
                     FragmentContainer(handlerOf(
                         Launcher::class,

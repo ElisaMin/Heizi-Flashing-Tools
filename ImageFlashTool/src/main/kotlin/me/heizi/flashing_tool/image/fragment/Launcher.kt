@@ -3,11 +3,14 @@ package me.heizi.flashing_tool.image.fragment
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +32,7 @@ class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel
 
     override val error: MutableState<String> = mutableStateOf("")
     override var hasNext: Boolean by mutableStateOf(false)
-    override var isDropDown: Boolean by mutableStateOf(true)
+    override var isDropDown by mutableStateOf(false)
 
     override val _a: MutableState<Boolean> = mutableStateOf(false)
     override val _b: MutableState<Boolean> = mutableStateOf(false)
@@ -83,6 +86,27 @@ fun launcherScreen(viewModel: LauncherViewModel){
 
 
     Column {
+//        ExtendableCard(states = viewModel.isDropDown, modifier = Modifier.fillMaxWidth() ,title = {
+//            OutlinedTextField(
+//                viewModel.partition,
+//                modifier = Modifier.fillMaxWidth(),
+//                isError = errorText.isNotEmpty(),
+//                onValueChange = { viewModel.partition= it },
+//                label = { Text("分区名称") },
+//            )
+//        }) {
+//            FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
+//                for (s in arrayOf("system", "boot", "vbmeta", "vendor","recovery")) {
+//                    OutlinedButton(onClick = {
+//                        viewModel.partition = s
+//                        viewModel.isDropDown.value = false
+//                    }) {
+//                        Text(s)
+//                    }
+//                }
+//            }
+//        }
+
         Column (
             modifier = Modifier.fillMaxWidth(),
         ){
@@ -93,18 +117,16 @@ fun launcherScreen(viewModel: LauncherViewModel){
                 onValueChange = { viewModel.partition= it },
                 label = { Text("分区名称") },
                 trailingIcon = {
-                    val text = if (viewModel.isDropDown)
-                        "▼" else "◀"
-                    TextButton(onClick = { with(viewModel){isDropDown = !isDropDown}
+                    if (!viewModel.isDropDown)
+                    IconButton(onClick = { with(viewModel){isDropDown = !isDropDown}
                         "Extent".debug("clicked",viewModel.isDropDown) },) {
-                        Text(text)
+                        Icon(Icons.Default.ArrowDropDown,"展开")
                     }
                 }
             )
-
             DropdownMenu(viewModel.isDropDown,{
                 viewModel.isDropDown = false
-            },modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),) {
+            },modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
                 for (s in arrayOf("system", "boot", "vbmeta", "vendor","recovery")) {
                     DropdownMenuItem(onClick = {
                         viewModel.partition = s
