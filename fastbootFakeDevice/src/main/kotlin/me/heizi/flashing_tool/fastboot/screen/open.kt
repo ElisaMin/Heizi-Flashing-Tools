@@ -7,10 +7,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import me.heizi.flashing_tool.fastboot.openedDeviceDialog
+
 import me.heizi.flashing_tool.fastboot.repositories.FastbootDevices
 import me.heizi.kotlinx.logger.debug
 
+val openedDeviceDialog = mutableListOf<String>()
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

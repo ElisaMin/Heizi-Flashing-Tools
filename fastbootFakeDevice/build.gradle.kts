@@ -35,19 +35,8 @@ tasks.test {
 }
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.vd.fb.Main"
-
+    manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.fastboot.Main"
 }
 
-val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-
-compileKotlin.kotlinOptions {
-    jvmTarget = "11"
-    freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
-}
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "11"
-}
 
 tasks.getByName("build").dependsOn("clean")

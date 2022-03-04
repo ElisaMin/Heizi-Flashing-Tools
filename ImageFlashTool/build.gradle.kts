@@ -29,7 +29,6 @@ dependencies {
 group = "me.heizi.flashing_tool.image"
 version = Versions.HFT
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.image.Main"
 }
 
@@ -39,15 +38,5 @@ tasks.test {
 }
 
 
-val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-
-compileKotlin.kotlinOptions {
-    jvmTarget = "11"
-    freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
-}
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "11"
-}
 
 tasks.getByName("build").dependsOn("clean")

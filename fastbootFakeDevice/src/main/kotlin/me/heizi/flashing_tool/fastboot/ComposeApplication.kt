@@ -7,10 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Notification
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberNotification
-import me.heizi.flashing_tool.fastboot.screen.DialogOpen
-import me.heizi.flashing_tool.fastboot.screen.FlowCollectedScannerViewModel
-import me.heizi.flashing_tool.fastboot.screen.ScannerDialog
-import me.heizi.flashing_tool.fastboot.screen.Trays
+import me.heizi.flashing_tool.fastboot.screen.*
 import me.heizi.kotlinx.logger.debug
 
 fun composeApplication() {

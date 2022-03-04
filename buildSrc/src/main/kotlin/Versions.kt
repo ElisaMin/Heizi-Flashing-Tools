@@ -4,7 +4,7 @@ package me.heizi.gradle
 
 object Versions {
     const val jna = "5.9.0"
-    const val HFT = "0.0.2"
+    const val HFT = "0.0.3"
     const val compose = "1.1.0-alpha04"
     const val kotlin = "1.6.10"
     const val slf4j = "1.7.35"

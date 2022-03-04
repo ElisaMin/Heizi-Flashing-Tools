@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 group = "me.heizi.flashing_tool"
 version = me.heizi.gradle.Versions.HFT
 
@@ -13,6 +15,13 @@ allprojects {
         mavenCentral()
         google()
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "17"
+            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+        }
     }
 }
 
