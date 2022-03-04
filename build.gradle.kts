@@ -21,4 +21,5 @@ plugins {
     id ("org.jetbrains.compose") version  me.heizi.gradle.Versions.compose
     id("com.github.johnrengelman.shadow") version "7.0.0"
 }
+tasks.getByName("build").dependsOn("clean")
 

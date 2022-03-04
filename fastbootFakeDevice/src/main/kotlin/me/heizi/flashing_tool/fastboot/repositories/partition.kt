@@ -1,12 +1,10 @@
-package me.heizi.flashing_tool.vd.fb.info
-
-import me.heizi.flashing_tool.vd.fb.FastbootDevice
+package me.heizi.flashing_tool.fastboot.repositories
 
 sealed class PartitionType {
     object RAW : PartitionType()
     object EXT4 : PartitionType()
     object F2FS : PartitionType()
-    object Typing:PartitionType(){
+    object Typing: PartitionType(){
         override fun toString(): String
             = "所输入的分区"
     }
@@ -23,7 +21,7 @@ sealed class PartitionType {
 //                "RAW" -> RAW
 //                "EXT4" -> EXT4
 //                "Typing" -> Typing
-//                else -> throw IllegalArgumentException("No object me.heizi.flashing_tool.vd.fb.info.PartitionType.$value")
+//                else -> throw IllegalArgumentException("No object me.heizi.flashing_tool.fastboot.repositories.PartitionType.$value")
 //            }
 //        }
 //    }
@@ -33,6 +31,5 @@ data class PartitionInfo (
     val name:String,
     val type: PartitionType,
     val size:Float,
-    val device: FastbootDevice,
     val isLogic:Boolean? = null
 )

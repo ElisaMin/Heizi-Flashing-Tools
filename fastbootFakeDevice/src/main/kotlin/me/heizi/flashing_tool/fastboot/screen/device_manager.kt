@@ -21,18 +21,13 @@ import androidx.compose.ui.window.Window
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
-import fastbootIconBuffered
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import me.heizi.flashing_tool.fastboot.extendableCard
+import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
+import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
+import me.heizi.flashing_tool.fastboot.repositories.FastbootDevice
+import me.heizi.flashing_tool.fastboot.repositories.FastbootDeviceInfo
 import me.heizi.flashing_tool.fastboot.screen.panel.panelAbSlotSwitch
 import me.heizi.flashing_tool.fastboot.screen.panel.panelPartition
-import me.heizi.flashing_tool.vd.fb.FastbootDevice
-import me.heizi.flashing_tool.vd.fb.extendableCard
-import me.heizi.flashing_tool.vd.fb.fastboot.FastbootCommandViewModel
-import me.heizi.flashing_tool.vd.fb.fastboot.fastbootCommand
-import me.heizi.flashing_tool.vd.fb.info.DeviceInfo
-import me.heizi.flashing_tool.vd.fb.scope
 import me.heizi.kotlinx.logger.debug
 
 @Composable
@@ -40,7 +35,7 @@ fun DeviceManagerWindow(
     viewModel: DeviceManagerViewModel,
     onExit:()->Unit,
 ) {
-    Window(onExit,title = viewModel.device.serialID,icon = fastbootIconBuffered.toPainter()) {
+    Window(onExit,title = viewModel.device.serialId,icon = fastbootIconBuffered.toPainter()) {
         viewModel.DeviceManagerScreen()
     }
 }
@@ -54,7 +49,7 @@ fun DeviceManagerWindow(
  */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun DeviceGetVarInfo(vars:List<Array<String>>,onClose: () -> Unit) {
+fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
 
     val s = vars.map { it.joinToString(": ") }.sorted()
     Popup(onDismissRequest = onClose, alignment = Alignment.BottomCenter) {
@@ -114,12 +109,11 @@ fun DeviceGetVarInfo(vars:List<Array<String>>,onClose: () -> Unit) {
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceManagerViewModel.DeviceManagerScreen() {
-    collectPipe()
-    setUpSimpleInfo()
+    withCompose()
     if (isOpenDetail)
-        DeviceGetVarInfo(device.cache) { isOpenDetail = false}
+        DeviceGetVarInfo(info.toArray()) { isOpenDetail = false}
     Scaffold(Modifier.fillMaxSize(), topBar = {
-        SmallTopAppBar(title = { Text(device.serialID, style = MaterialTheme.typography.displayLarge) })
+        SmallTopAppBar(title = { Text(device.serialId, style = MaterialTheme.typography.displayLarge) })
     }) {
         Row (
             modifier = Modifier
@@ -158,7 +152,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
                         }
                     }
                 }
-                panelPartition(device.partitions,device)
+                panelPartition(info.partitionInfos,device)
 
             }
         }
@@ -167,79 +161,64 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
 }
 
 
+
 open class DeviceManagerViewModelImpl(
-    serialID: String
-): DeviceManagerViewModel {
-
-    private var fastbootCommandBuffer: MutableState<FastbootCommandViewModel?> = mutableStateOf(null)
-
-    override val device: FastbootDevice = DeviceInfo(serialID)
+    override val device: FastbootDevice
+):Operates(device.runner) {
     override var isOpenDetail: Boolean by mutableStateOf(false)
-    override val isSlotA: Boolean? get()  = device.currentSlotA
-    override val deviceSimpleInfo: MutableMap<String, String> = mutableStateMapOf()
+    override var info: FastbootDeviceInfo by mutableStateOf(FastbootDeviceInfo.empty)
+    override val isSlotA: Boolean? by mutableStateOf(device.info.value.simple.currentSlotA)
+    override val deviceSimpleInfo = mutableStateMapOf<String,String>()
+
     @Composable
-    override fun setUpSimpleInfo() {
-        deviceSimpleInfo["是否有多个SLOT"] = if (device.isMultipleSlot) "多个" else "单个"
-        deviceSimpleInfo["是否BL已解锁"]   = if (device.isUnlocked) "已解锁" else "未解锁"
-        device.isFastbootd?.let {
+    override fun withCompose() {
+        device.runner.start()
+        val info by device.info.collectAsState()
+        this.info = info
+        deviceSimpleInfo["是否有多个SLOT"] = if (info.simple.isMultipleSlot) "多个" else "单个"
+        deviceSimpleInfo["是否BL已解锁"]   = if (info.simple.isUnlocked) "已解锁" else "未解锁"
+        info.simple.isFastbootd?.let {
             deviceSimpleInfo["Fastboot状态"] = if (!it) "fastboot" else "fastbootd"
         }
+
     }
 
-    override fun switchPartition(isSlotA: Boolean) {
-        device.run("--set-active=${if (isSlotA) "b" else "a" } ") {
-            runBlocking {
-                delay(100)
-            }
-            device.refreshInfo()
-        }
-    }
-
-
+}
+abstract class Operates(
+    private val runner: DeviceRunner
+):DeviceManagerViewModel {
     @FastbootOperate("OEM解锁") fun oemUnlock() {
-        device run "oem unlock"
+        runner run "oem unlock"
     }
     @FastbootOperate("重启") fun reboot() {
-        device run "reboot"
+        runner run "reboot"
     }
     @FastbootOperate("重置") fun wipe() {
-        device run "-w"
+        runner run "-w"
     }
     @NeedGetvar("is-userspace","yes")
     @NeedGetvar("is-userspace","no")
     @FastbootOperate("重启到Fastbootd") fun rebootToFastbootd() {
-        device run "reboot fastboot"
+        runner run "reboot fastboot"
     }
-
-    @Composable
-    override fun collectPipe() {
-        scope.launch {
-            device.fastbootCommandPipe.collect {
-                fastbootCommandBuffer.value = it
-            }
-        }
-        val buffer by fastbootCommandBuffer
-        if (buffer!=null) {
-            fastbootCommand(buffer!!) {
-                fastbootCommandBuffer.value = null
-            }
-        }
+    final override fun switchPartition(isSlotA: Boolean) {
+        runner run "--set-active=${ if (isSlotA) "b" else "a" } "
     }
-//    @FastbootOperate("启动镜像") fun boot(){
-
 }
 
-//    }
 interface DeviceManagerViewModel {
     
     
     var isOpenDetail : Boolean
     val device: FastbootDevice
+    val info:FastbootDeviceInfo
     val isSlotA: Boolean?
     val deviceSimpleInfo: Map<String, String>
     @Composable
-    fun collectPipe()
-    @Composable fun setUpSimpleInfo()
+    fun withCompose()
+//    @Composable
+//    fun collectPipe()
+//    @Composable fun setUpSimpleInfo()
     fun switchPartition(isSlotA: Boolean)
     @OptIn(ExperimentalStdlibApi::class)
     fun toFastbootOperateList():Map<String,()->Unit> = buildMap {
@@ -250,7 +229,7 @@ interface DeviceManagerViewModel {
                 it.getAnnotationsByType(NeedGetvar::class.java).let bool@{ annotations->
                     if (annotations.isEmpty()) return@bool true
                     for (getvar in annotations) {
-                        if (device[getvar.name] == getvar.value) return@bool true
+                        if (info[getvar.name] == getvar.value) return@bool true
                     }
                     false
                 } .let { isShow ->

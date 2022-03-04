@@ -10,8 +10,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.heizi.flashing_tool.vd.fb.info.PartitionInfo
-import me.heizi.flashing_tool.vd.fb.style.fileInput
+import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
+import me.heizi.flashing_tool.fastboot.repositories.PartitionInfo
+import me.heizi.flashing_tool.fastboot.fileInput
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.logger.debug
 
@@ -21,6 +22,7 @@ val defaultPathPartitionInfo = mutableStateOf("")
 @Composable
 fun dialogOfFlashing(
     info: PartitionInfo,
+    runner: DeviceRunner,
     isFlashDialogShowState: MutableState<Boolean> = mutableStateOf(false),
 ) {
     var isFlashDialogShow by remember { isFlashDialogShowState }
@@ -31,7 +33,7 @@ fun dialogOfFlashing(
         fun flash() {
             val parName = info.name
 
-            info.device run " ${if (isAVBEnable) " --disable-verity --disable-verification" else "" } flash $parName \"$path\""
+            runner run " ${if (isAVBEnable) " --disable-verity --disable-verification" else "" } flash $parName \"$path\""
         }
         if (path.isEmpty()) error = "路径为空，请再次点击确定确定你要进行特殊操作。"
         AlertDialog(onDismissRequest = {

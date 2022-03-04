@@ -16,14 +16,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
+import me.heizi.flashing_tool.fastboot.repositories.FastbootDevice
 import me.heizi.flashing_tool.fastboot.screen.dialogOfFlashing
-import me.heizi.flashing_tool.vd.fb.FastbootDevice
-import me.heizi.flashing_tool.vd.fb.info.PartitionInfo
-import me.heizi.flashing_tool.vd.fb.info.PartitionType
+import me.heizi.flashing_tool.fastboot.repositories.PartitionInfo
+import me.heizi.flashing_tool.fastboot.repositories.PartitionType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun panelPartition(partitionInfos:List<PartitionInfo>, fastbootDevice: FastbootDevice) {
+fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
     val isDialogShow = mutableStateOf(false)
     var type by remember { mutableStateOf("") }
     if (type.contains('\n')) {
@@ -33,8 +34,8 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, fastbootDevice: FastbootD
 
 
     dialogOfFlashing(
-        mutableStateOf(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice)).value
-        ,isDialogShow)
+        mutableStateOf(PartitionInfo(type, PartitionType.Typing,0.0f)).value
+        ,device.runner,isDialogShow)
 
     Column(
         modifier = Modifier.padding(top=8.dp).padding(horizontal = 8.dp)
@@ -69,19 +70,19 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, fastbootDevice: FastbootD
 
 
 
-        LazyVerticalGrid(GridCells.Adaptive(if (fastbootDevice.isFastbootd == true) 160.dp else 132.dp)) {
+        LazyVerticalGrid(GridCells.Adaptive(if (device.info.value.simple.isFastbootd == true) 160.dp else 132.dp)) {
 
             val displayingPartitions = type.lowercase().replace(" ", "_").trim().let { other->
                 var dps = partitionInfos.filter { it.name.lowercase().contains(other)  }
                 if (other.isNotEmpty()) dps = buildList {
                     dps.forEach(::add)
-                    add(PartitionInfo(type, PartitionType.Typing,0.0f,fastbootDevice))
+                    add(PartitionInfo(type, PartitionType.Typing,0.0f))
                 }
                 dps
             }
 
             items(displayingPartitions) {
-                partition(it, Modifier.animateItemPlacement())
+                partition(it, device.runner, Modifier.animateItemPlacement())
             }
         }
     }
@@ -89,12 +90,13 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, fastbootDevice: FastbootD
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun partition(info: PartitionInfo, modifier: Modifier = Modifier,) {
+fun partition(info: PartitionInfo, runner: DeviceRunner, modifier: Modifier = Modifier,) {
     val isFlashDialogShowState: MutableState<Boolean> = mutableStateOf(false)
-    dialogOfFlashing(info,isFlashDialogShowState)
+    dialogOfFlashing(info, runner, isFlashDialogShowState)
     fun erase() {
-        info.device run "erase ${info.name}"
+        runner run "erase ${info.name}"
     }
+
     var extend by remember { mutableStateOf(false) }
     Card(
         Modifier
@@ -125,9 +127,6 @@ fun partition(info: PartitionInfo, modifier: Modifier = Modifier,) {
                     }
                 }
             }
-
-
         }
-
     }
 }

@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.fastboot.screen
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,22 +21,32 @@ import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.singleWindowApplication
-import fastbootIconBuffered
-import me.heizi.flashing_tool.vd.fb.Title
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.launch
+import me.heizi.flashing_tool.fastboot.Title
+import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
+import me.heizi.flashing_tool.fastboot.repositories.Fastboot
 import org.jetbrains.skiko.toImage
 import kotlin.system.exitProcess
 
+@Composable
+@Preview
+private fun preview() {
+    object : ScannerViewModel {
+        override val devices: List<String>
+            get() = listOf("LMV600TM4bf4e87d")
+
+        override fun onDeviceSelected(serial: String) {
+            exitProcess(0)
+        }
+
+    } .ScannerScreen()
+}
+
 fun main() {
     singleWindowApplication {
-        object : ScannerViewModel {
-            override val devices: List<String>
-                get() = listOf("LMV600TM4bf4e87d")
-
-            override fun onDeviceSelected(serial: String) {
-                exitProcess(0)
-            }
-
-        } .ScannerScreen()
+        preview()
     }
 }
 
@@ -45,7 +56,17 @@ fun ScannerDialog(viewModel: ScannerViewModel,onCloseRequest:()->Unit) {
         viewModel.ScannerScreen()
     }
 }
-
+abstract class FlowCollectedScannerViewModel:ScannerViewModel {
+    final override val devices = mutableListOf<String>()
+    init {
+        CoroutineScope(Default).launch {
+            Fastboot.deviceSerials.collect {
+                devices.clear()
+                devices.addAll(it)
+            }
+        }
+    }
+}
 interface ScannerViewModel {
     val devices:List<String>
     fun onDeviceSelected(serial:String)

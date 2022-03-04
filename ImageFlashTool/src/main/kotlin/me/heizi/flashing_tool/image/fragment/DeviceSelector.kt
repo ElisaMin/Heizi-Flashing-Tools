@@ -22,8 +22,7 @@ import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.compose.desktop.core.fragment.Event
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
-import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
-import me.heizi.kotlinx.shell.shell
+import me.heizi.kotlinx.shell.Shell
 
 
 class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Composable {
@@ -41,7 +40,7 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
         while (true) {
             delay(200)
             isWaiting = devices.isEmpty()
-            shell(prefix = arrayOf("cmd", "/c", "fastboot devices"), isWindows_keep = false).waitForResult {
+            Shell("fastboot devices").await().let {
                 if (it is CommandResult.Success) it.runCatching {
 //                    val list = arrayListOf<String>()
                     for (line in message.lines()) {
