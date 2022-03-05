@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.image.fragment
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -15,33 +16,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.heizi.flashing_tool.image.Style
+import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.logger.debug
 
-
-class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel>(_content =  @Composable {
+@Deprecated("Decompose版本已经完成")
+class Launcher:LauncherViewModel, Fragment<LauncherViewModel>(_content =  @Composable {
     title = file.name
     subtitle = "你想要刷入哪个分区里面?"
     viewModel.checkInput()
-    launcherScreen(viewModel)
+    viewModel.launcherScreen()
 }) {
 
 
     override var partition by mutableStateOf("")
 
-    override val error: MutableState<String> = mutableStateOf("")
+    override var error by mutableStateOf("")
     override var hasNext: Boolean by mutableStateOf(false)
     override var isDropDown by mutableStateOf(false)
 
-    override val _a: MutableState<Boolean> = mutableStateOf(false)
-    override val _b: MutableState<Boolean> = mutableStateOf(false)
-    override val disableAVB: MutableState<Boolean> = mutableStateOf(false)
 
 
     @Composable
     override fun checkInput() {
-        error.value = when {
+        error = when {
             partition.contains("_",) -> {
                 "错误!包含'_'字符"
             }
@@ -53,7 +51,7 @@ class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel
             }
             else -> { "" }
         }
-        hasNext = partition.isNotEmpty() && error.value.isEmpty()
+        hasNext = partition.isNotEmpty() && error.isEmpty()
     }
 
     override fun onNextStepBtnClick() {
@@ -66,71 +64,99 @@ class Launcher:LauncherViewModel,CheckboxesViewModel, Fragment<LauncherViewModel
     fun toNextPage(isNextStep:Boolean) = (if (isNextStep) arrayOf(
         "launchMode" to "flash",
         "partition" to partition,
-        "_a" to _a.value,
-        "_b" to _b.value,
-        "disable_avb" to disableAVB.value,
+        "_a" to checkbox._a.value,
+        "_b" to checkbox._b.value,
+        "disable_avb" to checkbox.disableAVB.value,
     ) else arrayOf("launchMode" to "boot")).let {
         handler.go(DeviceSelector::class,*it)
 
     }
 
-    override val checkbox: CheckboxesViewModel = this
+    override val checkbox: CheckboxesViewModel = CheckboxesViewModel()
     override val viewModel: LauncherViewModel = this
 }
-//@Composable
-//fun check
+
 @Composable
-fun launcherScreen(viewModel: LauncherViewModel){
-    val errorText = viewModel.error.value
-    val hasNext = viewModel.hasNext
+@Preview
+private fun preview() {
+    val vm = object : LauncherViewModel {
+        override var partition: String = "partitions"
+        override var error: String = ""
+        override var hasNext: Boolean = false
+        override val checkbox: CheckboxesViewModel = CheckboxesViewModel()
+        override var isDropDown: Boolean = false
+
+        @Composable
+        override fun checkInput() {
+
+        }
+
+        override fun onNextStepBtnClick() {
+
+        }
+
+        override fun onBootBtnClick() {
+            TODO("Not yet implemented")
+        }
+    }
+//    val vm:InfoViewModel = object : InfoViewModel {
+//        override val bools: Triple<Boolean, Boolean, Boolean> = Triple(false,false,false)
+//        override val partition: String = "preview"
+//        override val device: List<String> = listOf("device1","device2")
+//        override val file: String = "fileName"
+//
+//        override fun onNextStepBtnClicked() {
+//
+//        }
+//    }
+    vm.launcherScreen()
+}
+@Deprecated("Decompose版本已经完成")
+@Composable
+fun LauncherViewModel.launcherScreen(){
+
+    error = when {
+        partition.contains("_",) -> {
+            "错误!包含'_'字符"
+        }
+        partition.contains(",",) -> {
+            "错误!包含','字符"
+        }
+        partition.contains(" ",) -> {
+            "错误!包含' '字符"
+        }
+        else -> { "" }
+    }
+    hasNext = partition.isNotEmpty() && error.isEmpty()
+
 
 
     Column {
-//        ExtendableCard(states = viewModel.isDropDown, modifier = Modifier.fillMaxWidth() ,title = {
-//            OutlinedTextField(
-//                viewModel.partition,
-//                modifier = Modifier.fillMaxWidth(),
-//                isError = errorText.isNotEmpty(),
-//                onValueChange = { viewModel.partition= it },
-//                label = { Text("分区名称") },
-//            )
-//        }) {
-//            FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
-//                for (s in arrayOf("system", "boot", "vbmeta", "vendor","recovery")) {
-//                    OutlinedButton(onClick = {
-//                        viewModel.partition = s
-//                        viewModel.isDropDown.value = false
-//                    }) {
-//                        Text(s)
-//                    }
-//                }
-//            }
-//        }
-
         Column (
             modifier = Modifier.fillMaxWidth(),
         ){
             TextField(
-                viewModel.partition,
+                partition,
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorText.isNotEmpty(),
-                onValueChange = { viewModel.partition= it },
+                isError = error.isNotEmpty(),
+                onValueChange = { partition= it },
                 label = { Text("分区名称") },
                 trailingIcon = {
-                    if (!viewModel.isDropDown)
-                    IconButton(onClick = { with(viewModel){isDropDown = !isDropDown}
-                        "Extent".debug("clicked",viewModel.isDropDown) },) {
+                    if (!isDropDown)
+                    IconButton(onClick = {
+                        isDropDown = !isDropDown
+                        "Extent".debug("clicked",isDropDown) },) {
                         Icon(Icons.Default.ArrowDropDown,"展开")
                     }
                 }
             )
-            DropdownMenu(viewModel.isDropDown,{
-                viewModel.isDropDown = false
+            DropdownMenu(isDropDown,{
+                isDropDown = false
             },modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
                 for (s in arrayOf("system", "boot", "vbmeta", "vendor","recovery")) {
                     DropdownMenuItem(onClick = {
-                        viewModel.partition = s
-                        viewModel.isDropDown = false
+                        partition = s
+                        isDropDown = false
                     }) {
                         Text(s)
                     }
@@ -138,47 +164,48 @@ fun launcherScreen(viewModel: LauncherViewModel){
             }
         }
 
-        if (!hasNext) Text(errorText)
-        Box(Style.Padding.bottom)
+        if (!hasNext) Text(error)
+        Box(style.padding.bottom)
         //=====
-        checkboxes(viewModel.checkbox)
+        checkboxes(checkbox)
         //=====
         Button(
-            onClick = { if (hasNext) viewModel.onNextStepBtnClick() },
-            modifier = Style.Padding.vertical.align(Alignment.End),
+            onClick = { if (hasNext) onNextStepBtnClick() },
+            modifier = style.padding.vertical.align(Alignment.End),
             enabled = hasNext
         ) {
             Text("选择设备刷入")
         }
 
         //-----------
-        Text("其他功能?", modifier = Style.Padding.bottom)
+        Text("其他功能?", modifier = style.padding.bottom)
         OutlinedButton(onClick = {
-            viewModel.onBootBtnClick()
+            onBootBtnClick()
         }) {
             Text("启动镜像")
         }
     }
 }
+@Deprecated("Decompose版本已经完成")
 interface LauncherViewModel:ViewModel {
     var partition: String
-    val error: State<String>
-    val hasNext:Boolean
-    val checkbox:CheckboxesViewModel
     var isDropDown:Boolean
+    var error:String
+    var hasNext:Boolean
+    val checkbox:CheckboxesViewModel
     @Composable
     fun checkInput()
     fun onNextStepBtnClick()
     fun onBootBtnClick()
 }
 
-
-interface CheckboxesViewModel {
-    val _a: MutableState<Boolean>
-    val _b: MutableState<Boolean>
-    val disableAVB: MutableState<Boolean>
+@Deprecated("Decompose版本已经完成")
+class CheckboxesViewModel {
+    val _a: MutableState<Boolean> = mutableStateOf(false)
+    val _b: MutableState<Boolean> = mutableStateOf(false)
+    val disableAVB: MutableState<Boolean> = mutableStateOf(false)
 }
-
+@Deprecated("Decompose版本已经完成")
 @Composable
 fun checkboxes(
     viewModel: CheckboxesViewModel
@@ -186,13 +213,13 @@ fun checkboxes(
     var _a by remember { viewModel._a }
     var _b by remember { viewModel._b }
     var _d by remember { viewModel.disableAVB }
-    ChipCheckBox(_a,"_a", modifier = Style.Padding.end,onCheck = {
+    ChipCheckBox(_a,"_a", modifier = style.padding.end,onCheck = {
         _a = !it
     })
-    ChipCheckBox(_b,"_b", modifier = Style.Padding.end,onCheck = {
+    ChipCheckBox(_b,"_b", modifier = style.padding.end,onCheck = {
         _b = !it
     })
-    ChipCheckBox(_d,"disable avb", modifier = Style.Padding.end) {
+    ChipCheckBox(_d,"disable avb", modifier = style.padding.end) {
         _d = !it
     }
 }

@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.heizi.flashing_tool.image.Style
+import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.compose.desktop.core.fragment.Event
 import me.heizi.kotlinx.logger.debug
@@ -106,7 +106,7 @@ fun waitingScreen(viewModel: WaitingViewModel) {
                 }
             }
         }
-        Box(Style.Padding.bottom)
+        Box(style.padding.bottom)
         Button(
             onClick = { if (viewModel.isEnable) viewModel.onNextStepBtnChecked() },
             enabled = viewModel.isEnable && !isWaiting, modifier = Modifier.align(Alignment.End)
