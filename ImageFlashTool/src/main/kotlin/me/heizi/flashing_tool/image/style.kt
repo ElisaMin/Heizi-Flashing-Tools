@@ -9,8 +9,8 @@ import androidx.compose.ui.unit.sp
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-object Style {
-    object Font {
+object style {
+    object font {
         val default get() = TextStyle.Default.copy(
             fontSize = 16.sp
         )
@@ -19,7 +19,7 @@ object Style {
             fontWeight = FontWeight.W600
         )
     }
-    object Padding {
+    object padding {
         val bottom get() = Modifier.padding(bottom = 12.dp)
         val end get() = Modifier.padding(end = 12.dp)
         val vertical get() = Modifier.padding(vertical = 12.dp)

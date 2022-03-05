@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.heizi.flashing_tool.image.Style
+import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.fragment.Event
 
 @Suppress("UNCHECKED_CAST")
@@ -82,7 +82,7 @@ fun showInfoScreen(viewModel: InfoViewModel) = Column {
     for ((key,value) in viewModel.data) {
         showInfo(key,value,modifier)
     }
-    Box(Style.Padding.bottom)
+    Box(style.padding.bottom)
     Button(
         onClick = { viewModel.onNextStepBtnClicked() },
         modifier = Modifier.align(Alignment.End),

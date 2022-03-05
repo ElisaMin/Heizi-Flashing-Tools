@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
-import me.heizi.flashing_tool.image.Style
+import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
 import me.heizi.kotlinx.compose.desktop.core.fragment.FragmentContainer
 import me.heizi.kotlinx.compose.desktop.core.fragment.handlerOf
@@ -50,7 +50,7 @@ abstract class Fragment <VM:ViewModel> (
          */
         fun start(file: File) {
             this.file = file
-            singleWindowApplication(title = "",icon = Style.Image.flashable.toPainter(), state = WindowState(size = DpSize(600.dp,460.dp))) {
+            singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(600.dp,460.dp))) {
                 MaterialTheme {
                     FragmentContainer(handlerOf(
                         Launcher::class,
@@ -77,13 +77,13 @@ abstract class Fragment <VM:ViewModel> (
             val title by remember { _title }
             val subtitle by remember { _subtitle }
             title(title,subtitle)
-            Box(Style.Padding.bottom)
+            Box(style.padding.bottom)
             block()
         }
         @Composable
         private fun title(title:String,subtitle:String) {
-            Text(title, style = Style.Font.h1, modifier = Style.Padding.bottom)
-            if (subtitle.isNotEmpty()) Text(subtitle, modifier = Style.Padding.bottom)
+            Text(title, style = style.font.h1, modifier = style.padding.bottom)
+            if (subtitle.isNotEmpty()) Text(subtitle, modifier = style.padding.bottom)
         }
 
     }
