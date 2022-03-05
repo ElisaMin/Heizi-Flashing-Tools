@@ -19,9 +19,8 @@ import javax.imageio.ImageIO
 abstract class TraysViewModel {
     val state = TrayState()
     val connectedState = mutableStateOf(false)
-    private val loopActiveState = mutableStateOf(true)
-//    var error by mutableStateOf("")
-    var enableStart by loopActiveState
+    // FIXME: 2022/3/5  不可更新
+    var enableStart by mutableStateOf(true)
     abstract fun exit()
     abstract fun onTrayIconSelected()
     abstract fun onStopCollecting()

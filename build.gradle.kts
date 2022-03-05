@@ -1,7 +1,8 @@
+import me.heizi.gradle.Versions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "me.heizi.flashing_tool"
-version = me.heizi.gradle.Versions.HFT
+version = Versions.HFT
 
 
 
@@ -22,6 +23,10 @@ allprojects {
             jvmTarget = "17"
             freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         }
+    }
+    tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+
+        manifest.attributes["Manifest-Version"] = Versions.HFT
     }
 }
 

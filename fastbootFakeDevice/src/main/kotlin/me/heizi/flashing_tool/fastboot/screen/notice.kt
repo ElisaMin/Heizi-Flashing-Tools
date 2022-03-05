@@ -23,7 +23,8 @@ fun noticeOfAlpha() {
         singleWindowApplication(
             title = "提示", icon = withContext(Dispatchers.IO) {
                 ImageIO.read(Resources.Urls.fastboot!!)
-            }.toPainter(), state = WindowState(size = DpSize(400.dp,200.dp))
+            }.toPainter(), state = WindowState(size = DpSize(400.dp,200.dp)),
+            exitProcessOnExit = false
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("欢迎使用预览版HFT-Fastboot设备管理器",  modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
