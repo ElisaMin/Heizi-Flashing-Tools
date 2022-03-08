@@ -7,8 +7,8 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.router.Router
 import com.arkivanov.decompose.router.router
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.arkivanov.essenty.parcelable.Parcelable
 import me.heizi.flashing_tool.image.fragment.Fragment.Companion.start
+import me.heizi.flashing_tool.image.screens.Screens
 import java.io.File
 //
 //fun main() {
@@ -32,26 +32,13 @@ fun start(file: File) {
     val lifecycle = remember { LifecycleRegistry() }
     val context = remember { DefaultComponentContext(lifecycle)}
     val router:Router<Screens,Any> = context.router(
-        initialConfiguration =Screens.Launcher(file),
+        initialConfiguration = Screens.Launcher(file),
         childFactory = { c, _ -> c}
     )
 //    Children(
 //        router.state
 //    ) {
 //    }
-}
-
-
-sealed class Screens: Parcelable {
-    abstract val context: Context
-    val title = ""
-    val subtitle = ""
-    class Launcher(val file: File) : Screens() {
-        override val context: Context.Ready = Context.Ready(file)
-    }
-    class DeviceChooser(override val context: Context):Screens() {
-
-    }
 }
 
 
@@ -62,10 +49,14 @@ object Main {
     }
 }
 interface ViewModel
-interface Component {
+interface Component<T:ViewModel> {
     val title:String
     val subtitle:String
-    val viewModel:ViewModel
+    val viewModel:T
+    @Composable
+    fun rememberViewModel() = remember {
+        viewModel
+    }
     @Composable
     fun render()
 }

@@ -7,14 +7,14 @@ sealed class Context(
     open val devices: Array<String> = arrayOf()
 ) {
     class Ready(file: File):Context(file.absolutePath) {
-        fun toBoot(devices:Array<String>) =
-            Boot(path,devices)
-        fun toFlash(partitions: Array<String>, devices: Array<String>) =
-            Flash(partitions = partitions, devices = devices, path = path)
+        fun toBoot() =
+            Boot(path)
+        fun toFlash(partitions: Array<String>,disableAVB: Boolean) =
+            Flash(partitions = partitions, path = path, devices = devices, disableAVB = disableAVB)
     }
     data class Boot(
         override val path:String = "",
-        override val devices: Array<String>
+        override val devices: Array<String> = arrayOf()
     ): Context(path,devices) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -37,7 +37,8 @@ sealed class Context(
         val partitions: Array<String>,
         val disableAVB:Boolean = false,
         override val path:String = "",
-        override val devices: Array<String>
+        override val devices: Array<String> = arrayOf(),
+        val infoChecked: Boolean = false
     ): Context(path, devices) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -47,6 +48,7 @@ sealed class Context(
             if (disableAVB != other.disableAVB) return false
             if (path != other.path) return false
             if (!devices.contentEquals(other.devices)) return false
+            if (infoChecked != other.infoChecked) return false
 
             return true
         }
@@ -56,7 +58,9 @@ sealed class Context(
             result = 31 * result + disableAVB.hashCode()
             result = 31 * result + path.hashCode()
             result = 31 * result + devices.contentHashCode()
+            result = 31 * result + infoChecked.hashCode()
             return result
         }
+
     }
 }

@@ -24,7 +24,7 @@ import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.Shell
 
-
+@Deprecated("decompose version is done")
 class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Composable {
     title = "选择设备"
     subtitle = "你要把文件刷入的那个设备里面?"
@@ -82,14 +82,14 @@ class DeviceSelector:WaitingViewModel,Fragment<WaitingViewModel>(_content = @Com
         handler.go(boot,*args.toList().toTypedArray(),"devices" to devices)
     }
 }
-
+@Deprecated("decompose version is done")
 interface WaitingViewModel:ViewModel {
     val isWaiting: State<Boolean>
     val isEnable: Boolean
     val devices: SnapshotStateMap<String, Boolean>
     fun onNextStepBtnChecked()
 }
-
+@Deprecated("decompose version is done")
 @Composable
 fun waitingScreen(viewModel: WaitingViewModel) {
     val isWaiting by remember { viewModel.isWaiting }
@@ -115,6 +115,7 @@ fun waitingScreen(viewModel: WaitingViewModel) {
         }
     }
 }
+@Deprecated("decompose version is done")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun deviceChooseItem(deviceId:String, checked:Boolean, onChecked:(Boolean)->Unit) = ListItem(trailing = {

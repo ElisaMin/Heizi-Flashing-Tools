@@ -32,7 +32,7 @@ class LauncherComponent(
     fileName:String,
     private val launchFlash:(partitions:Array<String>,disableAVB:Boolean)->Unit,
     private val launchBoot:()->Unit,
-) :ComponentContext by context,Component {
+) :ComponentContext by context,Component<LauncherViewModel> {
     override val title: String = fileName
     override val subtitle: String = "你想要刷入哪个分区里面?"
 
@@ -51,7 +51,7 @@ class LauncherComponent(
 
     @Composable
     override fun render() {
-        viewModel.LauncherScreen()
+        rememberViewModel().LauncherScreen()
     }
 
 }
