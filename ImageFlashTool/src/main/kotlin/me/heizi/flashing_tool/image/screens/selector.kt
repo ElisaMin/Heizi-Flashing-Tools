@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.image.Component
 import me.heizi.flashing_tool.image.Fastboot
 import me.heizi.flashing_tool.image.ViewModel
@@ -26,12 +27,18 @@ import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 
 class SelectorComponent(
     context: ComponentContext,
-    onNextStep:()->Unit
+    onNextStep:(Array<String>)->Unit
 ) :ComponentContext by context, Component<WaitingViewModel> {
     override val title: String = "选择设备"
     override val subtitle: String = "你要把文件刷入的那个设备里面?"
     override val viewModel:WaitingViewModel = object : AbstractWaitingViewModel() {
-        override fun onNextStepBtnChecked() { onNextStep() }
+        override fun afterClick(devices: Array<String>) {
+            job.cancel()
+            runBlocking {
+                job.join()
+            }
+            onNextStep(devices)
+        }
     }
 
     private val job: Job = (viewModel as AbstractWaitingViewModel).scanningJob
@@ -85,14 +92,21 @@ private abstract class AbstractWaitingViewModel:WaitingViewModel{
         }
         updateState()
     }
+    private lateinit var realJob:Job
+    private lateinit var realJob2:Job
 
     val scanningJob get() = Fastboot.scope.launch {
-        val job = Fastboot.scannerJob
-        val anotherJob = launch {
+        realJob = Fastboot.scannerJob
+        realJob2 = launch {
             Fastboot.deviceSerials.collect(::updateDevice)
         }
-        job.join()
-        anotherJob.cancel()
+        realJob.join()
+        realJob2.cancel()
+    }.also {
+        it.invokeOnCompletion {
+            realJob.cancel()
+            realJob2.cancel()
+        }
     }
     private fun updateDevice(array:Array<String>) {
         isWaiting = true
@@ -107,7 +121,18 @@ private abstract class AbstractWaitingViewModel:WaitingViewModel{
         updateState()
     }
     fun updateState() {
+        onDebug()
+        if (devices.isEmpty()) isWaiting = true
         isEnable = !isWaiting && devices.containsValue(true)
+    }
+    fun onDebug() {
+        "afakedevice".let {
+            devices[it] = devices[it]?:false
+        }
+    }
+    abstract fun afterClick(devices: Array<String>)
+    final override fun onNextStepBtnChecked() {
+        afterClick(devices.filter { it.value }.keys.toTypedArray())
     }
 }
 

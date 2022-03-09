@@ -5,11 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.Children
 import com.arkivanov.decompose.router.push
 import com.arkivanov.decompose.router.router
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import me.heizi.flashing_tool.image.screens.*
 import java.io.File
 
@@ -53,7 +51,7 @@ class RootComponent(
             )
         }
         is Screens.DeviceChooser -> {
-            SelectorComponent(context.childContext(Screens.DeviceChooser::class.simpleName!!, LifecycleRegistry())) { launch(screens.context) }
+            SelectorComponent(context){launchByChooser(screens.context,it)}
         }
 
         is Screens.Invoke -> {
@@ -75,7 +73,13 @@ class RootComponent(
         this@RootComponent.viewModel.title =title
         this@RootComponent.viewModel.subtitle =subtitle
     }
-
+    private fun launchByChooser(context: Context,device:Array<String>) {
+        when(context) {
+            is Context.Boot -> context.copy(devices = device)
+            is Context.Flash -> context.copy(devices = device)
+            is Context.Ready -> error("launch by chooser got wrong context")
+        } .let(::launch)
+    }
     private fun launchByInfo(context: Context) {
         when(context) {
             is Context.Boot -> context.copy(infoChecked = true)
