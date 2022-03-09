@@ -12,9 +12,8 @@ sealed class Screens: Parcelable {
     class Launcher(val file: File) : Screens() {
         override val context: Context.Ready = Context.Ready(file)
     }
-    class DeviceChooser(override val context: Context): Screens() {
-
-    }
+    class DeviceChooser(override val context: Context): Screens()
+    class InfoCheck(override val context: Context): Screens()
     class Invoke(override val context: Context) :Screens() {
         val shell by lazy {
             Fastboot.withContext(context)

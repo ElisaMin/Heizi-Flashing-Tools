@@ -38,8 +38,8 @@ class InfoComponent(
     fastbootContext: Context,
     onNextStep:()->Unit
 ) : ComponentContext by context, Component<InfoViewModel> {
-    override val title: String = ""
-    override val subtitle: String = ""
+    override val title: String = "信息确认"
+    override val subtitle: String = "请确认一下你正在做的操作。"
     override val viewModel: InfoViewModel = object : InfoViewModel {
         override val infos: Map<String, String> = fastbootContext.toMap()
         override fun onNextStepBtnClicked() { onNextStep() }

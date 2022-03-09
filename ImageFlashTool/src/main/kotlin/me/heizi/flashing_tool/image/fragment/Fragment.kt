@@ -18,7 +18,7 @@ import me.heizi.kotlinx.compose.desktop.core.fragment.AbstractFragment
 import me.heizi.kotlinx.compose.desktop.core.fragment.FragmentContainer
 import me.heizi.kotlinx.compose.desktop.core.fragment.handlerOf
 import java.io.File
-
+@Deprecated("moved to decompose version")
 /**
  * 程序片里面的界面和数据交流的对象 通常里面存在很多State
  * 并且对象实例是接近单例的
@@ -29,6 +29,7 @@ interface ViewModel
  *
  * @param _content 程序片展示的内容
  */
+@Deprecated("moved to decompose version")
 abstract class Fragment <VM:ViewModel> (
     _content:@Composable Fragment<VM>.() -> Unit
 ) : AbstractFragment() {
@@ -43,6 +44,7 @@ abstract class Fragment <VM:ViewModel> (
 
     companion object {
         lateinit var file:File
+        @Deprecated("moved to decompose version")
         /**
          * 启动窗口
          *

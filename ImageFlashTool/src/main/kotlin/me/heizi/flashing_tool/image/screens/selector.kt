@@ -15,8 +15,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.essenty.lifecycle.doOnCreate
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.image.Component
@@ -36,16 +34,7 @@ class SelectorComponent(
         override fun onNextStepBtnChecked() { onNextStep() }
     }
 
-    private lateinit var job: Job
-
-    init {
-        lifecycle.doOnCreate {
-            job = (viewModel as AbstractWaitingViewModel).scanningJob
-        }
-        lifecycle.doOnDestroy {
-            job.cancel()
-        }
-    }
+    private val job: Job = (viewModel as AbstractWaitingViewModel).scanningJob
 
     private fun updateState() {
         (viewModel as AbstractWaitingViewModel).updateState()

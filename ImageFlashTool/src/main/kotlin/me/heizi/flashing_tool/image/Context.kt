@@ -4,8 +4,10 @@ import java.io.File
 
 sealed class Context(
     open val path:String ,
-    open val devices: Array<String> = arrayOf()
+    open val devices: Array<String> = arrayOf(),
+    open val infoChecked: Boolean = false,
 ) {
+
     class Ready(file: File):Context(file.absolutePath) {
         fun toBoot() =
             Boot(path)
@@ -14,7 +16,8 @@ sealed class Context(
     }
     data class Boot(
         override val path:String = "",
-        override val devices: Array<String> = arrayOf()
+        override val devices: Array<String> = arrayOf(),
+        override val infoChecked: Boolean = false,
     ): Context(path,devices) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -38,7 +41,7 @@ sealed class Context(
         val disableAVB:Boolean = false,
         override val path:String = "",
         override val devices: Array<String> = arrayOf(),
-        val infoChecked: Boolean = false
+        override val infoChecked: Boolean = false,
     ): Context(path, devices) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
