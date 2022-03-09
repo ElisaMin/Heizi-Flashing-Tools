@@ -46,17 +46,21 @@ https://www.bilibili.com/video/BV1LS4y1G7b9
 https://bbs.lge.fun/thread-2551.htm
 
 # modules
-### Image Flash Tool
-镜像刷入工具
-### Khell
-kotlin shell lib 
-### logger
-kotlin log lib
+开发者可以看看这里有多少个子模块
+### Image Flash Tool (IFT)
+依赖：Khell/Logger/NativeFileDialog/ComposeX  
+不用多说
+### Fake Fastboot Device (FFT)
+依赖：Khell/Logger/NativeFileDialog/ComposeX  
+不用多说
 ### compose.desktop.core
-contains a fragment impl
+本来有Compose的[Fragment](https://github.com/ElisaMin/Heizi-Flashing-Tools/tree/fragment) 实现，
+但现在替换成了[Decompose](https://github.com/arkivanov/Decompose) 就把Fragment删了。
+主要是再整一套lifecycle之类的时间太慢了，而且还有问题（issues #2 ）。现在就剩一些通用的组件这样了。
+### Khell
+kotlin shell ext lib 
+### logger
+kotlin log ext lib
+### Native File Dialog
+call native file dialog by jna
 
-# Videos
-http://b23.tv/X6TEpfw
-
-# 咕咕咕
-INTP的日常项目搁置。

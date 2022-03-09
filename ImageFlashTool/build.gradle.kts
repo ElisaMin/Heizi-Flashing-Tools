@@ -38,6 +38,3 @@ tasks.test {
     useJUnit()
 }
 
-
-
-tasks.getByName("build").dependsOn("clean")
