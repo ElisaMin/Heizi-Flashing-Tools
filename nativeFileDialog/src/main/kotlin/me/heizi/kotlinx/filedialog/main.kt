@@ -6,6 +6,7 @@ import com.sun.jna.NativeLibrary
 import com.sun.jna.WString
 import java.io.File
 import java.nio.charset.Charset
+import java.util.*
 
 
 fun main() {
@@ -25,7 +26,7 @@ fun main() {
 object FileDialogs {
     operator fun get(name:String):String? = System.getProperty(name)
     private val nfd:NFD by lazy {
-        val libraryName= "NativeFileDialog"+this["os.name"]!!.toLowerCase().let {
+        val libraryName= "NativeFileDialog"+ this["os.name"]!!.lowercase(Locale.getDefault()).let {
             when {
                 it.startsWith("windows") -> {
                     val arch = this["os.arch"]!!

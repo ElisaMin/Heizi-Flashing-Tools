@@ -34,7 +34,3 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 }
 
 
-tasks.test {
-    useJUnit()
-}
-
