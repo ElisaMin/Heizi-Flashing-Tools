@@ -20,7 +20,6 @@ import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.logger.debug
 
-@Deprecated("Decompose版本已经完成")
 class Launcher:LauncherViewModel, Fragment<LauncherViewModel>(_content =  @Composable {
     title = file.name
     subtitle = "你想要刷入哪个分区里面?"
@@ -111,7 +110,6 @@ private fun preview() {
 //    }
     vm.launcherScreen()
 }
-@Deprecated("Decompose版本已经完成")
 @Composable
 fun LauncherViewModel.launcherScreen(){
 
@@ -186,7 +184,6 @@ fun LauncherViewModel.launcherScreen(){
         }
     }
 }
-@Deprecated("Decompose版本已经完成")
 interface LauncherViewModel:ViewModel {
     var partition: String
     var isDropDown:Boolean
@@ -199,13 +196,11 @@ interface LauncherViewModel:ViewModel {
     fun onBootBtnClick()
 }
 
-@Deprecated("Decompose版本已经完成")
 class CheckboxesViewModel {
     val _a: MutableState<Boolean> = mutableStateOf(false)
     val _b: MutableState<Boolean> = mutableStateOf(false)
     val disableAVB: MutableState<Boolean> = mutableStateOf(false)
 }
-@Deprecated("Decompose版本已经完成")
 @Composable
 fun checkboxes(
     viewModel: CheckboxesViewModel

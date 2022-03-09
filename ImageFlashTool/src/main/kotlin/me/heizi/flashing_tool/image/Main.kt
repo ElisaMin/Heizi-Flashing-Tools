@@ -1,14 +1,7 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.image
 
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.toPainter
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.singleWindowApplication
-import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import me.heizi.flashing_tool.image.fragment.Fragment.Companion.start
 import java.io.File
 
 
@@ -30,10 +23,5 @@ fun getFileOrEnd(file:String) =
 //        ?: error("文件不存在")
 
 fun startApplication(file: File){
-    singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(600.dp,460.dp))) {
-        val lifecycle = remember { LifecycleRegistry() }
-        val context = remember { DefaultComponentContext(lifecycle)}
-        val component = remember { RootComponent(file,context) }
-        component.render()
-    }
+    start(file)
 }

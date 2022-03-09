@@ -21,8 +21,8 @@ dependencies {
     implementation(project(":logger"))
     implementation(project(":compose.desktopx.core"))
     implementation(compose.desktop.currentOs)
-    implementation(Libs.Decompose)
-    implementation(Libs.DecomposeX)
+//    implementation(Libs.Decompose)
+//    implementation(Libs.DecomposeX)
     implementation(Libs.M3)
     implementation(Libs.Coroutine)
 }
