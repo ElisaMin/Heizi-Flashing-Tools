@@ -53,28 +53,27 @@ object Fastboot {
             }
         }
     }
+    val Context.command get() = when(this) {
+
+        is Context.Flash -> devices.map {
+            "fastboot -s $it ${if(disableAVB) "--disable-verification --disable-verity" else ""} flash "
+        }.flatMap { command -> partitions.map { "$command $it $path" } }
+
+        is Context.Boot -> devices.map {
+            "fastboot -s $it boot $path"
+        }
+
+        else -> error("错误很怪\$command:$this")
+
+    }
+
     fun withContext(context: Context):Shell {
         if (context.path.isEmpty() || !File(context.path).exists()
             || context.devices.isEmpty() || context.devices.contains("")
-        ) error("文件或设备是空的")
-        return when (context) {
-            is Context.Boot -> {
-                val commands = context.devices.map {
-                    "fastboot -s $it boot ${context.path}"
-                }.toTypedArray()
-                Shell(*commands, startWithCreate = false)
-            }
-            is Context.Flash -> {
-                if (context.partitions.isEmpty() || context.partitions.contains(""))
-                    error("分区是空的")
-                val commands = context.devices.map {
-                    "fastboot -s $it ${if(context.disableAVB) "--disable-verification --disable-verity" else ""} flash "
-                }.flatMap { command ->
-                    context.partitions.map { "$command $it ${context.path}" }
-                }.toTypedArray()
-                Shell(*commands, startWithCreate = false)
-            }
-            else -> error("错误很怪\$withContext:$context")
-        }
+        ) error("文件或设备不存在")
+        if (context is Context.Flash)
+            if (context.partitions.isEmpty() || context.partitions.contains(""))
+                error("分区是空的")
+        return Shell(*context.command.toTypedArray(), startWithCreate = false)
     }
 }

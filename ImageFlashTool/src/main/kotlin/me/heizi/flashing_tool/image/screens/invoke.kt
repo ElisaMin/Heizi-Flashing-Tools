@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.essenty.lifecycle.doOnStart
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.delay
@@ -43,11 +42,10 @@ class InvokeComponent(
         rememberViewModel().RunScreen()
     }
     init {
-        lifecycle.doOnStart {
-            CoroutineScope(Default).launch {
-                (viewModel as AbstractInvokeViewModel)
-                    .collect()
-            }
+        CoroutineScope(Default).launch {
+            delay(300)
+            (viewModel as AbstractInvokeViewModel)
+                .collect()
         }
     }
 

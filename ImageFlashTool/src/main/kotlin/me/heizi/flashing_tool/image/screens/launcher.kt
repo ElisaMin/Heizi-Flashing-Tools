@@ -59,49 +59,61 @@ class LauncherComponent(
 @Composable
 fun LauncherViewModel.LauncherScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxWidth()) {
-            TextField(
-                inputPartition, ::onPartitionInput, Modifier.fillMaxWidth(),
-                trailingIcon = {
-                    if (!isDropDown) IconButton(
-                        content = { Icon(Icons.Default.ArrowDropDown, "展开") },
-                        onClick = ::onDropDownBtnClicked,
-                    )
-                },
-                isError = error.isNotEmpty(), label = { Text("分区名称") },
+        Column(Modifier.fillMaxWidth().weight(1f)) {
+            Box(Modifier.fillMaxWidth()) {
+                TextField(
+                    inputPartition, ::onPartitionInput, Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        if (!isDropDown) IconButton(
+                            content = { Icon(Icons.Default.ArrowDropDown, "展开") },
+                            onClick = ::onDropDownBtnClicked,
+                        )
+                    },
+                    isError = error.isNotEmpty(), label = { Text("分区名称") },
+                )
+                DropdownMenu(
+                    isDropDown,
+                    ::onDropDownDismiss,
+                    modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                ) {
+                    for (s in arrayOf("system", "boot", "vbmeta", "vendor", "recovery")) {
+                        DropdownMenuItem(
+                            content = { Text(s) },
+                            onClick = { onDropDownDismiss();onPartitionInput(s) })
+                    }
+                }
+            }
+            if (error.isNotEmpty()) Text(error)
+            Box(style.padding.bottom)
+            Row {
+                for ((index, item) in arrayOf("_a", "_b", "disable avb").withIndex()) {
+                    ChipCheckBox(checkBox[index], item, style.padding.end) {
+                        onCheckBoxClicked(index, it)
+                    }
+                }
+            }
+        }
+        Box(Modifier.fillMaxWidth()) {
+            Button(
+                content = { Text("选择设备刷入") },
+                onClick = ::onNextStepBtnClick,
+                modifier = Modifier.align(Alignment.BottomEnd),
+                enabled = hasNext
             )
-            DropdownMenu(
-                isDropDown,
-                ::onDropDownDismiss,
-                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
-            ) {
-                for (s in arrayOf("system", "boot", "vbmeta", "vendor", "recovery")) {
-                    DropdownMenuItem(
-                        content = { Text(s) },
-                        onClick = { onDropDownDismiss();onPartitionInput(s) })
-                }
+            Column(Modifier.align(Alignment.BottomStart)) {
+                Text("其他功能?", modifier = style.padding.bottom)
+                OutlinedButton(
+                    content = { Text("启动镜像") },
+                    onClick = ::onBootBtnClick,
+                )
             }
+
+
         }
-        if (error.isNotEmpty()) Text(error)
-        Box(style.padding.bottom)
-        Row {
-            for ((index, item) in arrayOf("_a", "_b", "disable avb").withIndex()) {
-                ChipCheckBox(checkBox[index], item, style.padding.end) {
-                    onCheckBoxClicked(index, it)
-                }
-            }
-        }
-        Button(
-            content = { Text("选择设备刷入") },
-            onClick = ::onNextStepBtnClick,
-            modifier = style.padding.vertical.align(Alignment.End),
-            enabled = hasNext
-        )
-        Text("其他功能?", modifier = style.padding.bottom)
-        OutlinedButton(
-            content = { Text("启动镜像") },
-            onClick = ::onBootBtnClick
-        )
+//        Row() {  }
+
+
+
     }
 }
 

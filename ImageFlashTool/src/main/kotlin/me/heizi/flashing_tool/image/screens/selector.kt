@@ -1,10 +1,14 @@
 package me.heizi.flashing_tool.image.screens
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.ListItem
@@ -16,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.image.Component
@@ -61,18 +66,22 @@ class SelectorComponent(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun WaitingViewModel.SelectorScreen() = Column {
-    if (isWaiting) {
-        LinearProgressIndicator(Modifier.fillMaxWidth())
-        Text("正在等待设备.....")
-    } else {
-        LazyColumn { items(devices.toList()) { (device,checked) ->
-            ListItem (
-                text = { Text(device) },
-                trailing = { ChipCheckBox(checked, onCheck = {onDeviceSelected(device)}) }
-            )
-    } } }
-    Box(style.padding.bottom)
-    Button(
+    Box(style.padding.bottom.fillMaxWidth().weight(1f)) {
+        if (isWaiting) Column {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+            Text("正在等待设备.....")
+        } else {
+            val scroll = rememberLazyListState()
+            LazyColumn(modifier = style.padding.end,scroll) { items(devices.toList()) { (device,checked) ->
+                ListItem (
+                    text = { Text(device) },
+                    trailing = { ChipCheckBox(checked, onCheck = {onDeviceSelected(device)}) }
+                )
+            } }
+            VerticalScrollbar(rememberScrollbarAdapter(scroll),Modifier.align(Alignment.CenterEnd).fillMaxHeight())
+        }
+    }
+    if (!isWaiting) Button(
         content = {Text("下一步")},
         modifier = Modifier.align(Alignment.End),
         onClick = ::onNextStepBtnChecked,
@@ -96,6 +105,7 @@ private abstract class AbstractWaitingViewModel:WaitingViewModel{
     private lateinit var realJob2:Job
 
     val scanningJob get() = Fastboot.scope.launch {
+        delay(300)
         realJob = Fastboot.scannerJob
         realJob2 = launch {
             Fastboot.deviceSerials.collect(::updateDevice)
@@ -108,6 +118,8 @@ private abstract class AbstractWaitingViewModel:WaitingViewModel{
             realJob2.cancel()
         }
     }
+
+    // FIXME: 2022/3/9 shouldn't refresh the boolean after invoke
     private fun updateDevice(array:Array<String>) {
         isWaiting = true
         isEnable = false
@@ -121,12 +133,16 @@ private abstract class AbstractWaitingViewModel:WaitingViewModel{
         updateState()
     }
     fun updateState() {
-        onDebug()
+//        onDebug()
         if (devices.isEmpty()) isWaiting = true
         isEnable = !isWaiting && devices.containsValue(true)
     }
+    @Deprecated("debug so you know")
     fun onDebug() {
         "afakedevice".let {
+            devices[it] = devices[it]?:false
+        }
+        "fakedevices".let {
             devices[it] = devices[it]?:false
         }
     }

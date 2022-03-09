@@ -1,10 +1,11 @@
 package me.heizi.flashing_tool.image.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material3.Button
@@ -12,18 +13,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.ComponentContext
 import me.heizi.flashing_tool.image.Component
 import me.heizi.flashing_tool.image.Context
+import me.heizi.flashing_tool.image.Fastboot.command
 import me.heizi.flashing_tool.image.ViewModel
 import me.heizi.flashing_tool.image.style
 
 
 fun Context.toMap() = buildMap {
+    this["\uD83D\uDCDC指令"] = command.joinToString("\n")
     this["💿文件"] = path
     this["📱设备"] = devices.joinToString(", ")
 
-    this["模式"] = when(this@toMap) {
+    this["\uD83C\uDFF7模式"] = when(this@toMap) {
         is Context.Boot -> "启动镜像"
     is Context.Flash -> {
         this["\uD83C\uDF70分区"] = partitions.joinToString(", ")+if (disableAVB)
@@ -56,14 +60,17 @@ class InfoComponent(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun InfoViewModel.Display() = Column {
-    LazyColumn(Modifier.fillMaxSize()) { items(infos.toList()) { (title,text) ->
-        ListItem(
-            text={ Text(title) },
-            secondaryText = { Text(text) },
-            singleLineSecondaryText = false,
-        )
-    } }
-    Box(style.padding.bottom)
+    Box(style.padding.bottom.fillMaxWidth().weight(1f)) {
+        val scroll = rememberLazyListState()
+        LazyColumn(Modifier.fillMaxWidth().padding(end = 10.dp),scroll) { items(infos.toList()) { (title,text) ->
+            ListItem(
+                text={ Text(title) },
+                secondaryText = { Text(text) },
+                singleLineSecondaryText = false,
+            )
+        } }
+        VerticalScrollbar(rememberScrollbarAdapter(scroll),Modifier.fillMaxHeight().align(Alignment.CenterEnd))
+    }
     Button(
         content = {Text("下一步")},
         onClick = ::onNextStepBtnClicked,
