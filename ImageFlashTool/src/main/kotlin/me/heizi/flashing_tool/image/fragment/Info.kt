@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.fragment.Event
-
+@Deprecated("decompose version is done")
 @Suppress("UNCHECKED_CAST")
 class InfoFragment :InfoViewModel, Fragment<InfoViewModel>(_content = @Composable {
     showInfoScreen(viewModel)
@@ -51,7 +51,7 @@ class InfoFragment :InfoViewModel, Fragment<InfoViewModel>(_content = @Composabl
 
     override val viewModel: InfoViewModel = this
 }
-
+@Deprecated("decompose version is done")
 interface InfoViewModel:ViewModel {
     //_a _b disableAVB
     val bools:Triple<Boolean,Boolean,Boolean>
@@ -76,6 +76,7 @@ interface InfoViewModel:ViewModel {
     }
     fun onNextStepBtnClicked()
 }
+@Deprecated("decompose version is done")
 @Composable
 fun showInfoScreen(viewModel: InfoViewModel) = Column {
     val modifier = Modifier.fillMaxWidth()
@@ -90,6 +91,7 @@ fun showInfoScreen(viewModel: InfoViewModel) = Column {
         Text("下一步")
     }
 }
+@Deprecated("decompose version is done")
 @Composable
 fun showInfo(title:String, content: String,modifier: Modifier) = OutlinedTextField(
     onValueChange = { },

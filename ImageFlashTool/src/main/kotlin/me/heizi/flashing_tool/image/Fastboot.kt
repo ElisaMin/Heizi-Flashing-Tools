@@ -74,7 +74,7 @@ object Fastboot {
                 }.toTypedArray()
                 Shell(*commands, startWithCreate = false)
             }
-            else -> error("错误很怪\$withContext")
+            else -> error("错误很怪\$withContext:$context")
         }
     }
 }

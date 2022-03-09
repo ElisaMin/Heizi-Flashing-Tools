@@ -19,9 +19,11 @@ import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.CommandResult.Companion.waitForResult
 import me.heizi.kotlinx.shell.shell
 
-
+@Deprecated("decompose version is done")
 const val Invoke_FAILED = 3f
+@Deprecated("decompose version is done")
 const val Invoke_SUCCESS = 4f
+@Deprecated("decompose version is done")
 @Suppress("UNCHECKED_CAST")
 class InvokeCommand:InvokeViewModel,Fragment<InvokeViewModel>(_content = @Composable {
     subtitle = if (viewModel.progress.value>1)
@@ -89,14 +91,14 @@ class InvokeCommand:InvokeViewModel,Fragment<InvokeViewModel>(_content = @Compos
     override val viewModel: InvokeViewModel = this
 }
 
-
+@Deprecated("decompose version is done")
 interface InvokeViewModel:ViewModel {
     val text: State<String>
     val progress: State<Float>
 }
 
 
-
+@Deprecated("decompose version is done")
 @Composable
 fun invokeScreen(viewModel: InvokeViewModel):String {
     val progressing by remember { viewModel.progress }
@@ -121,6 +123,7 @@ fun invokeScreen(viewModel: InvokeViewModel):String {
         }
     }
 }
+@Deprecated("decompose version is done")
 @Composable
 fun progress(progress:Float) {
     if (progress!=0.11f) LinearProgressIndicator(progress, Modifier.fillMaxWidth())
