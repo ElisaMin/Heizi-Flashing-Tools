@@ -8,7 +8,7 @@ sealed class Context(
     open val infoChecked: Boolean = false,
 ) {
 
-    class Ready(file: File):Context(file.absolutePath) {
+    class Ready(file: File):Context("\"${ file.absolutePath }\"") {
         fun toBoot() =
             Boot(path)
         fun toFlash(partitions: Array<String>,disableAVB: Boolean) =
