@@ -15,11 +15,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.heizi.flashing_tool.fastboot.Resources
+import java.io.File
 import javax.imageio.ImageIO
 
 
 fun noticeOfAlpha() {
     CoroutineScope(Dispatchers.Default).launch {
+        if  (File(".creatingNotice").let {
+            val e = it.exists()
+            if (!e) it.createNewFile()
+            !e
+        })
         singleWindowApplication(
             title = "提示", icon = withContext(Dispatchers.IO) {
                 ImageIO.read(Resources.Urls.fastboot!!)

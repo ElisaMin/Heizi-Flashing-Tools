@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.heizi.flashing_tool.fastboot.screen.FastbootCommandViewModel
 import me.heizi.flashing_tool.fastboot.screen.fastbootCommand
+import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
@@ -28,16 +29,25 @@ object FastbootDevices {
         override val serialId: String
     ):DeviceAndRunner {
         override val runner: DeviceRunner get() = this
-        override val info = MutableStateFlow(FastbootDeviceInfo.empty)
+        override val info: MutableStateFlow<FastbootDeviceInfo> = MutableStateFlow(EmptyFastbootDeviceInfo)
 
         private val scope by lazy { deviceScope+job }
         private val job by lazy {
             val job = Fastboot.scope.launch {
-                while (isActive) {
-                    getInfo()?.let {
-                        info.emit(it)
-                        delay(30000)
-                    }?: delay(3000)
+                while (serialId in Fastboot.deviceSerials.value && isActive) {
+                    debug("has next")
+                    val job = launch {
+                        info.emit(getInfo())
+                    }
+                    launch {
+                        delay(460)
+                        if(job.isActive) job.cancel()
+                    }
+                    job.join()
+                    if (info.value == EmptyFastbootDeviceInfo)
+                        delay(3000)
+                    else delay(30000)
+                    debug("next refresh")
                 }
             }
             job.invokeOnCompletion {
@@ -71,16 +81,14 @@ object FastbootDevices {
         }
 
         override suspend fun getvar(): String? = Shell("fastboot -s $serialId getvar all", isMixingMessage = true).await().let {
-            if (it is CommandResult.Success && it.message.isNotEmpty())
-                it.message
-            else
-                null
+            if (it is CommandResult.Success && it.message.isNotEmpty()) it.message
+            else null
         }
 
+        var times = 0
         override suspend fun updateInfo() {
-            getInfo()?.let {
-                info.emit(it)
-            }
+            debug("updating info",times++)
+            info.emit(getInfo())
         }
 
         @Composable

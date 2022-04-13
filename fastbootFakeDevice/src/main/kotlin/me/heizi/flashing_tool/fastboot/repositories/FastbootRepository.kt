@@ -48,15 +48,26 @@ interface FastbootDeviceInfo {
         val currentSlotA:Boolean?
     }
     companion object {
-        val empty:FastbootDeviceInfo = FastbootDeviceInfoImpl("")
+        val empty:FastbootDeviceInfo = EmptyFastbootDeviceInfo
     }
+}
+object EmptyFastbootDeviceInfo : FastbootDeviceInfo {
+    override val simple: FastbootDeviceInfo.Simple = object :FastbootDeviceInfo.Simple {
+        override val isUnlocked: Boolean = true
+        override val isMultipleSlot: Boolean = true
+        override val isFastbootd: Boolean? = null
+        override val currentSlotA: Boolean = true
+    }
+    override val partitionInfos: List<PartitionInfo> = emptyList()
+    override fun toArray(): Array<Array<String>> = emptyArray()
+    override fun get(s: String): String? =null
 }
 interface FastbootDevice {
     val serialId:String
     val runner: DeviceRunner
     val info: StateFlow<FastbootDeviceInfo>
-    suspend fun getInfo(): FastbootDeviceInfo? {
-        return runner.getvar()?.let(::FastbootDeviceInfoImpl)
+    suspend fun getInfo(): FastbootDeviceInfo {
+        return runner.getvar()?.let(::FastbootDeviceInfoImpl) ?: EmptyFastbootDeviceInfo
     }
     suspend fun updateInfo()
 }

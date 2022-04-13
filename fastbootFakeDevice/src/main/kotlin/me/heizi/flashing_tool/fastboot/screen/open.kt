@@ -15,7 +15,7 @@ val openedDeviceDialog = mutableListOf<String>()
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun open(serialId:String) {
+fun open(serialId:String) { if (openedDeviceDialog.filter { it == serialId }.size == 1) {
     var fastbootDevice = FastbootDevices.getSingletonBySerialOrNull(serialId)
     while (fastbootDevice == null) {
         AlertDialog({
@@ -43,7 +43,7 @@ fun open(serialId:String) {
     if (isWindowOpen) DeviceManagerWindow(device) {
         openedDeviceDialog.remove(serialId)
         isWindowOpen = false
-    }
+    } }
 }
 
 
