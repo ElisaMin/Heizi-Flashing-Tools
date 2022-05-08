@@ -14,3 +14,4 @@ include("compose.desktopx.core")
 include("fastbootFakeDevice")
 include("nativeFileDialog")
 findProject(":nativeFileDialog")?.name = "fileDialog"
+include("utils")

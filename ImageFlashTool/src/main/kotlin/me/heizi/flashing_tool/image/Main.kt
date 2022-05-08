@@ -30,7 +30,7 @@ fun getFileOrEnd(file:String) =
 //        ?: error("文件不存在")
 
 fun startApplication(file: File){
-    singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(600.dp,460.dp))) {
+    singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(460.dp,600.dp))) {
         val lifecycle = remember { LifecycleRegistry() }
         val context = remember { DefaultComponentContext(lifecycle)}
         val component = remember { RootComponent(file,context) }

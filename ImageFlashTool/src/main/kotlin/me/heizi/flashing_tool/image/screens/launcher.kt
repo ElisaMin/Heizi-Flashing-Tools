@@ -30,6 +30,7 @@ import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 class LauncherComponent(
     context:ComponentContext,
     fileName:String,
+    infos:Map<String,String>? ,
     private val launchFlash:(partitions:Array<String>,disableAVB:Boolean)->Unit,
     private val launchBoot:()->Unit,
 ) :ComponentContext by context,Component<LauncherViewModel> {
@@ -37,6 +38,7 @@ class LauncherComponent(
     override val subtitle: String = "你想要刷入哪个分区里面?"
 
     override val viewModel:LauncherViewModel = object : AbstractLauncherViewModel() {
+        override val imageInfo = infos
         override fun onNextStepBtnClick()
                 = launchFlash(
             buildList {
@@ -92,6 +94,27 @@ fun LauncherViewModel.LauncherScreen() {
                     }
                 }
             }
+            if (imageInfo != null) {
+                Box(style.padding.bottom)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("镜像大小"+(imageInfo?.get("size")?:"")+
+                            "\n分区猜测：(能不能刷取决于您设备，这里只提供猜测。)", style = MaterialTheme.typography.labelMedium)
+                    Row {
+                        for (i in imageInfo?.get("guess")?.split(",")?: emptyList()) {
+                            @Suppress("NAME_SHADOWING")
+                            val i = i.trim()
+                            TextButton(
+                                content = { Text(i) },
+                                onClick = {
+                                    onPartitionInput(i)
+                                }
+                            )
+                        }
+                    }
+                }
+                Text("完整路径:${imageInfo?.get("fPath")?:""}" , style = MaterialTheme.typography.labelMedium)
+                Box(style.padding.bottom)
+            }
         }
         Box(Modifier.fillMaxWidth()) {
             Button(
@@ -120,6 +143,7 @@ fun LauncherViewModel.LauncherScreen() {
 interface LauncherViewModel: ViewModel {
     val inputPartition:String
     val error: String
+    val imageInfo:Map<String,String>?
     fun onPartitionInput(input:String)
     val isDropDown:Boolean
     fun onDropDownBtnClicked()
@@ -142,6 +166,7 @@ fun main() {
 }
 
 private abstract class AbstractLauncherViewModel:LauncherViewModel {
+    override val imageInfo: Map<String, String>? = null
     final override var inputPartition: String by mutableStateOf("")
     final override var error: String by mutableStateOf("")
     final override var checkBox: Array<Boolean> by mutableStateOf(arrayOf(false,false,false))

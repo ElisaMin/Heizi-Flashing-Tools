@@ -46,6 +46,7 @@ class RootComponent(
         is Screens.Launcher -> {
             LauncherComponent(context,
                 screens.file.name,
+                screens.info,
                 { partitions, disableAVB -> launchReady(partitions, disableAVB, screens.context) },
                 { launchBoot(screens.context) }
             )
