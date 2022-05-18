@@ -10,7 +10,7 @@ sealed class Context(
 
     class Ready(file: File):Context("\"${ file.absolutePath }\"") {
         fun toBoot() =
-            Boot(path)
+            Boot(path, devices)
         fun toFlash(partitions: Array<String>,disableAVB: Boolean) =
             Flash(partitions = partitions, path = path, devices = devices, disableAVB = disableAVB)
     }

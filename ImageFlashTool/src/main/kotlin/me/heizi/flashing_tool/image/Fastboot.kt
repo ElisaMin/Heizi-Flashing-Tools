@@ -68,7 +68,7 @@ object Fastboot {
     }
 
     fun withContext(context: Context):Shell {
-        if (context.path.isEmpty() || !File(context.path).exists()
+        if (context.path.isEmpty()|| !File(context.path.trim('"')).exists()
             || context.devices.isEmpty() || context.devices.contains("")
         ) error("文件或设备不存在")
         if (context is Context.Flash)
