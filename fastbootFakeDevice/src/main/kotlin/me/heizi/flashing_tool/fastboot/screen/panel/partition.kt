@@ -4,9 +4,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
 import me.heizi.flashing_tool.fastboot.repositories.FastbootDevice
-import me.heizi.flashing_tool.fastboot.screen.dialogOfFlashing
 import me.heizi.flashing_tool.fastboot.repositories.PartitionInfo
 import me.heizi.flashing_tool.fastboot.repositories.PartitionType
+import me.heizi.flashing_tool.fastboot.screen.dialogOfFlashing
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -80,7 +80,6 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
                 }
                 dps
             }
-
             items(displayingPartitions) {
                 partition(it, device.runner, Modifier.animateItemPlacement())
             }
@@ -88,7 +87,7 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
 @Composable
 fun partition(info: PartitionInfo, runner: DeviceRunner, modifier: Modifier = Modifier,) {
     val isFlashDialogShowState: MutableState<Boolean> = mutableStateOf(false)

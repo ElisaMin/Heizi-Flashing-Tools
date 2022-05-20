@@ -1,8 +1,13 @@
 package me.heizi.flashing_tool.fastboot.screen
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
@@ -21,11 +26,11 @@ import androidx.compose.ui.window.Window
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import me.heizi.flashing_tool.fastboot.extendableCard
 import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
-import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
-import me.heizi.flashing_tool.fastboot.repositories.FastbootDevice
-import me.heizi.flashing_tool.fastboot.repositories.FastbootDeviceInfo
+import me.heizi.flashing_tool.fastboot.repositories.*
 import me.heizi.flashing_tool.fastboot.screen.panel.panelAbSlotSwitch
 import me.heizi.flashing_tool.fastboot.screen.panel.panelPartition
 import me.heizi.kotlinx.logger.debug
@@ -40,6 +45,41 @@ fun DeviceManagerWindow(
     }
 }
 
+@Preview
+@Composable
+fun PreView() {
+
+    val theInfo: FastbootDeviceInfo = object :FastbootDeviceInfo {
+        override val simple: FastbootDeviceInfo.Simple = object : FastbootDeviceInfo.Simple {
+            override val isUnlocked: Boolean = true
+            override val isMultipleSlot: Boolean = true
+            override val isFastbootd: Boolean = true
+            override val currentSlotA: Boolean = true
+
+        }
+        override val partitionInfos: List<PartitionInfo> = listOf(PartitionInfo("name",PartitionType.EXT4,0f))
+        override fun toArray(): Array<Array<String>> = arrayOf()
+        override fun get(s: String): String? = null
+
+    }
+
+    DeviceManagerViewModelImpl(object : FastbootDevice {
+        override val serialId: String = "fuck"
+        override val info: StateFlow<FastbootDeviceInfo> = MutableStateFlow(theInfo)
+        override val runner: DeviceRunner = object : DeviceRunner {
+            override val serialId: String = "fuck"
+            override fun run(command: String) {}
+            override fun run(viewModel: FastbootCommandViewModel) {}
+            override suspend fun getvar(): String = ""
+            @Composable
+            override fun start() {}
+
+        }
+        override suspend fun updateInfo() {}
+
+    }).DeviceManagerScreen()
+}
+
 /**
  * Show a dialog display all these collected getvar
  *
@@ -47,7 +87,6 @@ fun DeviceManagerWindow(
  * @param vars
  * @param onClose
  */
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
 
@@ -75,11 +114,12 @@ fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
 
                 Box(Modifier.fillMaxSize()) {
                     if (isTable) {
-                        val scroll = rememberLazyListState()
+                        val scroll = rememberLazyGridState()
                         LazyVerticalGrid(GridCells.Adaptive(200.dp), state = scroll, contentPadding = PaddingValues(8.dp)) {
                             items(s) { Text(it) }
                         }
-                        VerticalScrollbar(rememberScrollbarAdapter(scroll),Modifier.align(Alignment.TopEnd))
+                        // FIXME: 2022/5/20
+//                        VerticalScrollbar(rememberScrollbarAdapter(scroll),Modifier.align(Alignment.TopEnd))
                     }
                     else {
                         val scroll = rememberScrollState()
@@ -120,6 +160,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(horizontal = 16.dp)
+                .padding(top = 64.dp)
         ){
 
             LazyColumn(modifier = Modifier.defaultMinSize(minWidth = 172.dp)) {
@@ -162,7 +203,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
 
 
 
-open class DeviceManagerViewModelImpl(
+class DeviceManagerViewModelImpl(
     override val device: FastbootDevice
 ):Operates(device.runner) {
     override var isOpenDetail: Boolean by mutableStateOf(false)
@@ -216,11 +257,7 @@ interface DeviceManagerViewModel {
     val deviceSimpleInfo: Map<String, String>
     @Composable
     fun withCompose()
-//    @Composable
-//    fun collectPipe()
-//    @Composable fun setUpSimpleInfo()
     fun switchPartition(isSlotA: Boolean)
-    @OptIn(ExperimentalStdlibApi::class)
     fun toFastbootOperateList():Map<String,()->Unit> = buildMap {
         val main = this@DeviceManagerViewModel
         for (it in main::class.java.methods.filter { it.annotations.isNotEmpty() }) {
