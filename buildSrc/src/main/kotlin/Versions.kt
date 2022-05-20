@@ -4,7 +4,7 @@ package me.heizi.gradle
 
 object Versions {
     const val jna = "5.9.0"
-    const val HFT = "0.0.5"
+    const val HFT = "0.0.6"
     const val compose = "1.2.0-alpha01-dev686"
     const val decompose = "0.5.1"
     const val kotlin = "1.6.21"
