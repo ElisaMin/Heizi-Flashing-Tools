@@ -1,7 +1,4 @@
-//package me.heizi.flashing_tool.vd.fb
-
-
-
+package me.heizi.flashing_tool.fastboot
 
 const val fake3 = """
 (bootloader) cpu-abi:arm64-v8a

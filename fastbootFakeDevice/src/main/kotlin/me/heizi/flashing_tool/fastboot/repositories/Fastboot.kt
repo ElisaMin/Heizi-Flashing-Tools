@@ -15,14 +15,26 @@ import java.util.*
 
 
 object Fastboot {
+
+    var isTesting = false
+        set(value) {
+            if (value) isScanning =false
+            devicesCache.value = arrayOf("LMG710ULM785d0fea","LMV600TM9a483380","fake3")
+            field = value
+        }
+
     val scope = CoroutineScope(Dispatchers.IO)
     var error by mutableStateOf("")
     private val devicesCache = MutableStateFlow(arrayOf<String>())
     val deviceSerials get() = devicesCache.stateIn(scope, SharingStarted.Lazily, devicesCache.value)
 
     var isScanning:Boolean
-        get() = collectJob.isActive
+        get() = !isTesting && collectJob.isActive
         set(start) {
+            if (isTesting) {
+                collectJob.cancel()
+                return
+            }
             debug("fastboot collect job changed",start)
             if (start) {
                 collectJob.cancel()

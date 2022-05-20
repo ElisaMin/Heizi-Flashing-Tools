@@ -4,6 +4,8 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.heizi.flashing_tool.fastboot.fake2
+import me.heizi.flashing_tool.fastboot.fake3
 import me.heizi.flashing_tool.fastboot.screen.FastbootCommandViewModel
 import me.heizi.flashing_tool.fastboot.screen.fastbootCommand
 import me.heizi.kotlinx.logger.debug
@@ -16,6 +18,14 @@ import kotlin.coroutines.EmptyCoroutineContext
 object FastbootDevices {
     private val singletons = mutableListOf<DeviceAndRunner>()
     fun getSingletonBySerialOrNull(serial:String):FastbootDevice? {
+        if (Fastboot.isTesting) return when (serial) {
+            "LMV600TM9a483380" -> fake2
+            "LMG710ULM785d0fea" -> me.heizi.flashing_tool.fastboot.fake
+            else -> fake3
+        }.let {
+            fake(serial,it)
+        }
+
         if (Fastboot.deviceSerials.value.contains(serial)) {
             return singletons.find { it.serialId == serial }
                 ?: FastbootDeviceImpl(serial)
@@ -24,8 +34,14 @@ object FastbootDevices {
         return null
     }
     val deviceScope = CoroutineScope(Fastboot.scope.coroutineContext+EmptyCoroutineContext+IO)
+
+
+    private fun fake(serialId: String,getvar:String) = object : FastbootDeviceImpl(serialId) {
+        override suspend fun getvar(): String = getvar
+    }
+
     private interface DeviceAndRunner:FastbootDevice,DeviceRunner
-    private class FastbootDeviceImpl(
+    private open class FastbootDeviceImpl(
         override val serialId: String
     ):DeviceAndRunner {
         override val runner: DeviceRunner get() = this
@@ -99,9 +115,7 @@ object FastbootDevices {
             } }
         }
 
-        init {
-            job
-        }
+        init { job }
     }
 
 }
