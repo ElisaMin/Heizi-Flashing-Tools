@@ -16,6 +16,7 @@ import com.arkivanov.decompose.ComponentContext
 import me.heizi.flashing_tool.image.Component
 import me.heizi.flashing_tool.image.ViewModel
 import me.heizi.flashing_tool.image.style
+import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 
 
@@ -135,8 +136,7 @@ fun LauncherViewModel.LauncherScreen() {
         }
 //        Row() {  }
 
-
-
+        AboutExtendCard()
     }
 }
 

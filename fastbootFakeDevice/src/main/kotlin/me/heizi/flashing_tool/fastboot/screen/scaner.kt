@@ -18,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.fastboot.Title
 import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
 import me.heizi.flashing_tool.fastboot.repositories.Fastboot
+import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import org.jetbrains.skiko.toImage
 import kotlin.system.exitProcess
 
@@ -52,7 +55,8 @@ fun main() {
 
 @Composable
 fun ScannerDialog(viewModel: ScannerViewModel,onCloseRequest:()->Unit) {
-    Dialog(onCloseRequest,title = "设备查询",icon = fastbootIconBuffered.toPainter()) {
+    val state = DialogState(size = DpSize(500.dp,500.dp))
+    Dialog(onCloseRequest,title = "设备查询",icon = fastbootIconBuffered.toPainter(), state = state) {
         viewModel.ScannerScreen()
     }
 }
@@ -86,5 +90,6 @@ fun ScannerViewModel.ScannerScreen(
                 }) { Text(it) }
             }
         }
+        AboutExtendCard()
     }
 }

@@ -33,6 +33,7 @@ import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
 import me.heizi.flashing_tool.fastboot.repositories.*
 import me.heizi.flashing_tool.fastboot.screen.panel.panelAbSlotSwitch
 import me.heizi.flashing_tool.fastboot.screen.panel.panelPartition
+import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import me.heizi.kotlinx.logger.debug
 
 @Composable
@@ -146,10 +147,22 @@ fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
         }
     }
 }
+@Composable
+fun AboutDialog(onClose: () -> Unit) {
+    Popup(onDismissRequest = onClose, alignment = Alignment.BottomCenter) {
+        Card(Modifier.fillMaxWidth(), elevation = 10.dp) {
+            Column {
+                IconButton(onClose) { Icon(Icons.Default.Close,"关闭") }
+                AboutExtendCard(true)
+            }
+        }
+    }
+}
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceManagerViewModel.DeviceManagerScreen() {
     withCompose()
+    if (isAboutOpening) AboutDialog { isAboutOpening = false }
     if (isOpenDetail)
         DeviceGetVarInfo(info.toArray()) { isOpenDetail = false}
     Scaffold(Modifier.fillMaxSize(), topBar = {
@@ -175,11 +188,19 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
                     }
                 }
 
+
                 if (isSlotA!=null) item {
                     extendableCard("Slot",true) {
                         panelAbSlotSwitch(isSlotA!!,::switchPartition)
                     }
                 }
+                item {
+                    TextButton({isAboutOpening = true}, modifier = Modifier.wrapContentSize()) {
+                        Text("关于软件/捐赠/BUG")
+                    }
+                }
+
+
             }
             Column {
 
@@ -195,6 +216,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
                 }
                 panelPartition(info.partitionInfos,device)
 
+
             }
         }
     }
@@ -206,6 +228,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
 class DeviceManagerViewModelImpl(
     override val device: FastbootDevice
 ):Operates(device.runner) {
+    override var isAboutOpening: Boolean by mutableStateOf(false)
     override var isOpenDetail: Boolean by mutableStateOf(false)
     override var info: FastbootDeviceInfo by mutableStateOf(FastbootDeviceInfo.empty)
     override val isSlotA: Boolean? by mutableStateOf(device.info.value.simple.currentSlotA)
@@ -249,7 +272,7 @@ abstract class Operates(
 
 interface DeviceManagerViewModel {
     
-    
+    var isAboutOpening:Boolean
     var isOpenDetail : Boolean
     val device: FastbootDevice
     val info:FastbootDeviceInfo

@@ -20,6 +20,7 @@ import javax.imageio.ImageIO
 
 
 fun noticeOfAlpha() {
+    println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
     CoroutineScope(Dispatchers.Default).launch {
         if  (File(".creatingNotice").let {
             val e = it.exists()
@@ -36,6 +37,7 @@ fun noticeOfAlpha() {
                 Text("欢迎使用预览版HFT-Fastboot设备管理器",  modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
                 Text("软件已经启动，在状态栏内可以找到软件的图标，该软件会在后台三秒一次轮询检测Fastboot设备，在使用完成请及时退出（关闭本窗口不可关闭程序）" +
                         "。在您的Fastboot设备电脑插入后，可以双击图标启动Fastboot设备管理器。")
+                Text("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
             }
         }
     }

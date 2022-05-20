@@ -30,6 +30,7 @@ fun getFileOrEnd(file:String) =
 //        ?: error("文件不存在")
 
 fun startApplication(file: File){
+    println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
     singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(460.dp,600.dp))) {
         val lifecycle = remember { LifecycleRegistry() }
         val context = remember { DefaultComponentContext(lifecycle)}
