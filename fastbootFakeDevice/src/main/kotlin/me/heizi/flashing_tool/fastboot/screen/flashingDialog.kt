@@ -10,9 +10,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.heizi.flashing_tool.fastboot.fileInput
 import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
 import me.heizi.flashing_tool.fastboot.repositories.PartitionInfo
-import me.heizi.flashing_tool.fastboot.fileInput
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
 import me.heizi.kotlinx.logger.debug
 
@@ -25,7 +25,7 @@ fun dialogOfFlashing(
     runner: DeviceRunner,
     isFlashDialogShowState: MutableState<Boolean> = mutableStateOf(false),
 ) {
-    var isFlashDialogShow by remember { isFlashDialogShowState }
+    var isFlashDialogShow by isFlashDialogShowState
     if (isFlashDialogShow) {
         var path by defaultPathPartitionInfo
         var isAVBEnable by remember { mutableStateOf(false) }

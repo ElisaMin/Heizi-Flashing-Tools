@@ -1,28 +1,33 @@
 package me.heizi.flashing_tool.fastboot.screen.panel
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.*
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tunjid.me.core.ui.dragdrop.dropTarget
 import me.heizi.flashing_tool.fastboot.repositories.DeviceRunner
 import me.heizi.flashing_tool.fastboot.repositories.FastbootDevice
 import me.heizi.flashing_tool.fastboot.repositories.PartitionInfo
 import me.heizi.flashing_tool.fastboot.repositories.PartitionType
+import me.heizi.flashing_tool.fastboot.screen.defaultPathPartitionInfo
 import me.heizi.flashing_tool.fastboot.screen.dialogOfFlashing
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
     val isDialogShow = mutableStateOf(false)
@@ -41,15 +46,31 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
         modifier = Modifier.padding(top=8.dp).padding(horizontal = 8.dp)
             .fillMaxSize()
     ) {
-        OutlinedTextField(type, onValueChange = { type = it }, modifier = Modifier.fillMaxWidth().background(Color.White), placeholder = {
-            Text("搜索分区或输入分区名称")
-        }, trailingIcon = {
-            IconButton({
-                isDialogShow.value =true
-            }) {
-                Icon(Icons.Default.Send,"刷入")
+
+        OutlinedCard (modifier = Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.padding(16.dp).padding(vertical = 14.dp).weight(1f)) {
+                    if (type.isEmpty()) Text("输入分区名称搜索或点击小飞机直接刷入分区，将文件拖拽到下方分区按钮可快速启动刷入操作。", overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    BasicTextField(type,onValueChange = { type = it }, modifier = Modifier.fillMaxWidth())
+                }
+                IconButton({
+                    isDialogShow.value =true
+                }) {
+                    Icon(Icons.Default.Send,"刷入")
+                }
             }
-        })
+
+        }
+
+//        OutlinedTextField(type, onValueChange = { type = it }, modifier = Modifier.fillMaxWidth().background(Color.White), placeholder = {
+//            Text("搜索分区或输入分区名称")
+//        }, trailingIcon = {
+//            IconButton({
+//                isDialogShow.value =true
+//            }) {
+//                Icon(Icons.Default.Send,"刷入")
+//            }
+//        })
         Box(Modifier.padding(top = 8.dp))
 //        var scrollstate by remember { mutableStateOf(0f) }
 //        Box(
@@ -88,13 +109,16 @@ fun panelPartition(partitionInfos:List<PartitionInfo>, device: FastbootDevice) {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun partition(info: PartitionInfo, runner: DeviceRunner, modifier: Modifier = Modifier,) {
+    var isSelected by remember { mutableStateOf(false) }
     val isFlashDialogShowState: MutableState<Boolean> = mutableStateOf(false)
     dialogOfFlashing(info, runner, isFlashDialogShowState)
     fun erase() {
         runner run "erase ${info.name}"
     }
+    val background = if (isSelected) CardDefaults.cardColors(MaterialTheme.colorScheme.primary,MaterialTheme.colorScheme.onPrimary) else CardDefaults.cardColors()
 
     var extend by remember { mutableStateOf(false) }
     Card(
@@ -103,8 +127,26 @@ fun partition(info: PartitionInfo, runner: DeviceRunner, modifier: Modifier = Mo
             .clickable {
                 extend = true
             }
+            .dropTarget(
+                onDropped = {uri,_->
+                    if (uri.size==1) defaultPathPartitionInfo.value = uri[0].path
+                    isFlashDialogShowState.value = true
+                    true
+                },
+                onDragEntered = {
+                    isSelected = true
+                }, onDragEnded = {
+                    isSelected = false
+                },
+                onDragStarted = { _, _ ->
+                    true
+                }, onDragExited = {
+                    isSelected = false
+                }
+            )
             .then(modifier),
-        elevation = 2.dp
+        colors = background
+//        elevation = 2.dp
     ) {
         Row(Modifier.padding(8.dp)) {
             Column {

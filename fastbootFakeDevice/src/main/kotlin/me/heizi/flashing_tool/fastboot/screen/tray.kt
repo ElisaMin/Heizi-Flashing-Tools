@@ -14,6 +14,7 @@ import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.TrayState
 import me.heizi.flashing_tool.fastboot.Resources
 import me.heizi.flashing_tool.fastboot.repositories.Fastboot
+import me.heizi.flashing_tool.fastboot.screen.Trays.Companion.isRunning
 import javax.imageio.ImageIO
 
 abstract class TraysViewModel {
@@ -58,34 +59,34 @@ abstract class Trays(
 
     final override fun onStartCollecting() {
         Fastboot.isScanning = true
-        enableStart = false
+        isRunning.value = true
     }
 
     final override fun onStopCollecting() {
         Fastboot.isScanning = false
-        enableStart = true
+        isRunning.value = false
+    }
+    companion object {
+        var isRunning = mutableStateOf(true)
     }
 }
 
 @Composable
 private fun TraysViewModel.Trays(applicationScope: ApplicationScope) {
-
-
-    val trayState = remember { state }
     val isConnected by remember { connectedState }
     val iconTray = ImageIO.read( if (isConnected) Resources.Urls.connected else Resources.Urls.disconnect).toPainter()
     val tooltip = if (isConnected) "设备已连接" else "Fastboot未连接设备"
 
     applicationScope.Tray(
-        state = trayState, icon = iconTray,tooltip = tooltip, onAction = ::onTrayIconSelected
+        state = state, icon = iconTray,tooltip = tooltip, onAction = ::onTrayIconSelected
     ) {
 
-        Item("Start Collection", enabled = !enableStart) {
+        Item("启动设备监听", enabled = !isRunning.value) {
             onStartCollecting()
         }
-        Item("Stop Collecting", enabled = enableStart) {
+        Item("停止监听设备", enabled = isRunning.value) {
             onStopCollecting()
         }
-        Item("exit"){ exit() }
+        Item("退出软件"){ exit() }
     }
 }

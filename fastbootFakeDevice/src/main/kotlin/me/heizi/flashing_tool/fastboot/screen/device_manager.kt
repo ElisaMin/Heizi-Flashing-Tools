@@ -20,12 +20,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
+import com.tunjid.me.core.ui.dragdrop.PlatformDropTargetModifier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import me.heizi.flashing_tool.fastboot.extendableCard
@@ -41,8 +47,21 @@ fun DeviceManagerWindow(
     viewModel: DeviceManagerViewModel,
     onExit:()->Unit,
 ) {
-    Window(onExit,title = viewModel.device.serialId,icon = fastbootIconBuffered.toPainter()) {
-        viewModel.DeviceManagerScreen()
+    Window(
+        onExit,title = viewModel.device.serialId,
+        icon = fastbootIconBuffered.toPainter(),
+        state = WindowState(
+            size = DpSize(900.dp,700.dp),
+            position = WindowPosition.Aligned(Alignment.Center)
+        )
+    ) {
+        val density = LocalDensity.current.density
+        val drop = remember {
+            PlatformDropTargetModifier(
+                density,window
+            )
+        }
+        viewModel.DeviceManagerScreen(drop)
     }
 }
 
@@ -160,13 +179,16 @@ fun AboutDialog(onClose: () -> Unit) {
 }
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun DeviceManagerViewModel.DeviceManagerScreen() {
+fun DeviceManagerViewModel.DeviceManagerScreen(drop:Modifier = Modifier) {
     withCompose()
     if (isAboutOpening) AboutDialog { isAboutOpening = false }
-    if (isOpenDetail)
-        DeviceGetVarInfo(info.toArray()) { isOpenDetail = false}
-    Scaffold(Modifier.fillMaxSize(), topBar = {
-        SmallTopAppBar(title = { Text(device.serialId, style = MaterialTheme.typography.displayLarge) })
+    if (isOpenDetail) DeviceGetVarInfo(info.toArray()) { isOpenDetail = false}
+    
+    
+    Scaffold(Modifier.fillMaxSize().then(drop), topBar = {
+        SmallTopAppBar(title = { Text(device.serialId, style = MaterialTheme.typography.displayLarge, maxLines = 1, overflow = TextOverflow.Ellipsis) }, actions = {
+            Button(::launchDevicesSelector) { Text("切换设备") }
+        })
     }) {
         Row (
             modifier = Modifier
@@ -214,8 +236,8 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
                         }
                     }
                 }
-                panelPartition(info.partitionInfos,device)
 
+                panelPartition(info.partitionInfos,device)
 
             }
         }
@@ -226,7 +248,8 @@ fun DeviceManagerViewModel.DeviceManagerScreen() {
 
 
 class DeviceManagerViewModelImpl(
-    override val device: FastbootDevice
+    override val device: FastbootDevice,
+    private val launchSelector:()->Unit = {}
 ):Operates(device.runner) {
     override var isAboutOpening: Boolean by mutableStateOf(false)
     override var isOpenDetail: Boolean by mutableStateOf(false)
@@ -234,6 +257,9 @@ class DeviceManagerViewModelImpl(
     override val isSlotA: Boolean? by mutableStateOf(device.info.value.simple.currentSlotA)
     override val deviceSimpleInfo = mutableStateMapOf<String,String>()
 
+    override fun launchDevicesSelector() {
+        launchSelector()
+    }
     @Composable
     override fun withCompose() {
         device.runner.start()
@@ -278,6 +304,7 @@ interface DeviceManagerViewModel {
     val info:FastbootDeviceInfo
     val isSlotA: Boolean?
     val deviceSimpleInfo: Map<String, String>
+    fun launchDevicesSelector()
     @Composable
     fun withCompose()
     fun switchPartition(isSlotA: Boolean)

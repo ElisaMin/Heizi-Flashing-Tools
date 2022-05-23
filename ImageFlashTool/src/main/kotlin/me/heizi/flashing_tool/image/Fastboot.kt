@@ -26,6 +26,7 @@ object Fastboot {
     private fun deviceScanner() = scope.launch {
         while (isActive) {
             this@Fastboot.debug("starting another collect job")
+//            if (test) devicesCache.emit(arrayOf("I'mFuckingMissYou")) else
             Shell("fastboot devices").also {
                 delay(1000)
                 if (it.isActive) it.cancel()

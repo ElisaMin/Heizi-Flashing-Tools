@@ -2,9 +2,11 @@
 package me.heizi.flashing_tool.image
 
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import com.arkivanov.decompose.DefaultComponentContext
@@ -31,7 +33,14 @@ fun getFileOrEnd(file:String) =
 
 fun startApplication(file: File){
     println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
-    singleWindowApplication(title = "",icon = style.Image.flashable.toPainter(), state = WindowState(size = DpSize(460.dp,600.dp))) {
+    singleWindowApplication(
+        title = "",
+        icon = style.Image.flashable.toPainter(),
+        state = WindowState(
+            size = DpSize(460.dp,600.dp),
+            position = WindowPosition(Alignment.Center)
+        )
+    ) {
         val lifecycle = remember { LifecycleRegistry() }
         val context = remember { DefaultComponentContext(lifecycle)}
         val component = remember { RootComponent(file,context) }
