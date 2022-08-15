@@ -26,19 +26,23 @@ import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
 import me.heizi.flashing_tool.fastboot.repositories.Fastboot
 import me.heizi.flashing_tool.fastboot.screen.Trays.Companion.isRunning
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
+import me.heizi.kotlinx.compose.desktop.core.components.DeviceCantFoundBtn
 import kotlin.system.exitProcess
 
 @Composable
 @Preview
 private fun preview() {
     object : ScannerViewModel {
+        override var isNotifying: Boolean = false
         override val traysViewModel: TraysViewModel = object : TraysViewModel() {
             override fun exit() {}
             override fun onTrayIconSelected() {}
             override fun onStopCollecting() {}
             override fun onStartCollecting() {}
         }
-        override val devices: List<String> get() = listOf("LMV600TM4bf4e87d")
+        override val devices: List<String> get() = listOf(
+//            "LMV600TM4bf4e87d"
+        )
         override fun onDeviceSelected(serial: String) { exitProcess(0) }
         override fun onInit() {}
     } .ScannerScreen()
@@ -73,6 +77,7 @@ fun ScannerDialog(viewModel: ScannerViewModel,exitApp:()->Unit = {},onCloseReque
     }
 }
 abstract class FlowCollectedScannerViewModel:ScannerViewModel {
+    final override var isNotifying: Boolean by mutableStateOf(false)
     final override val devices = mutableStateListOf<String>()
     private var gotDeviceCollected = false
     override fun onInit() {
@@ -95,6 +100,7 @@ abstract class FlowCollectedScannerViewModel:ScannerViewModel {
 interface ScannerViewModel {
     val traysViewModel:TraysViewModel
     val devices:List<String>
+    var isNotifying:Boolean
     fun onDeviceSelected(serial:String)
     fun onInit()
 }
@@ -137,6 +143,8 @@ fun ScannerViewModel.ScannerScreen(
         } else Spacer(Modifier.height(6.dp))
 
         AboutExtendCard(true)
+
+        if (devices.isEmpty()) DeviceCantFoundBtn()
 
         LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             items(devices) {

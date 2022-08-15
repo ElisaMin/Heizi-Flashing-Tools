@@ -28,6 +28,7 @@ import me.heizi.flashing_tool.image.Fastboot
 import me.heizi.flashing_tool.image.ViewModel
 import me.heizi.flashing_tool.image.style
 import me.heizi.kotlinx.compose.desktop.core.components.ChipCheckBox
+import me.heizi.kotlinx.compose.desktop.core.components.DeviceCantFoundBtn
 
 
 class SelectorComponent(
@@ -70,6 +71,8 @@ fun WaitingViewModel.SelectorScreen() = Column {
         if (isWaiting) Column {
             LinearProgressIndicator(Modifier.fillMaxWidth())
             Text("正在等待设备.....")
+            Box(Modifier.weight(1f))
+            DeviceCantFoundBtn()
         } else {
             val scroll = rememberLazyListState()
             LazyColumn(modifier = style.padding.end,scroll) { items(devices.toList()) { (device,checked) ->

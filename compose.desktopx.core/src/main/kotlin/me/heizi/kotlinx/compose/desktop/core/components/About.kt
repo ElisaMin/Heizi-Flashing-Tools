@@ -1,10 +1,10 @@
 package me.heizi.kotlinx.compose.desktop.core.components
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,11 +14,32 @@ import androidx.compose.ui.unit.sp
 import java.awt.Desktop
 import java.net.URI
 
-@Preview
-@Composable
-private fun preview() {
-    AboutExtendCard()
+fun openLink (url:String):Boolean = (
+        Desktop.isDesktopSupported() &&
+                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
+).also {
+        if (it) Desktop.getDesktop().browse(URI(url))
 }
+
+@Composable
+fun DeviceCantFoundBtn() {
+    var isDisplay by remember {
+        mutableStateOf(false)
+    }
+    if (isDisplay) SelectionContainer(Modifier.fillMaxWidth().padding(4.dp)) {
+        Text("https://bbs.lge.fun/thread-12824.htm")
+    } else TextButton({
+            isDisplay =  !openLink("https://bbs.lge.fun/thread-12824.htm") },Modifier.fillMaxWidth().padding(4.dp)) {
+            Text("等了许久也找不到设备？")
+    }
+
+}
+
+//@Preview
+//@Composable
+//private fun preview() {
+//    AboutExtendCard()
+//}
 @Composable
 fun AboutExtendCard(init: Boolean = false) {
     val isExtend = remember {
@@ -28,11 +49,7 @@ fun AboutExtendCard(init: Boolean = false) {
         mutableStateOf<String?>(null)
     }
     fun launchUrlOrDisplay (url:String) {
-        if (Desktop.isDesktopSupported()&&Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            Desktop.getDesktop().browse(URI(url))
-        } else {
-            failedUrl = url
-        }
+        if (!openLink(url)) failedUrl = url
     }
     ExtendableCard(isExtend, modifier = Modifier.fillMaxWidth()
         , title = { Text("关于软件/捐赠/Bug") }
