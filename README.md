@@ -1,66 +1,129 @@
 ![logo](docs/wangling.webp)
-# HFT - 刷机亡灵
-`Heizi Flashing Tools` `黑字刷机工具箱`又名 `刷级亡灵`
-> 这套软件本来取名为hft黑字刷机套件，但感觉太拗口了，所以改了，叫刷机亡灵套件。所以不管叫hft也好叫刷机亡灵也好，都是同一个软件哈。
+# Heizi Flash Tools
+它有很多名字，你可以选择其中之一来称呼这一套工具。
+* HFT
+* 刷级亡灵
+* 黑字刷机工具箱
+* Heizi Flash Tools
 
-## What is HFT？ 刷级亡灵的具体定义
-HFT主要围绕ADB和Fastboot做GUI处理，致力于可高度扩展、可下意识使用的刷机软件，以友好易用的方式连结小白和大佬。
-> f**k the manual
 
-## Why HFT? 为何非得是刷级亡灵?
-刷机亡灵不是一步就成，而是对Fastboot使用的可能性探索缓慢前进的成果。
-使用工具、总结使用规律、创造新的工具，这是第三个回合，你一定会认同它。
-### 第一次操作的简化：Batch脚本
-> * 项目地址 https://github.com/ElisaMin/LGG7-batch-Scripts  
+### 快速预览该软件的魅力：
+<iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
 
-如果你有幸使用过fastboot刷机，那么你一定会知道整个过程非常繁琐，首先你需要打开一个终端 确保这个终端可以找到Fastboot.exe，然后输入fastboot 和一些别的指令，偶尔刷一次是可以的，但是多次刷入非常难受。  
-然后我学习了一点Batch脚本对整个过程进行了简化，打开 选择 拖入文件 刷入，扔掉了手打指令，互动式的刷机，非常棒的体验，即使后面我对这个工具进行了图形化进行推广，但还是不敌这个的流畅体验。  
-![lazybox](docs/lazybox.jpg)
-### 第二次简化：图形化工具站
+### 更多HFT使用教程：
+<iframe src="//player.bilibili.com/player.html?aid=423897399&bvid=BV1y3411j7xK&cid=507144254&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>   
+
+<iframe src="//player.bilibili.com/player.html?aid=641789961&bvid=BV18Y4y157R1&cid=727635765&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+
+### 使用了该软件的教程：
+* LG-V50/V50S/G8X保姆级食用安卓12教程  
+  https://www.coolapk.com/feed/38297082?shareKey=NzEwZDliN2Y2NGQyNjMxNjE5MDU~&shareUid=3174533&shareFrom=com.coolapk.market_12.4.2
+* LG V60 解BL教程  
+  https://bbs.lge.fun/thread-2551.htm
+* LG V60三十秒刷TWRP  
+  https://www.bilibili.com/video/BV1LS4y1G7b9
+
+
+### 最新版本：0.0.7
+下载地址：任选其一
+* https://github.com/ElisaMin/Heizi-Flashing-Tools/releases
+* HFT(刷机亡灵)交流群   
+  https://jq.qq.com/?_wv=1027&k=NEzVueGC  
+  549674080
+* https://dl.lge.fun/HeiziFlashTools/
+
+
+# 对于开发者/功能讨论
+本项目遵循GPLv3开源协议。
+## 如果有任何建议、Bug：
+可以选择加入群聊进行讨论也可以开设Issue讨论。
+* 549674080  
+  https://jq.qq.com/?_wv=1027&k=NEzVueGC
+## sub - modules
+开发者可以看看这里有多少个子模块
+
+* Image Flash Tool (IFT)  
+依赖：Khell/Logger/NativeFileDialog/ComposeX
+* Fake Fastboot Device (FFT)  
+依赖：Khell/Logger/NativeFileDialog/ComposeX
+* ADB Sideload Tool (AST)  
+  积极开发中...  
+
+
+* compose.desktop.core  
+  用于Compose扩展
+    * 本来有Compose的[Fragment](https://github.com/ElisaMin/Heizi-Flashing-Tools/tree/fragment) 实现，但现在替换成了[Decompose](https://github.com/arkivanov/Decompose) 就把Fragment删了。#2
+* Khell   
+  Kotlin Shell ext lib
+* logger  
+  Kotlin Log ext lib
+* Native File Dialog  
+  call native file dialog by jna
+
+
+# What is HFT ? 刷级亡灵的具体定义
+## 大家都能听得懂的定义
+一个由各种各司其职的工具组成的桌面刷机工作站，但还在开发中，一切都会变。现在主要围绕ADB和Fastboot做GUI处理，致力于可高度扩展、可下意识使用的刷机软件，以友好易用的方式连结小白和大佬。
+> just f**k the manual
+
+## 都有啥各司其职的刷机工具？
+1. Fastboot设备管理工具    
+  **F**stboot **F**lash **T**ool , FFT  
+   ![FastbootFlashTool](docs/fft.png)  
+   整个工具基于Fastboot指令发展而来，在此之上实现了比较人性化的界面，同时针对不同的设备进行优化处理。所以你可以大胆的扔掉指令和黑色的垃圾CMD窗口，借助这个美丽的图形界面，进行切换AB分区、重启、查看详细信息和进行分区管理操作。  
+  状态: 完全可用
+
+2. 分区镜像刷入工具  
+  **I**mage **F**lash **T**ool , IFT  
+  ![Image Flash Tool](docs/ift.png)  
+  你可以使用这个工具打开一个Boot镜像、System、Vbmeta分区镜像等，按照图形界面上的帮助，进行您的安装操作。例如你要刷whyred_twrp_recovery.img这个红米的twrp，不需要打开什么软件、cmd，直接双击文件，别告诉我你看不懂这个是啥意思。
+  视频：【刷机工具】LG V60 一键刷TWRP | https://www.bilibili.com/video/BV1LS4y1G7b9  
+  状态: 完全可用
+3. APK/ZIP安装工具  
+   状态: 计划中
+
+更多还在脑海中... 如：
+* ADB管理器工具
+* 指令执行器
+* QPST Alike
+
+## Why HFT? HFT的构思以及形成的原因 
+长期以来，大家都在用CLI刷机，在熟悉操作后实际上你会发现CLI是非常简便的，Fastboot基本上都是**大白话**的指令，不用脑子思考就能`表达`一个`需求`，各种教程也在教授这种刷机方式，教他们怎么打开CMD什么的。
+> 指令: fastboot flash boot_a bootImage  
+> 翻译: fb模式     刷   启动分区A槽 文件路径
+
+Well，有点小聪明的人们会很快就上手，就像是连线一样，把`我要给手机用这个文件刷BootA分区`重新解释并套进`fastboot [command] [args1] [args2] `模板中。但对于没那么聪明的大部分来说，你一定会知道整个过程非常繁琐，首先你需要打开一个终端 确保这个终端可以找到Fastboot.exe，然后输入fastboot 和一些别的指令，偶尔刷一次是可以的，但是多次刷入非常难受。
+
+### Batch脚本
+LG G5，我的第一台LG设备，型号为H830，Root它需要借助AndroidM的DirtyCow漏洞，所以要执行一堆复杂的指令代码才能Root，每次砖了就得刷一次固件、执行几个步骤的代码，但我们并不需要执行那么多代码，因为XDA论坛上公布了一个为此而生的脚本，非常精美。一个Batch脚本能检测设备是什么机型，并且让用户自行选择是仅仅安装SU还是连Rec一起刷入。在无聊之际，我翻译了这个全是英文的脚本，也因此得学，制作了一个非常经典的工具脚本。
+> * 项目地址 https://github.com/ElisaMin/LGG7-batch-Scripts
+    ![lazybox](docs/lazybox.jpg)
+
+这里面简化了很多操作，使用键盘来完成交互式选择模式也让很多的刷机小白感受到熟悉。将你至于用户的位置，在打开后，选择2会跳转到另外一个界面，它自动检测你的设备是否插入，在检测到后让你把文件拖进窗口内，这一切都非常自然。
+
+**对比来说，它更加拟人化，也因此被广泛流传。**
+
+### 图形化
+在尝到甜头后，我希望一个软件能更加亲近人类多一点，开始了对鼠标操作的探索。
+
+#### Swing Version (Heizi Tool)
+第一次尝试： 总的来说，它是失败的。
 > * 项目地址 https://github.com/ElisaMin/kotlin-swing-dsl-and-simple
-
 ![heizitools](docs/ht.jpg)   
-我没有停下对刷机工具的探索，我写了一个图形化的工具，我花了一堆心思在上面思考fastboot的xxx功能应该怎么通过图形化展现出来。回过头来看这次的探索是阴沟里翻船了。这整个界面看起来比较混乱，属于对fastboot抽象成为图形界面的直白展示，并没有多人性化，而且文件选择器非常难用，每次都得疯狂的找，即使是作为开发者的我 也没有怎么使用这个软件。  
+
+在无聊之际思考着怎么把fastboot的xxx功能应该怎么通过图形化展现出来，得到了这个看起来云里雾里的界面。视角至于指令拼接中。在此，Fastboot得到了直白的图形化展示，并没有多人性化，就像是没有毛、耳朵、皮肤，甚至肛门装摄像头的电子猫宠物，它的确实现了猫的抽象价值，能跑能运行，但爱谁谁买去。  
+而且文件选择器非常难用，每次都得疯狂的找，即使是作为开发者的我 也没有怎么使用这个软件。
+> 如果你发现那个软件的文件选择器长这个样子那么一定是用Java开发的。
 ![fileChooser](docs/filechooser.jpg)  
-就这个文件选择器，谁用谁知道的＊＊，如果你发现那个软件的文件选择器长这个样子那么一定是用Java开发的。
-简单来说之前开发的软件都是一个庞大的工作站，你得打开这个工作站，才能选择里面的其中一个小功能使用。  
-### 第三次简化：刷机套件
-**我对Fastboot刷机工具的探索到这里进入了一个新的篇章。**  
+记得小时候就用过这玩意，也是觉得像屎一样。  
+
+**这就有了进步空间。**
+
+#### HFT
+总结后，我对刷机方式进行了新的思考（又是闲暇时间的瞎想~）。  
+**如果，我是说如果，它不是抽象一个Fastboot而是一个设备呢？或者抽象一个镜像，重新定义一种刷机方式。像是双击就能安装进设备里面！**   
 ![Image Flash Tool](docs/ift.png)  
 所以这次我改变了逻辑，现在的刷机工具更像是一个文件编辑器，使用逻辑是你打开一个文件 处理这个文件，然后拔＊无情。基本上有过一定软件使用经验的人，都能做到下意识使用这款软件，因为这就像是你在打开某个图片音乐，然后浏览内容。     
 
-## HFT套件里面都有啥
-QPST用过吧？全称 `Qualcomm Product Support Tools` 安装之后就能用QFIL等等等等，开始菜单里面也会多出很多个软件，软件UI参差不齐，有比较现代的，也有上个世纪风格的。类似于Qpst，Hft在安装后也会安装几个子软件进去，可供完成一些刷机的操作。  
 
-### FFT 
-![FastbootFlashTool](docs/fft.png)  
-Fastboot FlashTool，中文译名Fastboot管理器，有切换AB分区、分区管理等等操作，基本上满足了大部分的Fastboot刷机需求。
-### IFT
-![Image Flash Tool](docs/ift.png)  
-Image FlashTool 镜像刷入工具，在电脑上面操作的话就是双击打开一个镜像，按照指示疯狂下一步就刷好机了，例如你要刷whyred_twrp_recovery.img这个红米的twrp，不需要打开什么软件、cmd，直接双击文件，别告诉我你看不懂这个是啥意思。
-
-## 实战 
-### LG V60三十秒刷TWRP 
-https://www.bilibili.com/video/BV1LS4y1G7b9
-### LG V60 解BL教程
-https://bbs.lge.fun/thread-2551.htm
-
-# modules
-开发者可以看看这里有多少个子模块
-### Image Flash Tool (IFT)
-依赖：Khell/Logger/NativeFileDialog/ComposeX  
-不用多说
-### Fake Fastboot Device (FFT)
-依赖：Khell/Logger/NativeFileDialog/ComposeX  
-不用多说
-### compose.desktop.core
-本来有Compose的[Fragment](https://github.com/ElisaMin/Heizi-Flashing-Tools/tree/fragment) 实现，
-但现在替换成了[Decompose](https://github.com/arkivanov/Decompose) 就把Fragment删了。
-主要是再整一套lifecycle之类的时间太慢了，而且还有问题（issues #2 ）。现在就剩一些通用的组件这样了。
-### Khell
-kotlin shell ext lib 
-### logger
-kotlin log ext lib
-### Native File Dialog
-call native file dialog by jna
 
