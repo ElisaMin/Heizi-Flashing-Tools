@@ -6,6 +6,7 @@
 * 黑字刷机工具箱
 * Heizi Flash Tools
 
+> 注意：有用户反馈360会阻断该软件的IO，请退出各种管家软件再运行本软件。
 
 ### 快速预览该软件的魅力：
 <iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
