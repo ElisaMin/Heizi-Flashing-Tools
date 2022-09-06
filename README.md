@@ -9,12 +9,19 @@
 > 注意：有用户反馈360会阻断该软件的IO，请退出各种管家软件再运行本软件。
 
 ### 快速预览该软件的魅力：
-<iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+<iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>    
+<details> https://www.bilibili.com/video/BV1LS4y1G7b9 </details>  
 
 ### 更多HFT使用教程：
 <iframe src="//player.bilibili.com/player.html?aid=423897399&bvid=BV1y3411j7xK&cid=507144254&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>   
+<details>
+https://www.bilibili.com/video/BV1y3411j7xK
+</details>
 
-<iframe src="//player.bilibili.com/player.html?aid=641789961&bvid=BV18Y4y157R1&cid=727635765&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+<iframe src="//player.bilibili.com/player.html?aid=641789961&bvid=BV18Y4y157R1&cid=727635765&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>  
+<details>
+https://www.bilibili.com/video/BV18Y4y157R1
+</details>
 
 ### 使用了该软件的教程：
 * LG-V50/V50S/G8X保姆级食用安卓12教程  
