@@ -25,7 +25,7 @@ allprojects {
         }
     }
     tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-
+        minimize()
         manifest.attributes["Manifest-Version"] = Versions.HFT
     }
 }
@@ -33,7 +33,7 @@ allprojects {
 plugins {
     kotlin("jvm") version me.heizi.gradle.Versions.kotlin
     id ("org.jetbrains.compose") version  me.heizi.gradle.Versions.compose
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 tasks.getByName("build").dependsOn("clean")
 
