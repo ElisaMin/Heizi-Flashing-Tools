@@ -5,9 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.extensions.compose.jetbrains.Children
-import com.arkivanov.decompose.router.push
-import com.arkivanov.decompose.router.router
+import com.arkivanov.decompose.ExperimentalDecomposeApi
+import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.push
 import me.heizi.flashing_tool.image.screens.*
 import java.io.File
 
@@ -29,16 +31,19 @@ class RootComponent(
         override var subtitle: String by mutableStateOf("")
     }
 
+    @OptIn(ExperimentalDecomposeApi::class)
     @Composable
     fun render() {
-        Children(router.state) {
+        Children(stack) {
             viewModel.Container {
                 it.instance.render()
             }
         }
     }
 
-    private val router = router<Screens, Component<out ViewModel>>(
+    private val navigation = StackNavigation<Screens>()
+    private val stack = childStack(
+        source = navigation,
         initialConfiguration = Screens.Launcher(file),
         childFactory = ::createChild
     )
@@ -97,14 +102,14 @@ class RootComponent(
     }
     private fun launch(context: Context) {
         if (context.devices.isEmpty()) {
-            router.push(Screens.DeviceChooser(context))
+            navigation.push(Screens.DeviceChooser(context))
             return
         }
         if (!context.infoChecked) {
-            router.push(Screens.InfoCheck(context))
+            navigation.push(Screens.InfoCheck(context))
             return
         }
-        router.push(Screens.Invoke(context))
+        navigation.push(Screens.Invoke(context))
 
     }
     private fun updateTitle(title:String? = null,subtitle:String? = null) {
