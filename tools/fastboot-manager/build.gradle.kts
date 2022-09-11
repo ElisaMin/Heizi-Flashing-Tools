@@ -1,9 +1,6 @@
 
 import me.heizi.gradle.dependencies
-import me.heizi.gradle.versions
 
-group = "me.heizi.flashing_tool"
-version = versions["HFT"]
 
 dependencies(
     coroutine = true,

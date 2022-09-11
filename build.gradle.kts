@@ -4,6 +4,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 allprojects {
+    group =
+        if (this.projectDir.toPath().parent.fileName.toString() == "libs")
+            "me.heizi.kotlinx"
+        else "me.heizi.flashing_tool"
+    version = versions["HFT"]
+
     apply (plugin = "org.jetbrains.kotlin.jvm")
     apply (plugin = "com.github.johnrengelman.shadow")
 
@@ -43,8 +49,7 @@ plugins {
 }
 
 
-group = "me.heizi.flashing_tool"
-version = versions["HFT"]
+
 
 tasks.getByName("build").dependsOn("clean")
 

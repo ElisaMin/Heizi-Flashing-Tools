@@ -1,7 +1,6 @@
-
 import me.heizi.gradle.dependencies
 
-
 dependencies(
-    reflect = true,
+    log = true,
+    khell = true
 )
