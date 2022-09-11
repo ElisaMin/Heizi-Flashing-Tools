@@ -16,12 +16,12 @@ fun Project.dependencies(
     composex: Boolean = false,
     fileDialog:Boolean = false,
     reflect: Boolean = false
-): Unit = this.dependencies {
+): Unit = dependencies {
 
     val versions =  rootProject.versions
 
     implementation(kotlin("stdlib"))
-//    implementation("org.jetbrains.compose.material3:material3:${versions["compose"]}")
+
     if (khell) {
         if (!coroutine) dependencies(coroutine=true)
         implementation("me.heizi.kotlinx:khell:${versions["khell"]}")
@@ -42,9 +42,9 @@ fun Project.dependencies(
         implementation("net.java.dev.jna:jna-platform:${versions["jna"]}")
     }
     if (composex)
-        implementation(project(":compose.desktopx.core"))
+        implementation(project(":compose-ext-core"))
     if (fileDialog)
-        implementation(project(":fileDialog"))
+        implementation(project(":native-file-dialog"))
     if (reflect)
         implementation(kotlin("reflect"))
 

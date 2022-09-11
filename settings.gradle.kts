@@ -17,11 +17,25 @@ pluginManagement {
 
 rootProject.name = "HeiziToolX"
 
-include("khell")
-include("logger")
-include("ImageFlashTool")
-include("compose.desktopx.core")
-include("fastbootFakeDevice")
-include("nativeFileDialog")
-findProject(":nativeFileDialog")?.name = "fileDialog"
-include("utils")
+files("libs","tools").forEach { it
+    .listFiles()
+    ?.filter { it.isDirectory }
+    ?.forEach { dir ->
+        include(dir.name)
+        project(":"+dir.name).projectDir = dir
+    }
+}
+
+//
+//include("libs:compose-ext-core")
+//include("libs:native-file-dialog")
+//include("tools:fastboot-manager")
+//include("tools:image-install-wizard")
+// ?.name 
+//     = "compose.ext.core"
+// findProject(":nativeFileDialog")?.name 
+//     = "compose.ext.file_dialog"
+// include("tools/")
+// include("fastbootFakeDevice")
+// include("nativeFileDialog")
+// include("utils")
