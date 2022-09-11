@@ -1,34 +1,23 @@
 
-import me.heizi.gradle.Libs
-import me.heizi.gradle.Versions
-import org.jetbrains.compose.compose
+import me.heizi.gradle.dependencies
+import me.heizi.gradle.versions
 
-plugins {
-    kotlin("jvm")
-    id("org.jetbrains.compose")
-    id("com.github.johnrengelman.shadow")
-}
 
-repositories {
-    google()
-    mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
-}
+dependencies(
+    coroutine = true,
+    reflect = true,
 
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(project(":khell"))
-    implementation(project(":logger"))
-    implementation(project(":compose.desktopx.core"))
-    implementation(compose.desktop.currentOs)
-    implementation(Libs.Decompose)
-    implementation(Libs.DecomposeX)
-    implementation(Libs.M3)
-    implementation(Libs.Coroutine)
-}
+    log = true,
+    khell = true,
+    composex = true,
+    fileDialog = true,
+
+    decompose = true,
+)
 
 group = "me.heizi.flashing_tool.image"
-version = Versions.HFT
+version = versions["HFT"]
+
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.image.Main"
 }

@@ -1,38 +1,21 @@
 
-import me.heizi.gradle.Libs
-import me.heizi.gradle.Versions
-import org.jetbrains.compose.compose
-
-plugins {
-    kotlin("jvm")
-    id("org.jetbrains.compose")
-    id("com.github.johnrengelman.shadow")
-}
+import me.heizi.gradle.dependencies
+import me.heizi.gradle.versions
 
 group = "me.heizi.flashing_tool"
-version = Versions.HFT
+version = versions["HFT"]
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
-}
+dependencies(
+    coroutine = true,
+    reflect = true,
 
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(project(":khell"))
-    implementation(project(":logger"))
-    implementation(project(":fileDialog"))
-    implementation(project(":compose.desktopx.core"))
-    implementation(Libs.Coroutine)
-    implementation(Libs.M3)
-    implementation(compose.desktop.currentOs)
-    implementation(kotlin("reflect"))
-}
+    log = true,
+    khell = true,
+    composex = true,
+    fileDialog = true,
 
-
-tasks.test {
-    useJUnit()
-}
+    decompose = true,
+)
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     manifest.attributes["Main-Class"] = "me.heizi.flashing_tool.fastboot.Main"

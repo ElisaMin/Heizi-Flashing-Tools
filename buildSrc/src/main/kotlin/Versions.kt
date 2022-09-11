@@ -1,26 +1,44 @@
 package me.heizi.gradle
 
+import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.provider.Property
+import java.util.*
+import kotlin.reflect.KProperty
 
 
-object Versions {
-    const val jna = "5.9.0"
-    const val HFT = "0.0.8"
-    const val compose = "1.2.0-alpha01-dev774"
-    const val decompose = "1.0.0-alpha-04"
-    const val kotlin = "1.7.10"
-    const val slf4j = "2.0.0"
+
+val Project.props get() = object : Getter<Properties> {
+    override fun get(key: String): Properties = Properties().apply {
+        file(key+".properties").inputStream().use(::load)
+    }
 }
-object Libs {
-    const val M3 = "org.jetbrains.compose.material3:material3:${Versions.compose}"
-    const val Coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1"
-    const val DecomposeX = "com.arkivanov.decompose:extensions-compose-jetbrains:${Versions.decompose}"
-    const val Decompose = "com.arkivanov.decompose:decompose-jvm:${Versions.decompose}"
-    object SLF4J {
-        const val Api = "org.slf4j:slf4j-api:${Versions.slf4j}"
-        const val J12 = "org.slf4j:slf4j-log4j12:${Versions.slf4j}"
+val ExtensionAware.prop: Versions get() = object : Versions {
+    override val extraPropertiesExtension: ExtraPropertiesExtension
+        get() = extensions.extraProperties
+
+    override fun get(key: String): String
+            = extraPropertiesExtension[key] as String
+}
+
+operator fun <T> Property<T>.setValue (thisRef:Any?, prop: KProperty<*>, value :T) {
+    set(value)
+}
+
+val ExtensionAware.versions
+    get() = object : Versions {
+        override val extraPropertiesExtension: ExtraPropertiesExtension
+            get() = extensions.extraProperties
     }
-    object JNA {
-        const val self = "net.java.dev.jna:jna:${Versions.jna}"
-        const val platform = "net.java.dev.jna:jna-platform:${Versions.jna}"
-    }
+//operator fun ExtraPropertiesExtension.get(string: String):String
+//    = get(string+".version") as String
+
+interface Versions:Getter<String> {
+    val extraPropertiesExtension: ExtraPropertiesExtension
+    override fun get(key:String):String =
+        extraPropertiesExtension[key+".version"] as String
+}
+interface Getter<T> {
+    operator fun get(key:String):T
 }

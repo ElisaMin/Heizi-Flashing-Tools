@@ -1,19 +1,12 @@
-import me.heizi.gradle.Libs
-import me.heizi.gradle.Versions
-plugins {
-    kotlin("jvm")
-}
+import me.heizi.gradle.dependencies
+import me.heizi.gradle.versions
+
 
 group = "me.heizi.kotlinx"
-version = Versions.HFT
+version = versions["HFT"]
 
-repositories {
-    mavenCentral()
-}
 
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(project(":logger"))
-    implementation(Libs.JNA.self)
-    implementation(Libs.JNA.platform)
-}
+dependencies(
+    jna = true,
+    log = true
+)
