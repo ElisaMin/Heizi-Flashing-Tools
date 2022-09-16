@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.kotlin
 
 
@@ -15,7 +16,8 @@ fun Project.dependencies(
     khell: Boolean = false,
     composex: Boolean = false,
     fileDialog:Boolean = false,
-    reflect: Boolean = false
+    reflect: Boolean = false,
+    compose: Boolean =true,
 ): Unit = dependencies {
 
     val versions =  rootProject.versions
@@ -28,7 +30,7 @@ fun Project.dependencies(
     }
     if (log) {
         api("me.heizi.kotlinx:khell-log:${versions["khell"]}")
-        implementation("org.slf4j:slf4j-log4j12:${versions["slf4j"]}")
+        compileOnly("org.slf4j:slf4j-log4j12:${versions["slf4j"]}")
     }
     if (coroutine)
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["coroutines"]}")
@@ -47,9 +49,17 @@ fun Project.dependencies(
         implementation(project(":native-file-dialog"))
     if (reflect)
         implementation(kotlin("reflect"))
-
+    if(compose) (ext["composeDependencies"] as Array<*>).forEach {
+        implementation(it as String)
+    }
 }
+val org.gradle.api.Project.`ext`: org.gradle.api.plugins.ExtraPropertiesExtension get() =
+    (this as org.gradle.api.plugins.ExtensionAware).extensions.getByName("ext") as org.gradle.api.plugins.ExtraPropertiesExtension
 
+fun DependencyHandler.`runtimeOnly`(dependencyNotation: Any): Dependency? =
+    add("runtimeOnly", dependencyNotation)
+fun DependencyHandler.`compileOnly`(dependencyNotation: Any): Dependency? =
+    add("compileOnly", dependencyNotation)
 fun DependencyHandler.implementation(dependencyNotation: Any): Dependency? =
     add("implementation", dependencyNotation)
 

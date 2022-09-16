@@ -21,8 +21,11 @@ files("libs","tools").forEach { it
     .listFiles()
     ?.filter { it.isDirectory }
     ?.forEach { dir ->
-        include(dir.name)
-        project(":"+dir.name).projectDir = dir
+        if (File(dir,"build.gradle.kts").exists() ||
+            File(dir,"settings.gradle.kts").exists()) {
+            include(dir.name)
+            project(":" + dir.name).projectDir = dir
+        }
     }
 }
 

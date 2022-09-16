@@ -1,5 +1,5 @@
-import me.heizi.gradle.implementation
 import me.heizi.gradle.versions
+import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
@@ -32,15 +32,12 @@ allprojects {
         manifest.attributes["Manifest-Version"] = rootProject.versions["HFT"]
     }
 }
-
+@OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 subprojects {
-    apply(plugin ="org.jetbrains.compose")
-    apply(plugin ="org.jetbrains.kotlin.jvm")
-    dependencies {
-        implementation(compose.desktop.currentOs)
-        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-        implementation(compose.material3)
+    with(ComposePlugin.Dependencies) {
+        ext["composeDependencies"] = arrayOf(material3, desktop.currentOs)
     }
+    apply(plugin ="org.jetbrains.compose")
 }
 plugins {
     kotlin("jvm") apply false

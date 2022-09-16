@@ -50,22 +50,17 @@ https://www.bilibili.com/video/BV18Y4y157R1
 ## sub - modules
 开发者可以看看这里有多少个子模块
 
-* Image Flash Tool (IFT)  
-依赖：Khell/Logger/NativeFileDialog/ComposeX
-* Fake Fastboot Device (FFT)  
-依赖：Khell/Logger/NativeFileDialog/ComposeX
+* tools/Image Flash Tool (IFT)
+* tools/Fake Fastboot Device (FFT)
 * ADB Sideload Tool (AST)  
   积极开发中...  
 
 
-* compose.desktop.core  
+* libs/ADB-Helper
+* libs/compose.desktop.core  
   用于Compose扩展
     * 本来有Compose的[Fragment](https://github.com/ElisaMin/Heizi-Flashing-Tools/tree/fragment) 实现，但现在替换成了[Decompose](https://github.com/arkivanov/Decompose) 就把Fragment删了。#2
-* Khell   
-  Kotlin Shell ext lib
-* logger  
-  Kotlin Log ext lib
-* Native File Dialog  
+* libs/Native File Dialog  
   call native file dialog by jna
 
 
@@ -135,3 +130,7 @@ LG G5，我的第一台LG设备，型号为H830，Root它需要借助AndroidM的
 
 
 
+# 感谢Jetbrains送的JB全家桶
+本项目由IDEA开发，并取得了Jetbrains OpenSourceLicense
+
+![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)
