@@ -18,6 +18,7 @@ fun Project.dependencies(
     fileDialog:Boolean = false,
     reflect: Boolean = false,
     compose: Boolean =true,
+    apkParser: Boolean =false,
 ): Unit = dependencies {
 
     val versions =  rootProject.versions
@@ -52,6 +53,10 @@ fun Project.dependencies(
     if(compose) (ext["composeDependencies"] as Array<*>).forEach {
         implementation(it as String)
     }
+    if (apkParser) {
+        implementation("me.heizi.apk.parser:compose-desktop-ext:${versions["apk-parser"]}")
+    }
+
 }
 val org.gradle.api.Project.`ext`: org.gradle.api.plugins.ExtraPropertiesExtension get() =
     (this as org.gradle.api.plugins.ExtensionAware).extensions.getByName("ext") as org.gradle.api.plugins.ExtraPropertiesExtension

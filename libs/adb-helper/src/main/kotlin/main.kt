@@ -1,6 +1,5 @@
 package me.heizi.flashing_tool.adb
 
-import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.Shell
 import java.awt.Image
 import java.io.File
@@ -50,7 +49,7 @@ abstract class APK(path:String): File(path) {
     abstract val versionCode:String
     abstract val version:String
 }
-interface  DeviceInfo {
+interface DeviceInfo {
     val serialId:String
     val state:String
 }
