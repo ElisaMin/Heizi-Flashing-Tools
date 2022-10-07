@@ -2,7 +2,9 @@ package me.heizi.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.kotlin
@@ -58,6 +60,14 @@ fun Project.dependencies(
     }
 
 }
+
+fun DependencyHandler.debugExtentProject(dependencyNotation: Any)
+    = addDependencyTo<ExternalModuleDependency>(this,"debugImplementation", dependencyNotation) {
+        capabilities {
+            requireCapability("$group:$name-debug")
+        }
+}
+
 val org.gradle.api.Project.`ext`: org.gradle.api.plugins.ExtraPropertiesExtension get() =
     (this as org.gradle.api.plugins.ExtensionAware).extensions.getByName("ext") as org.gradle.api.plugins.ExtraPropertiesExtension
 
@@ -70,4 +80,3 @@ fun DependencyHandler.implementation(dependencyNotation: Any): Dependency? =
 
 fun DependencyHandler.api(dependencyNotation: Any): Dependency? =
     add("api", dependencyNotation)
-

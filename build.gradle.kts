@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import me.heizi.gradle.versions
 import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -20,7 +22,22 @@ allprojects {
         maven { url = uri("https://raw.githubusercontent.com/ElisaMin/Maven/master/")}
 
     }
-
+    configure<SourceSetContainer> {
+        val main by getting
+        create("debug") {
+            compileClasspath+=main.compileClasspath
+            runtimeClasspath+=main.runtimeClasspath
+            compileClasspath+=main.output
+            runtimeClasspath+=main.output
+            resources+main.resources
+        }
+    }
+    configure<JavaPluginExtension>() {
+        registerFeature("debug") {
+            usingSourceSet(sourceSets["debug"])
+            disablePublication()
+        }
+    }
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "17"
@@ -28,7 +45,7 @@ allprojects {
         }
     }
     tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-        minimize()
+//        minimize()
         manifest.attributes["Manifest-Version"] = rootProject.versions["HFT"]
     }
 }
