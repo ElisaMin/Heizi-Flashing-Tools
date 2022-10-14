@@ -1,0 +1,1 @@
+package debug.heizi.flashing_tool.adb

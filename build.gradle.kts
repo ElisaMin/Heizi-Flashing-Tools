@@ -25,10 +25,8 @@ allprojects {
     configure<SourceSetContainer> {
         val main by getting
         create("debug") {
-            compileClasspath+=main.compileClasspath
-            runtimeClasspath+=main.runtimeClasspath
-            compileClasspath+=main.output
-            runtimeClasspath+=main.output
+            compileClasspath+=(main.compileClasspath+main.output)
+            runtimeClasspath+=(main.runtimeClasspath+main.output)
             resources+main.resources
         }
     }

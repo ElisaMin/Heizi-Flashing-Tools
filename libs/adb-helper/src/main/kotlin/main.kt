@@ -1,8 +1,6 @@
 package me.heizi.flashing_tool.adb
 
 import me.heizi.kotlinx.shell.Shell
-import java.awt.Image
-import java.io.File
 
 interface ADB {
     val devices:List<ADBDevice>
@@ -42,13 +40,7 @@ enum class DeviceMode(val rebootTo:String) {
     Bootloader("bootloader")
 }
 
-abstract class APK(path:String): File(path) {
-    abstract val pkgName:String
-    abstract val appName:String
-    abstract val icon:Image
-    abstract val versionCode:String
-    abstract val version:String
-}
+
 interface DeviceInfo {
     val serialId:String
     val state:String
