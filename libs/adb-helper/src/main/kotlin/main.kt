@@ -1,35 +1,13 @@
 package me.heizi.flashing_tool.adb
 
-import me.heizi.kotlinx.shell.Shell
+import me.heizi.kotlinx.shell.CommandResult
 
-interface ADB {
-    val devices:List<ADBDevice>
-}
-interface ADBDevice {
-    val info:DeviceInfo
-    var isConnected:Boolean?
-    suspend fun execute(vararg command: String):Shell
-    suspend infix fun shell(command:String)
-        = execute("shell",command)
-    suspend infix fun reboot(mode:DeviceMode)
-        = execute("reboot",mode.rebootTo)
-    suspend fun install(
-        apk:APK,
-        isReplaceExisting:Boolean = false,
-        isTestAllow:Boolean = false,
-        isDebugAllow:Boolean = false,
-        isGrantAllPms:Boolean = false,
-    ) = buildList {
-        add("install")
-        if (isTestAllow) add("-t")
-        if (isDebugAllow) add("-d")
-        if (isGrantAllPms) add("-g")
-        add(apk.absolutePath)
-    }.toTypedArray().let {
-        execute(*it)
+fun CommandResult.successMessageOrThrow():String {
+    require(this is CommandResult.Success) {
+        this as CommandResult.Failed
+        "run command failed cuz $code : $ \n $errorMessage \n msg: $processingMessage  "
     }
-    suspend fun disconnect()
-        = execute("disconnect")
+    return this.message
 }
 
 enum class DeviceMode(val rebootTo:String) {
@@ -38,10 +16,4 @@ enum class DeviceMode(val rebootTo:String) {
     Sideload("sideload"),
     AutoRebootSideload("sideload-auto-reboot"),
     Bootloader("bootloader")
-}
-
-
-interface DeviceInfo {
-    val serialId:String
-    val state:String
 }
