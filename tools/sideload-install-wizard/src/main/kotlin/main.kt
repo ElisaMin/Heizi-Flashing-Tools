@@ -1,8 +1,12 @@
 package me.heizi.flashing_tool.sideloader
 
-import me.heizi.flashing_tool.adb.APK
+import androidx.compose.ui.graphics.toPainter
+import java.net.URL
+import javax.imageio.ImageIO
 
-fun main() {
-    APK::class
+object Resources {
+    operator fun get(name:String): URL? = this::class.java.classLoader.getResource(name)
+
+    val iconASTUgly = ImageIO.read(this["ic_ast_ugly.pg"]!!).toPainter()
 
 }
