@@ -39,7 +39,7 @@ allprojects {
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "17"
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn","-Xcontext-receivers","-Xskip-prerelease-check")
+            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn","-Xcontext-receivers","-Xskip-prerelease-check")
         }
     }
     tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
