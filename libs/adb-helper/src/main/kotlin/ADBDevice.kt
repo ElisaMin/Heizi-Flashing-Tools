@@ -96,9 +96,15 @@ sealed interface ADBDevice {
                 if (mode.isEmpty()) notfound else this::class.members
                     .filterIsInstance<KProperty<DeviceState>>()
                     .find {
-                        println(it)
                         it.name == mode
                     }?.call(this)?: host
+
+            @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+            fun DeviceState.toString():String = this::class.members
+                .filterIsInstance<KProperty<DeviceState>>()
+                .find {
+                    it.call(this@Companion) == this
+                }?.name ?:"notfound"
         }
 
     }
