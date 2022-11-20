@@ -1,10 +1,19 @@
 package me.heizi.flashing_tool.sideloader
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toPainter
 import me.heizi.kotlinx.logger.error
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
+
+/**
+ * false if apk parse success in initializing progress
+ */
+var isSideload by mutableStateOf(false)
+
 
 object Resources {
     operator fun get(name:String): URL? = this::class.java.classLoader.getResource(name)

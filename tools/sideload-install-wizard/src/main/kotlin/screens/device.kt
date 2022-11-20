@@ -13,8 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import me.heizi.flashing_tool.adb.ADBDevice
-
-var isSideload by mutableStateOf(false)
+import me.heizi.flashing_tool.sideloader.isSideload
 
 
 /**
@@ -35,12 +34,13 @@ var isSideload by mutableStateOf(false)
 
 @Composable
 fun DeviceScreen(
+    modifier: Modifier = Modifier,
     devices:List<ADBDevice>,
     selected:MutableSet<String>,
     isWaiting:Boolean,
     addDevice:(serial:String)->Boolean,
     onConnectRequest: (context: InnerDeviceContextState) -> Unit
-) = Column {
+) = Column(modifier) {
     var isInputDialogLaunch by remember { mutableStateOf(false) }
     if (isInputDialogLaunch) addDeviceDialog(addDevice) {isInputDialogLaunch = false}
     TextButton({}, Modifier.paddingButBottom(8.dp).fillMaxWidth()) {

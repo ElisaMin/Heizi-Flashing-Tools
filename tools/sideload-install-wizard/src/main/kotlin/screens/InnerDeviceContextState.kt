@@ -5,6 +5,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import me.heizi.flashing_tool.adb.ADBDevice
+import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.flashing_tool.sideloader.screens.InnerDeviceContextState.*
 
 

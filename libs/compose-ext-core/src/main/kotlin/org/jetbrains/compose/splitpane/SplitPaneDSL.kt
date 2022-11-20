@@ -4,9 +4,12 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.awt.Cursor
 
 /** Receiver scope which is used by [HorizontalSplitPane] and [VerticalSplitPane] */
 @ExperimentalSplitPaneApi
@@ -90,7 +93,7 @@ internal class HandleScopeImpl(
                 if (containerScope.isHorizontal) change.position.x else change.position.y
             )
         }
-    }
+    }.pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
 }
 
 @OptIn(ExperimentalSplitPaneApi::class)
