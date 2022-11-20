@@ -3,6 +3,7 @@ package me.heizi.flashing_tool.sideloader.screens
 import androidx.compose.animation.core.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,9 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
-import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
-import org.jetbrains.compose.splitpane.HorizontalSplitPane
-import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import org.jetbrains.compose.splitpane.*
 
 fun main() {
     singleWindowApplication {
@@ -30,126 +29,113 @@ fun main() {
 @Composable
 fun split() = MaterialTheme {
     Scaffold {
-        HorizontalSplitPane(Modifier.padding(it), rememberSplitPaneState(0.6f)) {
-            first(178.dp,) {
-                Column() {
-                    Card(Modifier.fillMaxSize().padding( 8.dp)) {
-                        Column(modifier = Modifier.paddingButBottom(16.dp),) {
-                            BoxWithConstraints {
-                                val content = @Composable {padding:PaddingValues->
-                                    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)) {  }
-                                    Column(Modifier.padding(padding).sizeIn(maxHeight = 126.dp)) {
-                                        val scrollableState = rememberScrollState()
-                                        val adapter = rememberScrollbarAdapter(scrollableState)
-                                        Box(Modifier.horizontalScroll(scrollableState)) { Text("微信(测试版)", style = MaterialTheme.typography.displayLarge, maxLines = 1) }
-                                        HorizontalScrollbar(adapter,)
 
-                                        Text("com.tencent.wechat")
-                                        Text("8.0.25-test01")
-                                    }
+        val first = @Composable {
+
+            Column {
+                Card(Modifier.fillMaxSize().padding(8.dp)) {
+                    Column(modifier = Modifier.paddingButBottom(16.dp).verticalScroll(rememberScrollState()),) {
+                        BoxWithConstraints {
+                            val content = @Composable {padding:PaddingValues->
+                                Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)) {  }
+                                Column(Modifier.padding(padding).sizeIn(maxHeight = 126.dp)) {
+                                    val scrollableState = rememberScrollState()
+                                    val adapter = rememberScrollbarAdapter(scrollableState)
+                                    Box(Modifier.horizontalScroll(scrollableState)) { Text("微信(测试版)", style = MaterialTheme.typography.displayLarge, maxLines = 1) }
+                                    HorizontalScrollbar(adapter,)
+
+                                    Text("com.tencent.wechat")
+                                    Text("8.0.25-test01")
                                 }
-                                if (maxWidth > 178.dp)
-                                    Row() {
-                                        content(PaddingValues(start=16.dp))
-                                    }
-                                else
-                                    Column() {
-                                        content(PaddingValues())
-                                    }
                             }
-                            Spacer(Modifier.padding(8.dp))
+                            if (maxWidth > 156.dp)
+                                Row() {
+                                    content(PaddingValues(start=16.dp))
+                                }
+                            else
+                                Column() {
+                                    content(PaddingValues())
+                                }
+                        }
+                        Spacer(Modifier.padding(8.dp))
                         Text("大小", style = MaterialTheme.typography.labelMedium)
                         Text("1024MB")
 
                         Text("SDK", style = MaterialTheme.typography.labelMedium)
                         Text("min-14")
                         Text("target-29")
-                        }
                     }
-                }
-            }
-            second(100.dp) {
-                Column(Modifier.fillMaxSize()){
-                    TextButton({}, Modifier.paddingButBottom(8.dp).fillMaxWidth()) {
-                        Icon(Icons.Default.Add,"add device")
-                        Text("添加设备")
-                    }
-                    LinearProgressIndicator(Modifier.padding(horizontal = 16.dp).fillMaxWidth())
-
-                    Card(Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)) {
-                        Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("LMG710iiiiwsrgasfg", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("已选中", maxLines = 1, overflow = TextOverflow.Visible)
-                        }
-                    }
-
-                    Card({},Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)) {
-                        Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("PXL333aagfryt551", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("设备", maxLines = 1, overflow = TextOverflow.Visible)
-                        }
-                    }
-
-                    Card({},Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
-                        Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("192.168.1.2:5556", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("未连接", maxLines = 1, overflow = TextOverflow.Visible)
-                        }
-                    }
-
-                    Card({ println("clicked") },Modifier.paddingButBottom(8.dp),enabled = false) {
-                        Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("ZX24hsa339", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("Recovery", maxLines = 1, overflow = TextOverflow.Visible)
-                        }
-                    }
-                }
-            }
-            splitter {
-                visiblePart {
-
-//                    val alpha by remember {
-//                        flow {
-//                            var corrent = 0f
-//                            while (true) {
-//                                delay(1000)
-//                                emit(0.3f)
-//                                while (corrent<=0.3f) {
-//                                    delay(41)
-//                                    corrent+=0.02f
-//                                    emit(corrent)
-//                                }
-//                                delay(1000)
-//                                while (corrent >= 0.01f) {
-//                                    delay(50)
-//                                    corrent-=0.02f
-//                                    emit(corrent)
-//                                }
-//                                corrent = 0f
-//
-//                            }
-//                        }.collectAsState(0f)
-//                    }
-//                    var alpha by remember { mutableStateOf(0f) }
-//                    val animated by rememberInfiniteTransition().
-//                    animateFloat(
-//                        0.0f,
-//                        0.3f,
-//                        infiniteRepeatable(keyframes {
-//                            durationMillis = 10000
-//                            0.0f at 0
-//                            0.01f at 3000
-//                            0.3f at 10000
-//                        }, repeatMode = RepeatMode.Reverse)
-//                    )
-//                    Box(Modifier.padding(vertical = 16.dp).background(SolidColor(Color.LightGray), alpha = animated).fillMaxHeight().width(4.dp))
-                }
-                handle {
-                    Box(Modifier.markAsHandle().fillMaxHeight().width(4.dp).padding(vertical = 8.dp).clickable {
-                    })
                 }
             }
         }
+        val second = @Composable {
+            Column(Modifier.fillMaxSize()){
+                TextButton({}, Modifier.paddingButBottom(8.dp).fillMaxWidth()) {
+                    Icon(Icons.Default.Add,"add device")
+                    Text("添加设备")
+                }
+                LinearProgressIndicator(Modifier.padding(horizontal = 16.dp).fillMaxWidth())
+
+                Card(Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)) {
+                    Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("LMG710iiiiwsrgasfg", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("已选中", maxLines = 1, overflow = TextOverflow.Visible)
+                    }
+                }
+
+                Card({},Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)) {
+                    Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("PXL333aagfryt551", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("设备", maxLines = 1, overflow = TextOverflow.Visible)
+                    }
+                }
+
+                Card({},Modifier.paddingButBottom(8.dp),colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
+                    Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("192.168.1.2:5556", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("未连接", maxLines = 1, overflow = TextOverflow.Visible)
+                    }
+                }
+
+                Card({ println("clicked") },Modifier.paddingButBottom(8.dp),enabled = false) {
+                    Row(Modifier.padding(16.dp,8.dp).fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("ZX24hsa339", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("Recovery", maxLines = 1, overflow = TextOverflow.Visible)
+                    }
+                }
+            }
+        }
+//        VerticalSplitPane {
+//            first {
+//                first()
+//            }
+//            second {
+//                second()
+//            }
+//        }
+        BoxWithConstraints(Modifier.padding(it)) {
+            if (maxWidth> 380.dp)
+                HorizontalSplitPane(splitPaneState = rememberSplitPaneState(0.6f)) {
+                    first(176.dp,) {
+                        first()
+                    }
+                    second {
+                        second()
+                    }
+                    defaultSplitter()
+                }
+            else
+                VerticalSplitPane {
+                    first(176.dp) {
+                        first()
+                    }
+                    second {
+                        second()
+                    }
+                    defaultSplitter()
+                }
+        }
+
 
     }
 }
