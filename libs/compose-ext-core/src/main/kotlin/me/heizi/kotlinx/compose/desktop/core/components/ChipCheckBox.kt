@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,17 +24,12 @@ fun ChipCheckBox (
     onCheck:(Boolean)->Unit = {},
 ) {
     OutlinedButton(
-        colors = object: ButtonColors {
-            @Composable
-            override fun containerColor(enabled: Boolean): State<Color>
-                    = rememberUpdatedState(if (check) Color.LightGray else Color.LightGray.copy(alpha = 0.3f))
-            @Composable
-            override fun contentColor(enabled: Boolean): State<Color>
-                    = rememberUpdatedState(
-//                if (enableState) Color.White else
+
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (check) Color.LightGray else Color.LightGray.copy(alpha = 0.3f),
+            contentColor = // if (enableState) Color.White else
                 Color.Black
-            )
-        },
+        ),
         shape = CircleShape,
         modifier = modifier,
         onClick = {
