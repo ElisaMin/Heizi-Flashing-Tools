@@ -1,5 +1,6 @@
 package org.jetbrains.compose.splitpane
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -55,3 +56,12 @@ internal fun defaultSplitter(
     }
 )
 
+@ExperimentalSplitPaneApi
+fun SplitPaneScope.defaultSplitter() {
+    splitter {
+        handle {
+            Box(Modifier.markAsHandle().fillMaxHeight().width(4.dp).padding(vertical = 8.dp).clickable {
+            })
+        }
+    }
+}
