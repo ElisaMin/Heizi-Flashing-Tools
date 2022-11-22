@@ -18,7 +18,7 @@ var isSideload by mutableStateOf(false)
 object Resources {
     operator fun get(name:String): URL? = this::class.java.classLoader.getResource(name)
 
-    val iconASTUgly = ImageIO.read(this["ic_ast_ugly.pg"]!!).toPainter()
+    val iconASTUgly = ImageIO.read(this["ic_ast_ugly.png"]!!).toPainter()
 }
 
 /**

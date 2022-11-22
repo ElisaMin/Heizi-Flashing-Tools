@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.heizi.flashing_tool.sideloader.isSideload
 
@@ -25,20 +26,23 @@ fun Info(
 ) {
     val isApk = !isSideload
     Card(modifier) {
-        Row(Modifier.padding(16.dp)) {
-            if (isApk) Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)) {
-
+        val content = @Composable {padding:PaddingValues->
+            if (isApk&& icon!=null) Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)) {
+                //TODO icon here
             }
-            Column(Modifier.padding(start = 16.dp).sizeIn(maxHeight = 126.dp)) {
+            Column(Modifier.padding(padding).sizeIn(maxHeight = 126.dp)) {
                 val scrollableState = rememberScrollState()
                 val adapter = rememberScrollbarAdapter(scrollableState)
                 Box(Modifier.horizontalScroll(scrollableState)) { Text(titleName, style = MaterialTheme.typography.displayLarge, maxLines = 1) }
                 HorizontalScrollbar(adapter,)
                 if (packageName != null)
-                    Text(packageName)
+                    Text(packageName, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (version != null)
-                    Text(version)
+                    Text(version, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
+        }
+        Row(Modifier.padding(16.dp)) {
+
         }
         Detail(packageDetail)
     }
@@ -53,5 +57,6 @@ private fun Detail(
         for (s in detail) {
             Text(s)
         }
+        Spacer(Modifier.padding(bottom = 8.dp))
     }
 }
