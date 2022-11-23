@@ -1,6 +1,10 @@
 package me.heizi.flashing_tool.sideloader.screens
 
+import androidx.compose.foundation.ScrollbarAdapter
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -40,19 +44,47 @@ fun DeviceScreen(
     isWaiting:Boolean,
     addDevice:(serial:String)->Boolean,
     onConnectRequest: (context: InnerDeviceContextState) -> Unit
-) = Column(modifier) {
+)= Row(modifier) {
+
     var isInputDialogLaunch by remember { mutableStateOf(false) }
-    if (isInputDialogLaunch) addDeviceDialog(addDevice) {isInputDialogLaunch = false}
-    TextButton({}, Modifier.paddingButBottom(8.dp).fillMaxWidth()) {
-        Icon(Icons.Default.Add,"add device")
-        Text("添加设备")
+    if (isInputDialogLaunch) addDeviceDialog(
+        onSubmit = addDevice,
+        onDismissing ={ isInputDialogLaunch = false }
+    )
+
+    val scrollState = rememberScrollState()
+
+    Column(Modifier.weight(1f).verticalScroll(scrollState),verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        Text("选择要安装的设备:", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.labelMedium)
+        Text("请保证您的设备已经开启ADB调试或已经进入Rec模式。", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.labelSmall)
+
+        Box(Modifier.fillMaxWidth().height(8.dp)) {
+            if (isWaiting) LinearProgressIndicator(Modifier.fillMaxSize())
+        }
+        ListDevice(
+            devices = devices,
+            isWaiting = isWaiting,
+            onConnectRequest = onConnectRequest,
+            onSelecting = { device ->
+                if (device in selected) selected-=device else selected+=device
+                device in selected
+            }
+        )
+
+
+        TextButton(
+            content = {
+                Icon(Icons.Default.Add,"add device")
+                Text("手动添加设备")
+            }, onClick = {
+                isInputDialogLaunch = !isInputDialogLaunch
+            }, modifier =
+            Modifier.fillMaxWidth(),
+        )
     }
-    if (isWaiting) LinearProgressIndicator(Modifier.height(8.dp).padding(horizontal = 16.dp).fillMaxWidth())
-    else Box(Modifier.height(8.dp).padding(horizontal = 16.dp))
-    ListDevice(devices = devices, onConnectRequest = onConnectRequest, onSelecting = { device ->
-        if (device in selected) selected-=device else selected+=device
-        device in selected
-    },isWaiting = isWaiting)
+
+    VerticalScrollbar(ScrollbarAdapter(scrollState),)
 }
 
 
@@ -141,7 +173,7 @@ fun Device(
 ) {
     Card(
         enabled = context.isAvailable || !isWaiting ,
-        modifier = Modifier.paddingButBottom(8.dp),
+//        modifier = Modifier.paddingButBottom(8.dp),
         colors = contentColor,
         onClick = onClick,
         content = {
