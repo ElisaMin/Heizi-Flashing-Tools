@@ -4,7 +4,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
-import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
 
@@ -32,7 +31,7 @@ fun Project.dependencies(
     }
     if (log) {
         api("me.heizi.kotlinx:khell-log:${versions["khell"]}")
-        compileOnly("org.slf4j:slf4j-log4j12:${versions["slf4j"]}")
+        runtimeOnly("org.slf4j:slf4j-log4j12:${versions["slf4j"]}")
     }
     if (coroutine)
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["coroutines"]}")
@@ -56,11 +55,12 @@ fun Project.dependencies(
     }
     if (apkParser) {
         implementation("me.heizi.apk.parser:compose-desktop-ext:${versions["apk-parser"]}")
+        implementation("net.dongliu.apk.parser:apk-parser:${versions["apk-parser"]}")
     }
 
 }
 
-val org.gradle.api.Project.`ext`: org.gradle.api.plugins.ExtraPropertiesExtension get() =
+val Project.ext: org.gradle.api.plugins.ExtraPropertiesExtension get() =
     (this as org.gradle.api.plugins.ExtensionAware).extensions.getByName("ext") as org.gradle.api.plugins.ExtraPropertiesExtension
 
 fun DependencyHandler.implProj(path: String) {
@@ -75,10 +75,10 @@ fun DependencyHandler.implProj(path: String) {
 
 fun DependencyHandler.debugImplementation(dependency: Any)
         = add("debugImplementation", dependency)
-fun DependencyHandler.`runtimeOnly`(dependencyNotation: Any): Dependency? =
+fun DependencyHandler.runtimeOnly(dependencyNotation: Any): Dependency? =
     add("runtimeOnly", dependencyNotation)
-fun DependencyHandler.`compileOnly`(dependencyNotation: Any): Dependency? =
-    add("compileOnly", dependencyNotation)
+//fun DependencyHandler.compileOnly(dependencyNotation: Any): Dependency? =
+//    add("compileOnly", dependencyNotation)
 fun DependencyHandler.implementation(dependencyNotation: Any): Dependency? =
     add("implementation", dependencyNotation)
 

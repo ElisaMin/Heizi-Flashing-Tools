@@ -3,7 +3,8 @@ import me.heizi.gradle.implProj
 
 dependencies(
     compose = true,
-    composex = true
+    composex = true,
+    apkParser = true,
 )
 dependencies {
     implProj(":adb-helper")
