@@ -22,9 +22,28 @@ fun main() {
     singleWindowApplication(title = "AndroidInstallWizard", icon = Resources.iconASTUgly) {
 //        apk()
 //        zip()
-        split()
+//        split()
+        Multiple()
     }
 }
+
+
+@Composable
+fun Multiple() {
+    TODO("多个APK")
+}
+@Composable
+fun Invoke() {
+    TODO("""
+        正在执行：
+        ----- ----- ------ ---- ---
+         installing
+         success
+        ———————————————————————————
+        完成                    关闭
+    """.trimIndent())
+}
+
 @Preview
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSplitPaneApi::class)
 @Composable

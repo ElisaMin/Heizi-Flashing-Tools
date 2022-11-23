@@ -47,13 +47,14 @@ object ADB {
         Shell("adb devices").await().let {
             require(it is CommandResult.Success) {
                 "its not ready to collecting devices!"
-            };it
-        }.message.lineSequence()
+            }
+            it.message
+        }.lineSequence()
         .filter {
             val it = it.trim()
-            it.isNotEmpty() && it.first()!='*'&& it!="List of devices attached"
+            it.isNotEmpty() && it.first()!='*'&& it !in arrayOf("List of devices attached","adb devices")
         }.map {
-            it.split(' ')
+            it.split(' ','	')
         }.filter {
             it.size == 2
         }.map {
@@ -62,6 +63,10 @@ object ADB {
             emit(it)
         }
     }
+    val savedDevices:Flow<ADBDevice> = LocalDevice.asFlow().map {
+        AdbDeviceImpl(it,ADBDevice.DeviceState.host)
+    }
+
     suspend fun wireless(host:String)
         = "connected" in execute("connect $host").await().let {
             when(it) {
@@ -75,7 +80,7 @@ object ADB {
 
 
 
-    private class AdbDeviceImpl(
+    private data class AdbDeviceImpl(
         override val serial: String,
         override val state: ADBDevice.DeviceState
     ):ADBDevice {

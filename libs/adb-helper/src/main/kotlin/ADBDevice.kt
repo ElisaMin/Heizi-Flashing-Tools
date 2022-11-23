@@ -6,24 +6,43 @@ import java.io.File
 import kotlin.reflect.KProperty
 
 
+fun ADBDevice.resultNeeding(vararg command: String,resultNeeding: Boolean = false):Shell?
+    = if (resultNeeding) executeWithResult(*command) else {
+        execute(*command)
+        null
+    }
+
 infix fun ADBDevice.shell(command:String)
         = execute("shell",command)
+
 infix fun ADBDevice.reboot(mode: DeviceMode)
         = execute("reboot",mode.rebootTo)
+
+infix fun ADBDevice.sideload(zip: File)
+    = execute()
+
 fun ADBDevice.install(
     apk: File,
     isReplaceExisting:Boolean = false,
     isTestAllow:Boolean = false,
     isDebugAllow:Boolean = false,
     isGrantAllPms:Boolean = false,
+    isInstant:Boolean = false,
+    abi:String?=null,
+    resultNeeding: Boolean = false,
 ) = buildList {
     add("install")
+    if (isReplaceExisting) add("-r")
     if (isTestAllow) add("-t")
     if (isDebugAllow) add("-d")
     if (isGrantAllPms) add("-g")
+    if (isInstant) add("--instant")
+    abi?.let {abi->
+        addAll(arrayOf("--abi",abi))
+    }
     add(apk.absolutePath)
 }.toTypedArray().let {
-    execute(*it)
+    resultNeeding(*it,resultNeeding = resultNeeding)
 }
 fun ADBDevice.disconnect()
 = execute("disconnect")
