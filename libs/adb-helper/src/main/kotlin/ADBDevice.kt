@@ -1,8 +1,8 @@
 package me.heizi.flashing_tool.adb
 
 import kotlinx.coroutines.delay
-import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.Shell
+import java.io.File
 import kotlin.reflect.KProperty
 
 
@@ -11,7 +11,7 @@ infix fun ADBDevice.shell(command:String)
 infix fun ADBDevice.reboot(mode: DeviceMode)
         = execute("reboot",mode.rebootTo)
 fun ADBDevice.install(
-    apk: APK,
+    apk: File,
     isReplaceExisting:Boolean = false,
     isTestAllow:Boolean = false,
     isDebugAllow:Boolean = false,

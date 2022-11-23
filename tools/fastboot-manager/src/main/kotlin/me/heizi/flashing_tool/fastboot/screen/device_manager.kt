@@ -107,6 +107,7 @@ fun PreView() {
  * @param vars
  * @param onClose
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
 
@@ -116,7 +117,7 @@ fun DeviceGetVarInfo(vars:Array<Array<String>>,onClose: () -> Unit) {
 //        var input by remember { mutableStateOf("") }
         Card(Modifier.height(500.dp).fillMaxWidth(), elevation = 10.dp) {
             Column {
-                SmallTopAppBar(title = {
+                TopAppBar(title = {
                     Row{
                         Text("详细Fastboot设备信息")
 
@@ -186,7 +187,7 @@ fun DeviceManagerViewModel.DeviceManagerScreen(drop:Modifier = Modifier) {
     
     
     Scaffold(Modifier.fillMaxSize().then(drop), topBar = {
-        SmallTopAppBar(title = { Text(device.serialId, style = MaterialTheme.typography.displayLarge, maxLines = 1, overflow = TextOverflow.Ellipsis) }, actions = {
+        TopAppBar(title = { Text(device.serialId, style = MaterialTheme.typography.displayLarge, maxLines = 1, overflow = TextOverflow.Ellipsis) }, actions = {
             Button(::launchDevicesSelector) { Text("切换设备") }
         })
     }) {

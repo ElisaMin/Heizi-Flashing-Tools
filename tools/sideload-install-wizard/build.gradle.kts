@@ -7,4 +7,5 @@ dependencies(
 )
 dependencies {
     implProj(":adb-helper")
+    implProj(":apk-parser")
 }

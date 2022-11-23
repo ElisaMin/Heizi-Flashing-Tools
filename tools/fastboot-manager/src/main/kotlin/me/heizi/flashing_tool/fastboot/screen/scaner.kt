@@ -119,7 +119,7 @@ fun ScannerViewModel.ScannerScreen(
         val isRunning by remember {
             isRunning
         }
-        SmallTopAppBar(title = {
+        TopAppBar(title = {
             Row {
                 Text("已连接设备:${devices.size}",style = MaterialTheme.typography.displayMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
 //                Text(":${devices.size}",style = MaterialTheme.typography.displayLarge)
