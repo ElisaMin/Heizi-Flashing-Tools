@@ -6,42 +6,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.isConnected
 import me.heizi.kotlinx.logger.error
 import me.heizi.kotlinx.shell.CommandResult
 import me.heizi.kotlinx.shell.Shell
-
+import kotlin.coroutines.CoroutineContext
 
 
 object ADB {
 
     private val scope = CoroutineScope(Dispatchers.IO)
-
-    infix fun execute(command:String)
-        = Shell("adb $command", runCommandOnPrefix = true)
-
-    object AsyncExecute {
-        val commands by lazy {
-            MutableStateFlow("")
-        }
-        val results by lazy {
-            commands
-                .filter { it.isNotEmpty() }
-                .map { Shell(
-                    "adb $it",
-                    startWithCreate = true,
-                    runCommandOnPrefix = true,
-                ) }
-        }
-        init {
-            scope.launch {
-                results.collect {
-
-                }
-            }
-        }
-    }
-
-
 
     val devices: Flow<ADBDevice> = flow {
         Shell("adb devices").await().let {
@@ -67,8 +41,36 @@ object ADB {
         AdbDeviceImpl(it,ADBDevice.DeviceState.host)
     }
 
+    fun execute(command:String,isStart:Boolean =true)
+            = Shell("adb $command", runCommandOnPrefix = true, startWithCreate = isStart)
+
+    infix fun execute(command:String)
+            = execute(command,true)
+
+    object AsyncExecute {
+        val commands by lazy {
+            MutableStateFlow("")
+        }
+        val results by lazy {
+            commands
+                .filter { it.isNotEmpty() }
+                .map { Shell(
+                    "adb $it",
+                    startWithCreate = true,
+                    runCommandOnPrefix = true,
+                ) }
+        }
+        init {
+            scope.launch {
+                results.collect {
+
+                }
+            }
+        }
+    }
+
     suspend fun wireless(host:String)
-        = "connected" in execute("connect $host").await().let {
+        = "connected" in (execute("connect $host").await().let {
             when(it) {
                 is CommandResult.Success -> it.message
                 is CommandResult.Failed -> {
@@ -76,27 +78,38 @@ object ADB {
                     ""
                 }
             }
-        }
+        })
 
 
 
-    private data class AdbDeviceImpl(
+    private class AdbDeviceImpl(
         override val serial: String,
-        override val state: ADBDevice.DeviceState
+        state: ADBDevice.DeviceState
     ):ADBDevice {
-        override var isConnected: Boolean?
-            get() = TODO("it seams not working")
-            set(value) {
-                TODO("it seams not working")
+        override var state: ADBDevice.DeviceState = state
+            private set
+
+        override var isConnected: Boolean get()  = state.isConnected()
+            set(connecting) {
+                if (connecting) reconnect() else disconnect()
+                scope.launch {
+                    state = state()
+                }
             }
 
         override fun execute(vararg command: String) {
-            AsyncExecute.commands.value = (command.joinToString(" ", truncated = " "))
+            AsyncExecute.commands.value = (command.afterThisDevice().joinToString(" ", truncated = " "))
         }
 
-        override fun executeWithResult(vararg command: String): Shell
-            = ADB.execute(command.joinToString(" ", truncated = " "))
+        override fun executeWithResult(vararg command: String,isStart: Boolean): Shell
+            = execute(command.afterThisDevice().joinToString(" ", truncated = " "),isStart)
 
+        override fun live(coroutineContext: CoroutineContext): ADBDevice.Live {
+            TODO("实现更新state")
+        }
+
+        private fun Array<out String>.afterThisDevice():Array<out String>
+                = arrayOf("-s",serial,*this)
     }
 
 }

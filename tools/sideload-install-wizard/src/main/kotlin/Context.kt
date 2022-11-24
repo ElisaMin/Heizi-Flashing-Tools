@@ -3,31 +3,33 @@ package me.heizi.flashing_tool.sideloader
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import me.heizi.flashing_tool.adb.ADB
+import me.heizi.flashing_tool.adb.ADBDevice
+import me.heizi.flashing_tool.adb.install
+import me.heizi.kotlinx.shell.ProcessingResults
+import me.heizi.kotlinx.shell.Shell
 import java.io.File
+import java.util.StringJoiner
 import kotlin.math.roundToLong
+
 
 // TODO make it close to [ViewModel]
 // TODO new class of files
 interface Context {
-    val filePath:String
-    val fileName:String
-    val file:File
+    val files:List<File>
     val selected:MutableSet<String>
 
-    private class AbstractContext constructor(
-        override val filePath: String,
-
+    private class AbstractContext(
+        override val files: List<File>
     ):Context {
-        override val file = File(filePath)
-        override val fileName: String get() = filePath.split('/','\\').last()
+        constructor(filePath: String) : this(listOf(File(filePath)))
         override val selected: MutableSet<String> get() = Context.selected
     }
+
 
     abstract class Sideload
     private constructor(filePath: String):Context by AbstractContext(filePath) {
@@ -35,26 +37,122 @@ interface Context {
     }
     //TODO Apk detail map,invoke prm
     abstract class Install private constructor(
-    ):Context
+    ):Context {
+
+        interface Info {
+            val isReplaceExisting:Boolean
+            val isTestAllow:Boolean
+            val isDebugAllow:Boolean
+            val isGrantAllPms:Boolean
+            val isInstant:Boolean
+            val abi:String?
+        }
+    }
+
+
+     @OptIn(FlowPreview::class)
      class Invoking private constructor(
          context: Context
      ) :Context by context {
-         val message by mutableStateOf("")
-         val isSuccess:Boolean? by mutableStateOf(null)
+         var subTitle by mutableStateOf("正在预热中...")
+             private set
+         var message by mutableStateOf("")
+             private set
+         var isSuccess:Boolean? by mutableStateOf(null)
+             private set
+         var isDone:Boolean? by mutableStateOf(null)
+             private set
+         private var current = 1
+         private val devices = Context.devices.filter { it.serial in selected }
+
+         fun updateSubTitle(msg:String) = msg.let {
+             subTitle=it+"\n"
+             message+=it
+         }
+
+         private suspend fun start(context: Context) {
+             val isApk = context.isAPk
+                 ?:error("unexpected context:$context, is not apk or sideload")
+             if (isApk) start { file,device->
+                 require(file is Install.Info) {
+                     "unexpected context:$file is not info"
+                 }
+                 with(file as Install.Info){
+                     device.install(
+                         apk = file,
+                         resultNeeding = true,
+                         isReplaceExisting=isReplaceExisting,
+                         isDebugAllow = isDebugAllow,
+                         isGrantAllPms = isGrantAllPms,
+                         isInstant = isInstant,
+                         isTestAllow = isTestAllow,
+                         abi = abi,
+                     )!!
+                 }
+
+             } else start { file, device ->
+                 device.executeWithResult("sideload",file.absolutePath,isStart = false)
+             }
+         }
+         private suspend inline fun start(crossinline collector: (File,ADBDevice)->Shell) = devices.flatMapConcat {device->
+             files.map { file ->
+                 "device:${device.serial},file:${file.name}" to collector(file,device)
+             }.asFlow()
+         }.start()
+
+
+         private suspend fun Flow<Pair<String, Shell>>.start() =
+             flatMapConcat { (info,s)->
+                current=s.id
+                 updateSubTitle("正在执行#${current}-info-$info")
+                s
+            }.mapNotNull r@{ r->
+                when(r) {
+                    is ProcessingResults.Error ->
+                        message += "+ ${r.message}"
+                    is ProcessingResults.Message ->
+                        message += "  ${r.message}"
+                    is ProcessingResults.Closed ->
+                        message += "  完成#${current}"
+                    is ProcessingResults.CODE ->
+                        return@r (r.code == 0).also { isSuccess = it }
+                }
+                null
+            }.toList().let { list ->
+                buildString {
+                    append("所有任务完成")
+                    if (list.size>1)
+                        append("，共有${list.size }个任务，")
+                    append(list.count { !it }
+                        .takeIf { it!=0 && list.size!=it }
+                        ?.let { "，失败${it}个" }
+                        ?: "，全部失败"
+                    )
+                    append("。")
+                }
+            }.let {
+                isDone = true
+                 updateSubTitle(it)
+            }
+
+
          init {
-             TODO("Invoke it")
-//             val command = when(context) {
-//                 is Sideload -> ::sideload
-//             }
-//             require(context is Sideload || context is Install)
-////             va
-//             scope.launch {  }
+             scope.launch {
+                 delay(500)
+             }
+             updateSubTitle("开始执行。")
+             isDone = false
+
          }
 
 
     }
     companion object {
+
         val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
+
+        val current = MutableSharedFlow<Context>()
+
         val devices = flow {
             ADB.devices.collect(::emit)
             ADB.savedDevices.collect(::emit)
@@ -104,3 +202,4 @@ val File.size:String get() {
     }
     throw NoSuchFileException(this, reason = "file size sense not allow")
 }
+val File.fileName:String get() = absolutePath.split('/','\\').last()

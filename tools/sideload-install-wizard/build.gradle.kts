@@ -5,6 +5,7 @@ dependencies(
     compose = true,
     composex = true,
     apkParser = true,
+    khell = true
 )
 dependencies {
     implProj(":adb-helper")

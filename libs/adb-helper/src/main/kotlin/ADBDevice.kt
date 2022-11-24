@@ -3,14 +3,20 @@ package me.heizi.flashing_tool.adb
 import kotlinx.coroutines.delay
 import me.heizi.kotlinx.shell.Shell
 import java.io.File
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KProperty
 
 
-fun ADBDevice.resultNeeding(vararg command: String,resultNeeding: Boolean = false):Shell?
-    = if (resultNeeding) executeWithResult(*command) else {
+fun ADBDevice.resultNeeding(vararg command: String,resultNeeding: Boolean = false,isStart: Boolean=true):Shell?
+    = if (resultNeeding) executeWithResult(*command,isStart=isStart) else {
         execute(*command)
         null
     }
+
+fun ADBDevice.reconnect()
+        = execute("reconnect")
+fun ADBDevice.disconnect()
+        = execute("disconnect")
 
 infix fun ADBDevice.shell(command:String)
         = execute("shell",command)
@@ -44,8 +50,6 @@ fun ADBDevice.install(
 }.toTypedArray().let {
     resultNeeding(*it,resultNeeding = resultNeeding)
 }
-fun ADBDevice.disconnect()
-= execute("disconnect")
 
 suspend fun ADBDevice.blockingStateChecking() {
     while (true) {
@@ -53,6 +57,10 @@ suspend fun ADBDevice.blockingStateChecking() {
         ADBDevice.DeviceState(executeWithResult("get-state").await().successMessageOrThrow().trim())
     }
 }
+
+suspend fun ADBDevice.state()
+    = ADBDevice.DeviceState(executeWithResult("get-state").await().successMessageOrThrow().trim())
+
 /**
  * Abstract a struct as a REAL adb device in code to read info and execute command for a device 抽象一个真实存在的ADB设备成
  * 为代码解构——读取和执行指令。
@@ -74,11 +82,10 @@ sealed interface ADBDevice {
     val state:DeviceState
 
     /**
-     * return a connecting state as boolean. null means disconnected or offline
-     * true if device is connected to pc
+     * return a connecting state as boolean. false means reconnect-able
      */
 
-    var isConnected:Boolean?
+    var isConnected:Boolean
 
     /**
      * it will be created by calling `adb -s $[serial] $[command]` for full command
@@ -95,13 +102,16 @@ sealed interface ADBDevice {
      * @param command see `adb help` command to list all the command
      */
 
-    fun executeWithResult(vararg command: String) : Shell
+    fun executeWithResult(vararg command: String,isStart: Boolean = true) : Shell
+
+    fun live(coroutineContext: CoroutineContext):Live
 
     /**
      * device connection state
      */
     @JvmInline
     value class DeviceState private constructor(val code: Int = -1 ) {
+
         companion object {
             val notfound = DeviceState()
             val host = DeviceState(0)
@@ -124,7 +134,18 @@ sealed interface ADBDevice {
                 .find {
                     it.call(this@Companion) == this
                 }?.name ?:"notfound"
+
+            fun  DeviceState.isConnected() = code in 3..6
         }
 
+    }
+
+    /**
+     * Updatable
+     *
+     */
+    interface Live:ADBDevice {
+
+        suspend fun refresh()
     }
 }
