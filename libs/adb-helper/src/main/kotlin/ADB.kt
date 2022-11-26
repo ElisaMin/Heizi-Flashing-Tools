@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.device
 import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.isConnected
 import me.heizi.kotlinx.logger.error
 import me.heizi.kotlinx.shell.CommandResult
@@ -112,6 +113,7 @@ object ADB {
                 = arrayOf("-s",serial,*this)
     }
 
+    val test:ADBDevice get() = AdbDeviceImpl("nothings", device)
 }
 
 
