@@ -20,13 +20,13 @@ import kotlinx.coroutines.*
 import me.heizi.flashing_tool.sideloader.Resources
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import org.jetbrains.compose.splitpane.*
-
+import me.heizi.flashing_tool.sideloader.screens.Invoke as Invoking
 fun main() {
     singleWindowApplication(title = "AndroidInstallWizard", icon = Resources.iconASTUgly) {
 //        apk()
 //        zip()
 //        split()
-        Invoke()
+        InvokePreview()
 //        Multiple()
     }
 }
@@ -36,92 +36,38 @@ fun main() {
 fun Multiple() {
     TODO("下一个版本再更新")
 }
+@Preview
 @OptIn(ExperimentalMaterial3Api::class, InternalComposeApi::class)
 @Composable
-fun Invoke() = MaterialTheme { with(MaterialTheme.colorScheme) {
-    val backgroundColor = primaryContainer
-    val contentColor = onPrimaryContainer
+fun InvokePreview() = MaterialTheme {
 
     var isDone by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    val subtitle by mutableStateOf(if (isDone)"您的手术很顺利" else "少女施法中..." )
 
-    CompositionLocalProvider(LocalContentColor.provides(contentColor)) {
-        Scaffold (
-            modifier = Modifier.fillMaxSize().background(backgroundColor),
-            containerColor = backgroundColor, contentColor = contentColor, topBar = {
-                Box(Modifier.wrapContentSize().background(color = backgroundColor)) {
-                    Column(modifier = Modifier.padding(top = 16.dp,start = 24.dp)) {
-
-                        Text(if (!isDone)"正在执行" else "完成", style = MaterialTheme.typography.headlineLarge)
-                        Spacer(Modifier.padding(4.dp))
-                        Text(if (isDone)"您的手术很顺利" else "少女施法中...",style = MaterialTheme.typography.titleLarge)
-
-                    }
-                }
-//            MediumTopAppBar(title = {
-//                Column {
-//                    Text("正在执行\nsssss")
-//                    Spacer(Modifier.padding(4.dp))
-////                    Text("正在执行ssss")
-//                }
-//            },colors=TopAppBarDefaults.smallTopAppBarColors(backgroundColor, titleContentColor = contentColor,))
-        }, floatingActionButton = {
-            if (isDone) ExtendedFloatingActionButton(onClick = {}, text = {
-                Text("关闭")
-            }, icon = {
-                Icon(Icons.Default.Close,"exit")
-            }, containerColor = primary, contentColor = onPrimary, modifier = Modifier.padding(end = 36.dp, bottom = 16.dp))
-        }) {
-            Card(
-                modifier = Modifier.padding(it).padding(top = 16.dp).padding(horizontal = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = background, contentColor = primary),
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp )
-            ) {
-
-            Column(modifier = Modifier.fillMaxSize(),Arrangement.spacedBy(4.dp)) {
-                Spacer(Modifier.padding(4.dp))
-                if (!isDone) LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp),)
-                Box(Modifier.weight(1f).padding(horizontal = 16.dp)) {
-                    val scrollV = rememberScrollState()
-                    val scrollH = rememberScrollState()
-                    var text by remember { mutableStateOf("shit") }
-                    val scope = rememberCoroutineScope()
-
-                    LaunchedEffect("the key") {
+    LaunchedEffect("the key") {
 //                        repeat(50){
 //                            delay(31)
 //                            text+=("list is my dick and it getting longer and now is $it cm")
 //                        }
-                        repeat(4){
-                            delay(100)
-                            println("updated ${text.length}")
+        repeat(4){
+            delay(1000)
+            println("updated ${text.length}")
 
-                            text+=("list is my dick and it getting longer and now is $it cm\n")
-                        }
-                        isDone = true
+            text+=("list is my dick and it getting longer and now is $it cm\n")
+        }
+        isDone = true
 
-                    }
-
-                    SelectionContainer(
-                        Modifier.fillMaxSize()
-                    ) {
-                        Text(text, modifier = Modifier.verticalScroll(scrollV).horizontalScroll(scrollH).fillMaxSize())
-                        if (!isDone) SideEffect {
-                            scope.launch {
-                                 with(scrollV)  { scrollTo(maxValue) }
-                            }
-                        }
-                    }
-                    HorizontalScrollbar(rememberScrollbarAdapter(scrollH),Modifier.align(Alignment.BottomCenter).fillMaxWidth(),)
-                    VerticalScrollbar(rememberScrollbarAdapter(scrollV),Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(vertical =8.dp))
-                }
-            }
-            }
-//            Column(Modifier.align(Alignment.Center),Arrangement.spacedBy(8.dp)) {
-//                Text("正在执行", style = MaterialTheme.typography.displayMedium)
-//
-//            }
-        }}
     }
+
+
+    Invoking(
+        isDone = isDone,
+        smallTitle = subtitle,
+        text = text
+    )
+
+
 
 //    TODO("""
 //        正在执行：
