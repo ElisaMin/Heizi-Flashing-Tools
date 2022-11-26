@@ -9,11 +9,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.modifier.ModifierLocalReadScope
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.InnerDeviceContextState
 import net.dongliu.apk.parser.bean.ApkIcon
 import org.jetbrains.compose.splitpane.*
@@ -83,7 +81,7 @@ fun ViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.paddi
         defaultSplitter()
         second { second(PaddingValues(8.dp)) }
     } else VerticalSplitPane {
-        first((176+ 36).dp) { first() }
+        first((176+36-8).dp) { first() }
         defaultSplitter()
         second { second(PaddingValues(horizontal = 8.dp)) }
     }

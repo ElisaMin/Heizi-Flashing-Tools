@@ -2,15 +2,18 @@
 package debug.heizi.flashing_tool.sideloader
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
+import me.heizi.flashing_tool.adb.disconnect
 import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.InnerDeviceContextState
 import me.heizi.flashing_tool.sideloader.isSideload
@@ -20,17 +23,18 @@ import net.dongliu.apk.parser.bean.ApkIcon
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 
 
+
 @OptIn(ExperimentalSplitPaneApi::class, ExperimentalComposeUiApi::class)
 fun main() {
     singleWindowApplication {
         val viewModel = remember {
             object :ViewModel {
 
-                override val devices: List<ADBDevice> = listOf(
+                override var devices: List<ADBDevice> by mutableStateOf(listOf(
                     ADB.test
-                )
+                ))
                 override val selected: MutableSet<String> get() =  Context.selected
-                override var isWaiting: Boolean = false
+                override var isWaiting: Boolean by mutableStateOf(false)
                 override val packageDetails: Map<String, Array<String>>
                     = mapOf("details" to arrayOf("test","test"))
                 override val icon: ApkIcon<*>? = null
@@ -46,12 +50,15 @@ fun main() {
 
                 override fun onConnectRequest(contextState: InnerDeviceContextState) {
                     Context.scope.launch {
-                        snacks.showSnackbar(contextState.toString())
+                        isWaiting = true
+                        snacks.showSnackbar(contextState.toString(), duration = SnackbarDuration.Indefinite)
+                        delay(1000)
+                        isWaiting = false
+                        snacks.currentSnackbarData?.dismiss()
                     }
                 }
 
                 override fun switchMode() {
-
                     isSideload = !isSideload
                 }
 
@@ -60,6 +67,9 @@ fun main() {
                 }
 
                 override suspend fun CoroutineScope.onLaunching() {
+                    delay(3000)
+                    devices.first().disconnect()
+                    devices = listOf(devices.first())
                 }
 
                 override fun onOut() {

@@ -1,7 +1,8 @@
 package me.heizi.flashing_tool.sideloader.screens
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -9,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import me.heizi.flashing_tool.sideloader.isSideload
 import net.dongliu.apk.parser.bean.ApkIcon
 
 
@@ -32,31 +32,28 @@ fun Info(
     version:String?=null,
     switchMode:()->Unit
 ) = Card(modifier) {
-
-    AppTitle(
-        icon,
-        titleName,
-        packageName,
-        version
-    )
-
-    FilledTonalButton(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        onClick = switchMode,
-        content = {
-            Text("这是刷机包?") },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    Column(Modifier.paddingButBottom(8.dp).verticalScroll(rememberScrollState())) {
+        AppTitle(
+            icon,
+            titleName,
+            packageName,
+            version
         )
-    )
-
-    Detail(
-        Modifier.paddingButBottom(16.dp),
-        packageDetail
-    )
-
-
+        FilledTonalButton(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            onClick = switchMode,
+            content = {
+                Text("这是刷机包?") },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            )
+        )
+        Detail(
+            Modifier.paddingButBottom(16.dp),
+            packageDetail
+        )
+    }
 }
 
 
@@ -76,6 +73,7 @@ private fun AppTitle(
     modifier: Modifier = Modifier
 ) = BoxWithConstraints(modifier) {
 
+    @Composable
     fun content(padding: PaddingValues) = AppTitleInner(icon,title,packageName,version,padding)
 
     if (maxWidth > 156.dp) Row {
