@@ -1,9 +1,6 @@
 package me.heizi.flashing_tool.sideloader
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -19,15 +16,13 @@ import kotlin.math.roundToLong
 
 // TODO make it close to [ViewModel]
 // TODO new class of files
-interface Context {
+sealed interface Context {
     val files:List<File>
-    val selected:MutableSet<String>
 
     private class AbstractContext(
         override val files: List<File>
     ):Context {
         constructor(filePath: String) : this(listOf(File(filePath)))
-        override val selected: MutableSet<String> get() = Context.selected
     }
 
 
@@ -38,15 +33,18 @@ interface Context {
     //TODO Apk detail map,invoke prm
     abstract class Install private constructor(
     ):Context {
-
+        //TODO turn it as composable
         interface Info {
+            @Text("")
             val isReplaceExisting:Boolean
             val isTestAllow:Boolean
             val isDebugAllow:Boolean
             val isGrantAllPms:Boolean
             val isInstant:Boolean
             val abi:String?
+            private annotation class Text(val name:String)
         }
+
     }
 
 

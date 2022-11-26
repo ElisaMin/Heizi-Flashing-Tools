@@ -6,20 +6,25 @@ import me.heizi.flashing_tool.sideloader.Context
 
 
 
-interface ViewModel:Context {
+interface ViewModel {
 
     val devices:List<ADBDevice>
     val isWaiting:Boolean
     fun addDevice(serial:String):Boolean
+
     // do it on compose
     // fun onConnectRequest(contextState: InnerDeviceContextState)
 
 }
 
 @Composable
-fun ViewModel.Full() {
+operator fun ViewModel.invoke() {
 
 }
 
+
+
 @Composable
 fun Snackbar() {}
+
+

@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.sideloader.isSideload
+import me.heizi.flashing_tool.sideloader.*
 
 
 /**

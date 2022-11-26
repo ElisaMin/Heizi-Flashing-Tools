@@ -1,12 +1,11 @@
-package me.heizi.flashing_tool.sideloader.screens
+package me.heizi.flashing_tool.sideloader
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.sideloader.isSideload
-import me.heizi.flashing_tool.sideloader.screens.InnerDeviceContextState.*
+import me.heizi.flashing_tool.sideloader.InnerDeviceContextState.*
 
 
 sealed class InnerDeviceContextState {
@@ -24,18 +23,6 @@ sealed class InnerDeviceContextState {
 }
 val InnerDeviceContextState.isAvailable
     get() = this !is Unavailable
-
-//@JvmInline
-//value class InnerDeviceContextState private constructor(val code: Int = -1) {
-//    companion object {
-//        val Unavailable = InnerDeviceContextState(0)
-//        val Reconnect = InnerDeviceContextState(1)
-//        val AndroidEvenRebootNeed = InnerDeviceContextState(2)
-////        val RecoveryRebootNeed = InnerDeviceContextState(3)
-//        val SideloadRebootNeed = InnerDeviceContextState(4)
-//        val Connected = InnerDeviceContextState(5)
-//    }
-//}
 
 @Composable
 fun InnerDeviceContextState.color():CardColors = when(this) {
