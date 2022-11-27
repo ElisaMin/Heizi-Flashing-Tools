@@ -43,7 +43,7 @@ fun DeviceScreen(
     selected:MutableSet<String>,
     isWaiting:Boolean,
     addDevice:(serial:String)->Boolean,
-    onConnectRequest: (context: InnerDeviceContextState) -> Unit
+    onConnectRequest: (context: InnerDeviceContextState, serial:String) -> Unit
 )= Row(modifier) {
 
     var isInputDialogLaunch by remember { mutableStateOf(false) }
@@ -130,7 +130,7 @@ fun ListDevice(
     isWaiting: Boolean,
     devices:List<ADBDevice>,
     onSelecting:(serial:String)->Boolean,
-    onConnectRequest:(context:InnerDeviceContextState) ->Unit
+    onConnectRequest:(context:InnerDeviceContextState, serial:String) ->Unit
 ) {
     for (device in devices) {
         DeviceRemembered(device.serial,device.state, select =  {
@@ -146,16 +146,16 @@ fun DeviceRemembered(
     state: ADBDevice.DeviceState,
     select:(isSelected:Boolean)->Boolean,
     isWaiting: Boolean = false,
-    connectRequest: (state:InnerDeviceContextState) -> Unit
+    connectRequest: (state:InnerDeviceContextState, serial:String) -> Unit
 ) {
-    val context = remember(serial,101) { state.context() }
-    val text = remember(serial,102) { state.notify(context) }
+    val context = state.context()
+    val text = state.notify(context)
     var isSelected by remember(serial,103) { mutableStateOf(false) }
     val color = if (isSelected) InnerDeviceContextState.clickedColor() else context.color()
     Device(serial,state,isSelected,context,color,text,isWaiting) {
         if (state == if (isSideload) ADBDevice.DeviceState.sideload else ADBDevice.DeviceState.device ) {
             isSelected = select(isSelected)
-        } else connectRequest(context)
+        } else connectRequest(context,serial)
     }
 }
 
@@ -172,7 +172,7 @@ fun Device(
     onClick:()->Unit
 ) {
     Card(
-        enabled = context.isAvailable || !isWaiting ,
+        enabled = context.isAvailable && !isWaiting ,
 //        modifier = Modifier.paddingButBottom(8.dp),
         colors = contentColor,
         onClick = onClick,
@@ -184,7 +184,7 @@ fun Device(
         }
     )
 }
-
+@Composable
 fun ADBDevice.DeviceState.notify(
     context:InnerDeviceContextState = this.context()
 ):String = buildString {

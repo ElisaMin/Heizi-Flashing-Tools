@@ -33,9 +33,8 @@ fun InnerDeviceContextState.color():CardColors = when(this) {
 }.let {
     CardDefaults.cardColors(it)
 }
-
-fun ADBDevice.DeviceState.context():InnerDeviceContextState = with(ADBDevice.DeviceState) {
-    when(this@context) {
+fun ADBDevice.DeviceState.toContext() = with(ADBDevice.DeviceState) {
+    when(this@toContext) {
         // unavailable
         bootloader, notfound -> Unavailable
         // reconnect-able
@@ -47,3 +46,6 @@ fun ADBDevice.DeviceState.context():InnerDeviceContextState = with(ADBDevice.Dev
     }
 
 }
+
+@Composable
+fun ADBDevice.DeviceState.context():InnerDeviceContextState = toContext()

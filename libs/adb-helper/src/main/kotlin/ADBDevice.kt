@@ -16,7 +16,7 @@ fun ADBDevice.resultNeeding(vararg command: String,resultNeeding: Boolean = fals
 fun ADBDevice.reconnect()
         = execute("reconnect")
 fun ADBDevice.disconnect()
-        = execute("disconnect")
+        = execute("disconnect",serial)
 
 infix fun ADBDevice.shell(command:String)
         = execute("shell",command)
@@ -66,7 +66,7 @@ suspend fun ADBDevice.state()
  * 为代码解构——读取和执行指令。
  * only impl see [ADB].
  */
-sealed interface ADBDevice {
+interface ADBDevice {
 
     /**
      * use for command `adb -s $seral`, it can be the host port or device id

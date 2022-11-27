@@ -94,7 +94,11 @@ object ADB {
             set(connecting) {
                 if (connecting) reconnect() else disconnect()
                 scope.launch {
-                    state = state()
+                    runCatching {
+                        state()
+                    }.getOrNull()?.let {
+                        state = it
+                    }
                 }
             }
 
@@ -112,8 +116,6 @@ object ADB {
         private fun Array<out String>.afterThisDevice():Array<out String>
                 = arrayOf("-s",serial,*this)
     }
-
-    val test:ADBDevice get() = AdbDeviceImpl("nothings", device)
 }
 
 

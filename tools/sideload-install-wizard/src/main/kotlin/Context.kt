@@ -9,40 +9,60 @@ import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.adb.install
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
+import net.dongliu.apk.parser.bean.ApkIcon
 import java.io.File
-import java.util.StringJoiner
 import kotlin.math.roundToLong
 
 
 // TODO make it close to [ViewModel]
 // TODO new class of files
 sealed interface Context {
+
     val files:List<File>
 
-    private class AbstractContext(
+    object Ready:Context {
         override val files: List<File>
+            get() = emptyList()
+    }
+
+    abstract class SingleFileContext(
+        val file:File
     ):Context {
-        constructor(filePath: String) : this(listOf(File(filePath)))
+        override val files: List<File> = listOf(file)
+        open val name get() =  file.name
+        open val packageName:String?=null
+        open val version:String?=null
+        open val icon:ApkIcon<*>?=null
+        open val details = mapOf(
+            "路径" to arrayOf(file.absolutePath),
+            "大小" to arrayOf(file.size),
+        )
     }
 
 
     abstract class Sideload
-    private constructor(filePath: String):Context by AbstractContext(filePath) {
-
+    private constructor(file:File): SingleFileContext(file) {
     }
     //TODO Apk detail map,invoke prm
     abstract class Install private constructor(
+
     ):Context {
-        //TODO turn it as composable
+
+
+
         interface Info {
-            @Text("")
+            @Text("替换")
             val isReplaceExisting:Boolean
+            @Text("测试")
             val isTestAllow:Boolean
+            @Text("Debug")
             val isDebugAllow:Boolean
+            @Text("权限通行")
             val isGrantAllPms:Boolean
+            @Text("临时")
             val isInstant:Boolean
             val abi:String?
-            private annotation class Text(val name:String)
+            private annotation class Text(val text:String)
         }
 
     }
@@ -61,7 +81,9 @@ sealed interface Context {
          var isDone:Boolean? by mutableStateOf(null)
              private set
          private var current = 1
-         private val devices = Context.devices.filter { it.serial in selected }
+         private val devices = Context.devices.filter {
+             it.serial in selected && it.state.toContext() is InnerDeviceContextState.Connected
+         }
 
          fun updateSubTitle(msg:String) = msg.let {
              subTitle=it+"\n"
@@ -147,9 +169,11 @@ sealed interface Context {
     }
     companion object {
 
-        val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
+        operator fun invoke(files: List<File>):Context {
+            TODO()
+        }
 
-        val current = MutableSharedFlow<Context>()
+        val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
 
         val devices = flow {
             ADB.devices.collect(::emit)

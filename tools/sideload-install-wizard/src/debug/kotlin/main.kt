@@ -17,22 +17,47 @@ import me.heizi.flashing_tool.adb.disconnect
 import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.InnerDeviceContextState
 import me.heizi.flashing_tool.sideloader.isSideload
-import me.heizi.flashing_tool.sideloader.screens.ViewModel
+import me.heizi.flashing_tool.sideloader.screens.Device
+import me.heizi.flashing_tool.sideloader.screens.HomeViewModel
+import me.heizi.flashing_tool.sideloader.screens.HostViewModel
 import me.heizi.flashing_tool.sideloader.screens.invoke
+import me.heizi.kotlinx.shell.Shell
 import net.dongliu.apk.parser.bean.ApkIcon
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
+import kotlin.coroutines.CoroutineContext
 
+val shell = Shell("echo hello world")
 
+class DebugDevice(
+    override val serial: String = "device",
+    override val state: ADBDevice.DeviceState,
+) :ADBDevice {
+    override var isConnected: Boolean = false
+    override fun execute(vararg command: String) {
+        println(command.joinToString())
+    }
+
+    override fun executeWithResult(vararg command: String, isStart: Boolean): Shell {
+        println(command.joinToString())
+        return shell
+    }
+
+    override fun live(coroutineContext: CoroutineContext): ADBDevice.Live {
+        TODO("Not yet implemented")
+    }
+}
 
 @OptIn(ExperimentalSplitPaneApi::class, ExperimentalComposeUiApi::class)
 fun main() {
     singleWindowApplication {
-        val viewModel = remember {
-            object :ViewModel {
-
-                override var devices: List<ADBDevice> by mutableStateOf(listOf(
-                    ADB.test
-                ))
+        val homeViewModel = remember {
+            object :HostViewModel() {
+                override var devices: List<ADBDevice> = mutableStateListOf(
+                    DebugDevice("android",ADBDevice.DeviceState.device),
+                    DebugDevice("recovery",ADBDevice.DeviceState.recovery),
+                    DebugDevice("offline",ADBDevice.DeviceState.offline),
+                    DebugDevice("sideload",ADBDevice.DeviceState.sideload),
+                )
                 override val selected: MutableSet<String> get() =  Context.selected
                 override var isWaiting: Boolean by mutableStateOf(false)
                 override val packageDetails: Map<String, Array<String>>
@@ -41,24 +66,13 @@ fun main() {
                 override val titleName: String = "名字"
                 override val packageName: String = "包名"
                 override val version: String = "版本名称"
-                override val snacks: SnackbarHostState
-                    = SnackbarHostState()
 
                 override fun addDevice(serial: String): Boolean {
                     return true
                 }
 
-                override fun onConnectRequest(contextState: InnerDeviceContextState) {
-                    Context.scope.launch {
-                        isWaiting = true
-                        snacks.showSnackbar(contextState.toString(), duration = SnackbarDuration.Indefinite)
-                        delay(1000)
-                        isWaiting = false
-                        snacks.currentSnackbarData?.dismiss()
-                    }
-                }
-
                 override fun switchMode() {
+                    selected.clear()
                     isSideload = !isSideload
                 }
 
@@ -67,9 +81,6 @@ fun main() {
                 }
 
                 override suspend fun CoroutineScope.onLaunching() {
-                    delay(3000)
-                    devices.first().disconnect()
-                    devices = listOf(devices.first())
                 }
 
                 override fun onOut() {
@@ -79,7 +90,7 @@ fun main() {
             }
 
         }
-        viewModel()
+        homeViewModel()
 
 
 //        var isOpen by remember { mutableStateOf(true) }

@@ -7,45 +7,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.sideloader.InnerDeviceContextState
-import net.dongliu.apk.parser.bean.ApkIcon
+
 import org.jetbrains.compose.splitpane.*
-
-@Stable
-interface ViewModel {
-
-    val devices:List<ADBDevice>
-    val selected:MutableSet<String>
-    val isWaiting:Boolean
-
-    val packageDetails:Map<String,Array<String>>
-    val icon:ApkIcon<*>?
-    val titleName:String
-    val packageName:String?
-    val version:String?
-
-    val snacks:SnackbarHostState
-
-    fun addDevice(serial:String):Boolean
-    fun onConnectRequest(contextState: InnerDeviceContextState)
-
-    fun switchMode()
-
-    fun nextStep()
-
-    suspend fun CoroutineScope.onLaunching()
-    fun onOut()
-
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-operator fun ViewModel.invoke() {
+operator fun HomeViewModel.invoke() {
     LaunchedEffect("launchOnHome") {
         onLaunching()
     }
@@ -61,12 +30,12 @@ operator fun ViewModel.invoke() {
     )
 }
 @Composable
-fun ViewModel.snackbar() {
+fun HomeViewModel.snackbar() {
     SnackbarHost(snacks)
 }
 
 @Composable
-fun ViewModel.fab() {
+fun HomeViewModel.fab() {
     if (!isWaiting) ExtendedFloatingActionButton(
         onClick = ::nextStep,
         text = { Text("安装") },
@@ -75,7 +44,7 @@ fun ViewModel.fab() {
 }
 
 @OptIn(ExperimentalSplitPaneApi::class) @Composable
-fun ViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.padding(padding)) {
+fun HomeViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.padding(padding)) {
     if (maxWidth> 380.dp) HorizontalSplitPane(splitPaneState = rememberSplitPaneState(0.6f)) {
         first(176.dp,) { first() }
         defaultSplitter()
@@ -88,7 +57,7 @@ fun ViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.paddi
 
 }
 @Composable
-fun ViewModel.first() {
+fun HomeViewModel.first() {
     Info(
         modifier = Modifier.fillMaxSize().padding(8.dp),
         packageDetail =packageDetails,
@@ -100,7 +69,7 @@ fun ViewModel.first() {
     )
 }
 @Composable
-fun ViewModel.second(padding:PaddingValues){
+fun HomeViewModel.second(padding:PaddingValues){
     DeviceScreen(
         modifier = Modifier.padding(padding),
         devices = devices,
