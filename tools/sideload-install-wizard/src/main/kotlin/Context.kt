@@ -29,7 +29,7 @@ sealed interface Context {
         val file:File
     ):Context {
         override val files: List<File> = listOf(file)
-        open val name get() =  file.name
+        open val name get() =  file.fileName
         open val packageName:String?=null
         open val version:String?=null
         open val icon:ApkIcon<*>?=null
@@ -83,6 +83,17 @@ sealed interface Context {
          private var current = 1
          private val devices = Context.devices.filter {
              it.serial in selected && it.state.toContext() is InnerDeviceContextState.Connected
+         }
+
+
+         init {
+             scope.launch {
+                 delay(500)
+                 updateSubTitle("开始执行。")
+                 start(context)
+                 isDone = false
+             }
+
          }
 
          fun updateSubTitle(msg:String) = msg.let {
@@ -154,18 +165,7 @@ sealed interface Context {
                 isDone = true
                  updateSubTitle(it)
             }
-
-
-         init {
-             scope.launch {
-                 delay(500)
-             }
-             updateSubTitle("开始执行。")
-             isDone = false
-
-         }
-
-
+         
     }
     companion object {
 
@@ -179,25 +179,13 @@ sealed interface Context {
             ADB.devices.collect(::emit)
             ADB.savedDevices.collect(::emit)
         }
-        private val fakeSelected: SnapshotStateMap<String, Nothing?> = mutableStateMapOf()
-        val selected: MutableSet<String> = object : MutableSet<String>,Collection<String> by fakeSelected.keys {
-            inline fun withTrue(crossinline block:()->Unit):Boolean {
-                block()
-                return true
+        val selected: MutableList<String> = mutableStateListOf()
+        fun List<String>.deviceFilter(devices:List<ADBDevice>) =
+            mapNotNull { serial ->
+                serial.takeIf {
+                    devices[serial]?.isContextConnected == true
+                }
             }
-            override fun add(element: String): Boolean = withTrue { fakeSelected[element] = null }
-            override fun addAll(elements: Collection<String>): Boolean = withTrue { fakeSelected.putAll(elements.map { Pair(it,null) }) }
-            override fun clear() = fakeSelected.clear()
-            override fun iterator(): MutableIterator<String> = object : MutableIterator<String> {
-                val iterable = fakeSelected.iterator()
-                override fun hasNext(): Boolean = iterable.hasNext()
-                override fun next(): String = iterable.next().key
-                override fun remove() = iterable.remove()
-            }
-            override fun retainAll(elements: Collection<String>): Boolean { throw NotImplementedError() }
-            override fun removeAll(elements: Collection<String>): Boolean = withTrue { elements.forEach(fakeSelected::remove) }
-            override fun remove(element: String): Boolean =withTrue { fakeSelected.remove(element) }
-        }
     }
 }
 val Context.isAPk get() = when (this) {

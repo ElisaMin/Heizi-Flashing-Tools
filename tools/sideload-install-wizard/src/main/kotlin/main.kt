@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toPainter
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.heizi.flashing_tool.adb.ADBDevice
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -20,6 +21,7 @@ val files = MutableStateFlow(listOf<File>())
 val context = compositionLocalOf<Context> {
     Context.Ready
 }
+operator fun List<ADBDevice>.get(serial:String) = find { it.serial == serial }
 
 
 object Resources {

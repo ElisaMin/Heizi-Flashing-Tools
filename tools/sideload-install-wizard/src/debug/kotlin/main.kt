@@ -2,24 +2,14 @@
 package debug.heizi.flashing_tool.sideloader
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.adb.disconnect
-import me.heizi.flashing_tool.sideloader.Context
-import me.heizi.flashing_tool.sideloader.InnerDeviceContextState
 import me.heizi.flashing_tool.sideloader.isSideload
-import me.heizi.flashing_tool.sideloader.screens.Device
-import me.heizi.flashing_tool.sideloader.screens.HomeViewModel
-import me.heizi.flashing_tool.sideloader.screens.HostViewModel
+import me.heizi.flashing_tool.sideloader.screens.AbstractHomeViewModel
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.shell.Shell
 import net.dongliu.apk.parser.bean.ApkIcon
@@ -51,14 +41,13 @@ class DebugDevice(
 fun main() {
     singleWindowApplication {
         val homeViewModel = remember {
-            object :HostViewModel() {
+            object :AbstractHomeViewModel() {
                 override var devices: List<ADBDevice> = mutableStateListOf(
                     DebugDevice("android",ADBDevice.DeviceState.device),
                     DebugDevice("recovery",ADBDevice.DeviceState.recovery),
                     DebugDevice("offline",ADBDevice.DeviceState.offline),
                     DebugDevice("sideload",ADBDevice.DeviceState.sideload),
                 )
-                override val selected: MutableSet<String> get() =  Context.selected
                 override var isWaiting: Boolean by mutableStateOf(false)
                 override val packageDetails: Map<String, Array<String>>
                     = mapOf("details" to arrayOf("test","test"))
@@ -72,7 +61,6 @@ fun main() {
                 }
 
                 override fun switchMode() {
-                    selected.clear()
                     isSideload = !isSideload
                 }
 

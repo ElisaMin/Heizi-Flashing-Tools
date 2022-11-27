@@ -75,6 +75,7 @@ fun HomeViewModel.second(padding:PaddingValues){
         devices = devices,
         selected = selected,
         isWaiting = isWaiting,
+        onSelecting = ::onSelecting,
         addDevice = ::addDevice,
         onConnectRequest = ::onConnectRequest
     )

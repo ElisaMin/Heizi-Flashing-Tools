@@ -33,6 +33,7 @@ fun InnerDeviceContextState.color():CardColors = when(this) {
 }.let {
     CardDefaults.cardColors(it)
 }
+val ADBDevice.isContextConnected get() = state.toContext() is Connected
 fun ADBDevice.DeviceState.toContext() = with(ADBDevice.DeviceState) {
     when(this@toContext) {
         // unavailable

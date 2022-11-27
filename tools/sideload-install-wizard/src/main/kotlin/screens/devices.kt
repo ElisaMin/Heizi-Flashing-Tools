@@ -40,8 +40,9 @@ import me.heizi.flashing_tool.sideloader.*
 fun DeviceScreen(
     modifier: Modifier = Modifier,
     devices:List<ADBDevice>,
-    selected:MutableSet<String>,
+    selected:List<String>,
     isWaiting:Boolean,
+    onSelecting: (serial: String) -> Boolean,
     addDevice:(serial:String)->Boolean,
     onConnectRequest: (context: InnerDeviceContextState, serial:String) -> Unit
 )= Row(modifier) {
@@ -66,10 +67,8 @@ fun DeviceScreen(
             devices = devices,
             isWaiting = isWaiting,
             onConnectRequest = onConnectRequest,
-            onSelecting = { device ->
-                if (device in selected) selected-=device else selected+=device
-                device in selected
-            }
+            selected = selected,
+            onSelecting = onSelecting,
         )
 
 
@@ -129,13 +128,16 @@ fun addDeviceDialog(
 fun ListDevice(
     isWaiting: Boolean,
     devices:List<ADBDevice>,
-    onSelecting:(serial:String)->Boolean,
+    selected: List<String>,
+    onSelecting:(serial:String,)->Boolean,
     onConnectRequest:(context:InnerDeviceContextState, serial:String) ->Unit
 ) {
     for (device in devices) {
         DeviceRemembered(device.serial,device.state, select =  {
-            onSelecting(device.serial)
-        }, connectRequest = onConnectRequest, isWaiting = isWaiting)
+            onSelecting( device.serial)
+        }, connectRequest = onConnectRequest, isWaiting = isWaiting,
+            initSelected = device.serial in selected
+        )
     }
 }
 
@@ -144,17 +146,18 @@ fun ListDevice(
 fun DeviceRemembered(
     serial: String,
     state: ADBDevice.DeviceState,
-    select:(isSelected:Boolean)->Boolean,
+    select:()->Boolean,
     isWaiting: Boolean = false,
+    initSelected:Boolean,
     connectRequest: (state:InnerDeviceContextState, serial:String) -> Unit
 ) {
     val context = state.context()
     val text = state.notify(context)
-    var isSelected by remember(serial,103) { mutableStateOf(false) }
+    var isSelected by mutableStateOf(initSelected)
     val color = if (isSelected) InnerDeviceContextState.clickedColor() else context.color()
     Device(serial,state,isSelected,context,color,text,isWaiting) {
         if (state == if (isSideload) ADBDevice.DeviceState.sideload else ADBDevice.DeviceState.device ) {
-            isSelected = select(isSelected)
+            isSelected = select()
         } else connectRequest(context,serial)
     }
 }
