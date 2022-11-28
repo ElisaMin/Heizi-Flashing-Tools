@@ -8,12 +8,14 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.CoroutineScope
 import me.heizi.flashing_tool.adb.ADBDevice
+import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.flashing_tool.sideloader.screens.AbstractHomeViewModel
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.shell.Shell
 import net.dongliu.apk.parser.bean.ApkIcon
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 val shell = Shell("echo hello world")
@@ -40,6 +42,19 @@ class DebugDevice(
 @OptIn(ExperimentalSplitPaneApi::class, ExperimentalComposeUiApi::class)
 fun main() {
     singleWindowApplication {
+        Context.Ready()
+//        object : Context.Invoke {
+//        override val smallTitle: String = "s"
+//        override val message: String = "m"
+//        override val isSuccess: Boolean? = null
+//        override val isDone: Boolean? = true
+//
+//        override fun start() {
+//
+//        }
+//
+//        override val files: List<File> = emptyList()
+//    }.invoke()
         val homeViewModel = remember {
             object :AbstractHomeViewModel() {
                 override var devices: List<ADBDevice> = mutableStateListOf(
@@ -78,7 +93,7 @@ fun main() {
             }
 
         }
-        homeViewModel()
+//        homeViewModel()
 
 
 //        var isOpen by remember { mutableStateOf(true) }

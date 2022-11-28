@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.sideloader.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +15,53 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import me.heizi.flashing_tool.sideloader.Context
+import kotlin.system.exitProcess
 
+@Composable
+operator fun Context.Ready.invoke(
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+)  {
+    Box(Modifier.fillMaxSize().background(backgroundColor)) {
+        Text(
+            "正在加载中...",
+            color = color,
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+//睡了
+@Composable
+operator fun Context.Invoke.invoke(
+    exit:()->Unit = {
+        runBlocking {
+            withRunningRecomposer {
+                it.close()
+                it.join()
+                exitProcess(0)
+            }
+        }
+    }
+) {
+    if (isDone == null) {
+        Context.Ready.invoke()
+    } else Invoke(
+        title = if (!isDone!!) "正在执行" else when(isSuccess) {
+            true->"执行成功"
+            false->"执行失败"
+            null->"正在执行"
+        },smallTitle = smallTitle,
+        isDone = isDone!!,
+        text = message,
+        closeBtnClick = exit
+    )
+    LaunchedEffect("invoking command") {
+        start()
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,7 +1,6 @@
 package me.heizi.flashing_tool.sideloader
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import me.heizi.flashing_tool.adb.ADB
@@ -67,40 +66,39 @@ sealed interface Context {
 
     }
 
+    interface Invoke:Context {
+        val smallTitle:String
+        val message:String
+        val isSuccess:Boolean?
+        val isDone:Boolean?
+        fun start()
+    }
 
      @OptIn(FlowPreview::class)
-     class Invoking private constructor(
-         context: Context
-     ) :Context by context {
-         var subTitle by mutableStateOf("正在预热中...")
+     class SingleInvoking private constructor(
+         private val parent: Context
+     ) :Context by parent,Invoke {
+         override var smallTitle by mutableStateOf("正在预热中...")
              private set
-         var message by mutableStateOf("")
+         override var message by mutableStateOf("")
              private set
-         var isSuccess:Boolean? by mutableStateOf(null)
+         override var isSuccess:Boolean? by mutableStateOf(null)
              private set
-         var isDone:Boolean? by mutableStateOf(null)
+         override var isDone:Boolean? by mutableStateOf(null)
              private set
          private var current = 1
          private val devices = Context.devices.filter {
              it.serial in selected && it.state.toContext() is InnerDeviceContextState.Connected
          }
 
-
-         init {
+         override fun start() {
              scope.launch {
                  delay(500)
                  updateSubTitle("开始执行。")
-                 start(context)
+                 start(parent)
                  isDone = false
              }
-
          }
-
-         fun updateSubTitle(msg:String) = msg.let {
-             subTitle=it+"\n"
-             message+=it
-         }
-
          private suspend fun start(context: Context) {
              val isApk = context.isAPk
                  ?:error("unexpected context:$context, is not apk or sideload")
@@ -124,6 +122,10 @@ sealed interface Context {
              } else start { file, device ->
                  device.executeWithResult("sideload",file.absolutePath,isStart = false)
              }
+         }
+         fun updateSubTitle(msg:String) = msg.let {
+             smallTitle=it+"\n"
+             message+=it
          }
          private suspend inline fun start(crossinline collector: (File,ADBDevice)->Shell) = devices.flatMapConcat {device->
              files.map { file ->
@@ -165,7 +167,7 @@ sealed interface Context {
                 isDone = true
                  updateSubTitle(it)
             }
-         
+
     }
     companion object {
 
