@@ -15,11 +15,12 @@
  */
 package androidx.palette.graphics
 
-import ColorUtils
 import androidx.compose.ui.graphics.Color
 import androidx.palette.graphics.Palette.Swatch
+import colorToHSL
 import java.awt.Color.*
 import java.util.*
+import kotlin.math.roundToInt
 
 
 /**
@@ -277,16 +278,16 @@ internal class ColorCutQuantizer(
                     greenSum += colorPopulation * quantizedGreen(color)
                     blueSum += colorPopulation * quantizedBlue(color)
                 }
-                val redMean: Int = Math.round(redSum / totalPopulation.toFloat())
-                val greenMean: Int = Math.round(greenSum / totalPopulation.toFloat())
-                val blueMean: Int = Math.round(blueSum / totalPopulation.toFloat())
+                val redMean: Int = (redSum / totalPopulation.toFloat()).roundToInt()
+                val greenMean: Int = (greenSum / totalPopulation.toFloat()).roundToInt()
+                val blueMean: Int = (blueSum / totalPopulation.toFloat()).roundToInt()
                 return Swatch(approximateToRgb888(redMean, greenMean, blueMean), totalPopulation)
             }
     }
 
     private fun shouldIgnoreColor(color565: Int): Boolean {
         val rgb: Int = approximateToRgb888(color565)
-        ColorUtils.colorToHSL(rgb, mTempHsl)
+        colorToHSL(rgb, mTempHsl)
         return shouldIgnoreColor(rgb, mTempHsl)
     }
 

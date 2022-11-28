@@ -15,23 +15,33 @@
  */
 package androidx.palette.graphics
 
-import android.graphics.Bitmap
-import android.graphics.Rect
-import android.util.SparseBooleanArray
+import RGBToHSL
 import androidx.collection.SimpleArrayMap
+import androidx.collection.SparseArrayCompat
 import androidx.compose.ui.graphics.Color
-import androidx.core.util.Preconditions
 import androidx.palette.graphics.Palette.Builder
-import androidx.palette.graphics.Palette.PaletteAsyncListener
+import calculateMinimumAlpha
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Rect
+import setAlphaComponent
 import java.util.Arrays
 import java.util.Collections
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+
+private val Color.Companion.WHITE: Int
+    get() = Color.White.value.toInt()
+private val Color.Companion.BLACK: Int
+    get() = Color.Black.value.toInt()
 
 @Deprecated("not this shit", replaceWith = ReplaceWith(""))
 annotation class ColorInt
 @Deprecated("not this shit")
 annotation class Px
 
+typealias SparseBooleanArrayList
+    = SparseArrayCompat<Boolean>
 
 /**
  * A helper class to extract prominent colors from an image.
@@ -86,8 +96,8 @@ class Palette internal constructor(
         fun onGenerated(palette: Palette?)
     }
 
-    private val mSelectedSwatches: SimpleArrayMap<Target, Swatch?>
-    private val mUsedColors: SparseBooleanArray
+    private val mSelectedSwatches: SimpleArrayMap<Target, Swatch?> = SimpleArrayMap()
+    private val mUsedColors: SparseBooleanArrayList = SparseBooleanArrayList()
 
     /**
      * Returns the dominant swatch from the palette.
@@ -294,7 +304,7 @@ class Palette internal constructor(
         // Check whether the HSL values are within the correct ranges, and this color hasn't
         // been used yet.
         val hsl = swatch.hsl
-        return ((hsl[1] >= target.minimumSaturation && hsl[1] <= target.maximumSaturation) && hsl[2] >= target.minimumLightness) && hsl[2] <= target.maximumLightness && !mUsedColors[swatch.rgb]
+        return ((hsl[1] >= target.minimumSaturation && hsl[1] <= target.maximumSaturation) && hsl[2] >= target.minimumLightness) && hsl[2] <= target.maximumLightness && !mUsedColors[swatch.rgb]!!
     }
 
     private fun generateScore(swatch: Swatch, target: Target): Float {
@@ -376,8 +386,8 @@ class Palette internal constructor(
                 if (mHsl == null) {
                     mHsl = FloatArray(3)
                 }
-                ColorUtils.RGBToHSL(mRed, mGreen, mBlue, mHsl!!)
-                return mHsl
+                RGBToHSL(mRed, mGreen, mBlue, mHsl!!)
+                return mHsl as FloatArray
             }
 
         /**
@@ -403,42 +413,42 @@ class Palette internal constructor(
         private fun ensureTextColorsGenerated() {
             if (!mGeneratedTextColors) {
                 // First check white, as most colors will be dark
-                val lightBodyAlpha = ColorUtils.calculateMinimumAlpha(
+                val lightBodyAlpha = calculateMinimumAlpha(
                     Color.WHITE, rgb, MIN_CONTRAST_BODY_TEXT
                 )
-                val lightTitleAlpha = ColorUtils.calculateMinimumAlpha(
+                val lightTitleAlpha = calculateMinimumAlpha(
                     Color.WHITE, rgb, MIN_CONTRAST_TITLE_TEXT
                 )
                 if (lightBodyAlpha != -1 && lightTitleAlpha != -1) {
                     // If we found valid light values, use them and return
-                    mBodyTextColor = ColorUtils.setAlphaComponent(Color.WHITE, lightBodyAlpha)
-                    mTitleTextColor = ColorUtils.setAlphaComponent(Color.WHITE, lightTitleAlpha)
+                    mBodyTextColor = setAlphaComponent(Color.WHITE, lightBodyAlpha)
+                    mTitleTextColor = setAlphaComponent(Color.WHITE, lightTitleAlpha)
                     mGeneratedTextColors = true
                     return
                 }
-                val darkBodyAlpha = ColorUtils.calculateMinimumAlpha(
+                val darkBodyAlpha = calculateMinimumAlpha(
                     Color.BLACK, rgb, MIN_CONTRAST_BODY_TEXT
                 )
-                val darkTitleAlpha = ColorUtils.calculateMinimumAlpha(
+                val darkTitleAlpha = calculateMinimumAlpha(
                     Color.BLACK, rgb, MIN_CONTRAST_TITLE_TEXT
                 )
                 if (darkBodyAlpha != -1 && darkTitleAlpha != -1) {
                     // If we found valid dark values, use them and return
-                    mBodyTextColor = ColorUtils.setAlphaComponent(Color.BLACK, darkBodyAlpha)
-                    mTitleTextColor = ColorUtils.setAlphaComponent(Color.BLACK, darkTitleAlpha)
+                    mBodyTextColor = setAlphaComponent(Color.BLACK, darkBodyAlpha)
+                    mTitleTextColor = setAlphaComponent(Color.BLACK, darkTitleAlpha)
                     mGeneratedTextColors = true
                     return
                 }
                 // If we reach here then we can not find title and body values which use the same
                 // lightness, we need to use mismatched values
-                mBodyTextColor = if (lightBodyAlpha != -1) ColorUtils.setAlphaComponent(
+                mBodyTextColor = if (lightBodyAlpha != -1) setAlphaComponent(
                     Color.WHITE,
                     lightBodyAlpha
-                ) else ColorUtils.setAlphaComponent(Color.BLACK, darkBodyAlpha)
-                mTitleTextColor = if (lightTitleAlpha != -1) ColorUtils.setAlphaComponent(
+                ) else setAlphaComponent(Color.BLACK, darkBodyAlpha)
+                mTitleTextColor = if (lightTitleAlpha != -1) setAlphaComponent(
                     Color.WHITE,
                     lightTitleAlpha
-                ) else ColorUtils.setAlphaComponent(Color.BLACK, darkTitleAlpha)
+                ) else setAlphaComponent(Color.BLACK, darkTitleAlpha)
                 mGeneratedTextColors = true
             }
         }
@@ -488,7 +498,7 @@ class Palette internal constructor(
          * Construct a new [Builder] using a source [Bitmap]
          */
         constructor(bitmap: Bitmap) {
-            if (bitmap == null || bitmap.isRecycled) {
+            if (bitmap.isNull) {
                 throw IllegalArgumentException("Bitmap is not valid")
             }
             mFilters.add(DEFAULT_FILTER)
@@ -651,21 +661,18 @@ class Palette internal constructor(
                 // We have a Bitmap so we need to use quantization to reduce the number of colors
                 // First we'll scale down the bitmap if needed
                 val bitmap = scaleBitmapDown(mBitmap)
-                val region = mRegion
+                var region = mRegion
                 if (bitmap != mBitmap && region != null) {
                     // If we have a scaled bitmap and a selected region, we need to scale down the
                     // region to match the new scale
                     val scale = bitmap.width / mBitmap.width.toDouble()
-                    region.left = Math.floor(region.left * scale).toInt()
-                    region.top = Math.floor(region.top * scale).toInt()
-                    region.right = Math.min(
-                        Math.ceil(region.right * scale).toInt(),
-                        bitmap.width
+                    region = Rect(
+                        left = floor(region.left * scale).toFloat(),
+                        top = floor(region.top * scale).toFloat(),
+                        right = ceil(region.right * scale).toFloat().coerceAtMost(bitmap.width.toFloat()),
+                        bottom = Math.ceil(region.bottom * scale).toFloat().coerceAtMost(bitmap.height.toFloat()),
                     )
-                    region.bottom = Math.min(
-                        Math.ceil(region.bottom * scale).toInt(),
-                        bitmap.height
-                    )
+
                 }
                 // Now generate a quantizer from the Bitmap
                 val quantizer = ColorCutQuantizer(
@@ -675,9 +682,9 @@ class Palette internal constructor(
                 )
                 // If created a new bitmap, recycle it
                 if (bitmap != mBitmap) {
-                    bitmap.recycle()
+                    bitmap.reset()
                 }
-                swatches = quantizer.getQuantizedColors()
+                swatches = quantizer.quantizedColors!!
             } else if (mSwatches != null) {
                 // Else we're using the provided swatches
                 swatches = mSwatches
@@ -697,27 +704,27 @@ class Palette internal constructor(
          * generated.
          *
          */
-        @Deprecated(
-            "Use the standard <code>java.util.concurrent</code> or\n" + "          <a href=" https ://developer.android.com/topic/libraries/architecture/coroutines">\n" + "          Kotlin concurrency utilities</a> to call {@link #generate()} instead.")    fun /*@@mtbbih@@*/generate(
-                    listener : PaletteAsyncListener
-        ) : AsyncTask<Bitmap?, Void?, Palette?>
-        {
-            Preconditions.checkNotNull(listener)
-            return object : AsyncTask<Bitmap?, Void?, Palette?>() {
-                protected override fun doInBackground(vararg params: Bitmap): Palette? {
-                    try {
-                        return generate()
-                    } catch (e: Exception) {
-                        Log.e(LOG_TAG, "Exception thrown during async generate", e)
-                        return null
-                    }
-                }
-
-                override fun onPostExecute(colorExtractor: Palette?) {
-                    listener.onGenerated(colorExtractor)
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mBitmap)
-        }
+//        @Deprecated(
+//            "Use the standard <code>java.util.concurrent</code> or\n" + "          <a href=\" https ://developer.android.com/topic/libraries/architecture/coroutines">\n" + "          Kotlin concurrency utilities</a> to call {@link #generate()} instead.")    fun /*@@mtbbih@@*/generate(
+//                    listener : PaletteAsyncListener
+//        ) : AsyncTask<Bitmap?, Void?, Palette?>
+//        {
+//            Preconditions.checkNotNull(listener)
+//            return object : AsyncTask<Bitmap?, Void?, Palette?>() {
+//                protected override fun doInBackground(vararg params: Bitmap): Palette? {
+//                    try {
+//                        return generate()
+//                    } catch (e: Exception) {
+//                        Log.e(LOG_TAG, "Exception thrown during async generate", e)
+//                        return null
+//                    }
+//                }
+//
+//                override fun onPostExecute(colorExtractor: Palette?) {
+//                    listener.onGenerated(colorExtractor)
+//                }
+//            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mBitmap)
+//        }
 
         private fun getPixelsFromBitmap(bitmap: Bitmap): IntArray {
             val bitmapWidth = bitmap.width
@@ -730,8 +737,8 @@ class Palette internal constructor(
             } else {
                 // If we do have a region, lets create a subset array containing only the region's
                 // pixels
-                val regionWidth = mRegion!!.width()
-                val regionHeight = mRegion!!.height()
+                val regionWidth = mRegion!!.width
+                val regionHeight = mRegion!!.height
                 // pixels contains all of the pixels, so we need to iterate through each row and
                 // copy the regions pixels into a new smaller array
                 val subsetPixels = IntArray(regionWidth * regionHeight)
@@ -792,8 +799,6 @@ class Palette internal constructor(
     }
 
     init {
-        mUsedColors = SparseBooleanArray()
-        mSelectedSwatches = SimpleArrayMap()
         dominantSwatch = findDominantSwatch()
     }
 
