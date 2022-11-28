@@ -15,20 +15,36 @@
  */
 package androidx.palette.graphics
 
-import androidx.palette.graphics.Target.Builder
+import kotlin.reflect.*
+
 
 /**
  * A class which allows custom selection of colors in a [Palette]'s generation. Instances
- * can be created via the [Builder] class.
  *
  *
  * To use the target, use the [Palette.Builder.addTarget] API when building a
  * Palette.
  */
-class Target {
-    val mSaturationTargets = FloatArray(3)
-    val mLightnessTargets = FloatArray(3)
-    val mWeights = FloatArray(3)
+data class Target(
+    val saturationTargets: FloatArray = FloatArray(3),
+    val lightnessTargets: FloatArray = FloatArray(3),
+    val weights: FloatArray = FloatArray(3),
+) {
+
+
+    class IndexOf(
+        val a:FloatArray,
+        val i:Int
+    ) {
+        operator fun getValue(target: Target, property: KProperty<*>): Float {
+            return (property as KProperty1<Target,Float>).get(target)
+        }
+
+        operator fun setValue(target: Target, property: KProperty<*>, fl: Float) {
+            (property as KMutableProperty1<Target,Float>).set(target,fl)
+        }
+
+    }
 
     /**
      * Returns whether any color selected for this target is exclusive for this target only.
@@ -38,65 +54,47 @@ class Target {
      */
     var isExclusive = true // default to true
 
-    internal constructor() {
-        setTargetDefaultValues(mSaturationTargets)
-        setTargetDefaultValues(mLightnessTargets)
+    init {
+        setTargetDefaultValues(saturationTargets)
+        setTargetDefaultValues(lightnessTargets)
         setDefaultWeights()
     }
-
-    internal constructor(from: Target) {
-        System.arraycopy(
-            from.mSaturationTargets, 0, mSaturationTargets, 0,
-            mSaturationTargets.size
-        )
-        System.arraycopy(
-            from.mLightnessTargets, 0, mLightnessTargets, 0,
-            mLightnessTargets.size
-        )
-        System.arraycopy(from.mWeights, 0, mWeights, 0, mWeights.size)
-    }
-
     /**
      * The minimum saturation value for this target.
      */
     
-    val minimumSaturation: Float
-        get() = mSaturationTargets[INDEX_MIN]
+    var minimumSaturation: Float by IndexOf(saturationTargets, INDEX_MIN)
+
 
     /**
      * The target saturation value for this target.
      */
     
-    val targetSaturation: Float
-        get() = mSaturationTargets[INDEX_TARGET]
+    var targetSaturation: Float by IndexOf(saturationTargets,INDEX_TARGET)
 
     /**
      * The maximum saturation value for this target.
      */
     
-    val maximumSaturation: Float
-        get() = mSaturationTargets[INDEX_MAX]
+    var maximumSaturation: Float by IndexOf(saturationTargets,INDEX_MAX)
 
     /**
      * The minimum lightness value for this target.
      */
     
-    val minimumLightness: Float
-        get() = mLightnessTargets[INDEX_MIN]
+    var minimumLightness: Float by IndexOf(lightnessTargets,INDEX_MIN)
 
     /**
      * The target lightness value for this target.
      */
     
-    val targetLightness: Float
-        get() = mLightnessTargets[INDEX_TARGET]
+    var targetLightness: Float by IndexOf(lightnessTargets,INDEX_TARGET)
 
     /**
      * The maximum lightness value for this target.
      */
     
-    val maximumLightness: Float
-        get() = mLightnessTargets[INDEX_MAX]
+    var maximumLightness: Float by IndexOf(lightnessTargets,INDEX_MAX)
 
     /**
      * Returns the weight of importance that this target places on a color's saturation within
@@ -108,8 +106,7 @@ class Target {
      *
      * @see .getTargetSaturation
      */
-    val saturationWeight: Float
-        get() = mWeights[INDEX_WEIGHT_SAT]
+    var saturationWeight: Float by IndexOf(weights,INDEX_WEIGHT_SAT)
 
     /**
      * Returns the weight of importance that this target places on a color's lightness within
@@ -121,8 +118,7 @@ class Target {
      *
      * @see .getTargetLightness
      */
-    val lightnessWeight: Float
-        get() = mWeights[INDEX_WEIGHT_LUMA]
+    var lightnessWeight: Float by IndexOf(weights,INDEX_WEIGHT_LUMA)
 
     /**
      * Returns the weight of importance that this target places on a color's population within
@@ -132,21 +128,22 @@ class Target {
      * The larger the weight, relative to the other weights, the more important that a
      * color's population being close to the most populous has on selection.
      */
-    val populationWeight: Float
-        get() = mWeights[INDEX_WEIGHT_POP]
+    var populationWeight: Float by IndexOf(weights,INDEX_WEIGHT_POP)
 
     private fun setDefaultWeights() {
-        mWeights[INDEX_WEIGHT_SAT] = WEIGHT_SATURATION
-        mWeights[INDEX_WEIGHT_LUMA] = WEIGHT_LUMA
-        mWeights[INDEX_WEIGHT_POP] = WEIGHT_POPULATION
+
+        weights[INDEX_WEIGHT_SAT] = WEIGHT_SATURATION
+        weights[INDEX_WEIGHT_LUMA] = WEIGHT_LUMA
+        weights[INDEX_WEIGHT_POP] = WEIGHT_POPULATION
     }
 
+    @Suppress("NAME_SHADOWING")
     fun normalizeWeights() {
         var sum = 0f
         var i = 0
-        val z = mWeights.size
+        val z = weights.size
         while (i < z) {
-            val weight = mWeights[i]
+            val weight = weights[i]
             if (weight > 0) {
                 sum += weight
             }
@@ -154,158 +151,38 @@ class Target {
         }
         if (sum != 0f) {
             var i = 0
-            val z = mWeights.size
+            val z = weights.size
             while (i < z) {
-                if (mWeights[i] > 0) {
-                    mWeights[i] /= sum
+                if (weights[i] > 0) {
+                    weights[i] /= sum
                 }
                 i++
             }
         }
     }
 
-    /**
-     * Builder class for generating custom [Target] instances.
-     */
-    class Builder {
-        private val mTarget: Target
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Target) return false
 
-        /**
-         * Create a new [Target] builder from scratch.
-         */
-        constructor() {
-            mTarget = Target()
-        }
+        if (!saturationTargets.contentEquals(other.saturationTargets)) return false
+        if (!lightnessTargets.contentEquals(other.lightnessTargets)) return false
+        if (!weights.contentEquals(other.weights)) return false
+        if (isExclusive != other.isExclusive) return false
 
-        /**
-         * Create a new builder based on an existing [Target].
-         */
-        constructor(target: Target) {
-            mTarget = Target(target)
-        }
+        return true
+    }
 
-        /**
-         * Set the minimum saturation value for this target.
-         */
-        fun setMinimumSaturation(value: Float): Builder {
-            mTarget.mSaturationTargets[INDEX_MIN] = value
-            return this
-        }
-
-        /**
-         * Set the target/ideal saturation value for this target.
-         */
-        fun setTargetSaturation(value: Float): Builder {
-            mTarget.mSaturationTargets[INDEX_TARGET] = value
-            return this
-        }
-
-        /**
-         * Set the maximum saturation value for this target.
-         */
-        fun setMaximumSaturation(value: Float): Builder {
-            mTarget.mSaturationTargets[INDEX_MAX] = value
-            return this
-        }
-
-        /**
-         * Set the minimum lightness value for this target.
-         */
-        fun setMinimumLightness(value: Float): Builder {
-            mTarget.mLightnessTargets[INDEX_MIN] = value
-            return this
-        }
-
-        /**
-         * Set the target/ideal lightness value for this target.
-         */
-        fun setTargetLightness(value: Float): Builder {
-            mTarget.mLightnessTargets[INDEX_TARGET] = value
-            return this
-        }
-
-        /**
-         * Set the maximum lightness value for this target.
-         */
-        fun setMaximumLightness(value: Float): Builder {
-            mTarget.mLightnessTargets[INDEX_MAX] = value
-            return this
-        }
-
-        /**
-         * Set the weight of importance that this target will place on saturation values.
-         *
-         *
-         * The larger the weight, relative to the other weights, the more important that a color
-         * being close to the target value has on selection.
-         *
-         *
-         * A weight of 0 means that it has no weight, and thus has no
-         * bearing on the selection.
-         *
-         * @see .setTargetSaturation
-         */
-        fun setSaturationWeight( weight: Float): Builder {
-            mTarget.mWeights[INDEX_WEIGHT_SAT] = weight
-            return this
-        }
-
-        /**
-         * Set the weight of importance that this target will place on lightness values.
-         *
-         *
-         * The larger the weight, relative to the other weights, the more important that a color
-         * being close to the target value has on selection.
-         *
-         *
-         * A weight of 0 means that it has no weight, and thus has no
-         * bearing on the selection.
-         *
-         * @see .setTargetLightness
-         */
-        fun setLightnessWeight( weight: Float): Builder {
-            mTarget.mWeights[INDEX_WEIGHT_LUMA] = weight
-            return this
-        }
-
-        /**
-         * Set the weight of importance that this target will place on a color's population within
-         * the image.
-         *
-         *
-         * The larger the weight, relative to the other weights, the more important that a
-         * color's population being close to the most populous has on selection.
-         *
-         *
-         * A weight of 0 means that it has no weight, and thus has no
-         * bearing on the selection.
-         */
-        fun setPopulationWeight( weight: Float): Builder {
-            mTarget.mWeights[INDEX_WEIGHT_POP] = weight
-            return this
-        }
-
-        /**
-         * Set whether any color selected for this target is exclusive to this target only.
-         * Defaults to true.
-         *
-         * @param exclusive true if any the color is exclusive to this target, or false is the
-         * color can be selected for other targets.
-         */
-        fun setExclusive(exclusive: Boolean): Builder {
-            mTarget.isExclusive = exclusive
-            return this
-        }
-
-        /**
-         * Builds and returns the resulting [Target].
-         */
-        fun build(): Target {
-            return mTarget
-        }
+    override fun hashCode(): Int {
+        var result = saturationTargets.contentHashCode()
+        result = 31 * result + lightnessTargets.contentHashCode()
+        result = 31 * result + weights.contentHashCode()
+        result = 31 * result + isExclusive.hashCode()
+        return result
     }
 
     companion object {
+
         private const val TARGET_DARK_LUMA = 0.26f
         private const val MAX_DARK_LUMA = 0.45f
         private const val MIN_LIGHT_LUMA = 0.55f
@@ -330,53 +207,60 @@ class Target {
         /**
          * A target which has the characteristics of a vibrant color which is light in luminance.
          */
-        val LIGHT_VIBRANT: Target = null
+        val LIGHT_VIBRANT = Target()
+        init {
+            setDefaultLightLightnessValues(LIGHT_VIBRANT)
+            setDefaultVibrantSaturationValues(LIGHT_VIBRANT)
+        }
 
         /**
          * A target which has the characteristics of a vibrant color which is neither light or dark.
          */
-        val VIBRANT: Target = null
+        val VIBRANT: Target = Target()
+        init {
+            setDefaultNormalLightnessValues(VIBRANT)
+            setDefaultVibrantSaturationValues(VIBRANT)
+
+        }
 
         /**
          * A target which has the characteristics of a vibrant color which is dark in luminance.
          */
-        val DARK_VIBRANT: Target = null
+        val DARK_VIBRANT: Target = Target()
+        init {
+            setDefaultDarkLightnessValues(DARK_VIBRANT)
+            setDefaultVibrantSaturationValues(DARK_VIBRANT)
+        }
 
         /**
          * A target which has the characteristics of a muted color which is light in luminance.
          */
-        val LIGHT_MUTED: Target = null
+        val LIGHT_MUTED: Target = Target()
+        init {
+            setDefaultLightLightnessValues(LIGHT_MUTED)
+            setDefaultMutedSaturationValues(LIGHT_MUTED)
+
+        }
 
         /**
          * A target which has the characteristics of a muted color which is neither light or dark.
          */
-        val MUTED: Target = null
+        val MUTED: Target = Target()
+        init {
+            setDefaultNormalLightnessValues(MUTED)
+            setDefaultMutedSaturationValues(MUTED)
+        }
 
         /**
          * A target which has the characteristics of a muted color which is dark in luminance.
          */
-        val DARK_MUTED: Target = null
-
+        val DARK_MUTED: Target = Target()
         init {
-            LIGHT_VIBRANT = Target()
-            setDefaultLightLightnessValues(LIGHT_VIBRANT)
-            setDefaultVibrantSaturationValues(LIGHT_VIBRANT)
-            VIBRANT = Target()
-            setDefaultNormalLightnessValues(VIBRANT)
-            setDefaultVibrantSaturationValues(VIBRANT)
-            DARK_VIBRANT = Target()
-            setDefaultDarkLightnessValues(DARK_VIBRANT)
-            setDefaultVibrantSaturationValues(DARK_VIBRANT)
-            LIGHT_MUTED = Target()
-            setDefaultLightLightnessValues(LIGHT_MUTED)
-            setDefaultMutedSaturationValues(LIGHT_MUTED)
-            MUTED = Target()
-            setDefaultNormalLightnessValues(MUTED)
-            setDefaultMutedSaturationValues(MUTED)
-            DARK_MUTED = Target()
             setDefaultDarkLightnessValues(DARK_MUTED)
             setDefaultMutedSaturationValues(DARK_MUTED)
+            setDefaultNormalLightnessValues(DARK_VIBRANT)
         }
+
 
         private fun setTargetDefaultValues(values: FloatArray) {
             values[INDEX_MIN] = 0f
@@ -385,29 +269,29 @@ class Target {
         }
 
         private fun setDefaultDarkLightnessValues(target: Target) {
-            target.mLightnessTargets[INDEX_TARGET] = TARGET_DARK_LUMA
-            target.mLightnessTargets[INDEX_MAX] = MAX_DARK_LUMA
+            target.lightnessTargets[INDEX_TARGET] = TARGET_DARK_LUMA
+            target.lightnessTargets[INDEX_MAX] = MAX_DARK_LUMA
         }
 
         private fun setDefaultNormalLightnessValues(target: Target) {
-            target.mLightnessTargets[INDEX_MIN] = MIN_NORMAL_LUMA
-            target.mLightnessTargets[INDEX_TARGET] = TARGET_NORMAL_LUMA
-            target.mLightnessTargets[INDEX_MAX] = MAX_NORMAL_LUMA
+            target.lightnessTargets[INDEX_MIN] = MIN_NORMAL_LUMA
+            target.lightnessTargets[INDEX_TARGET] = TARGET_NORMAL_LUMA
+            target.lightnessTargets[INDEX_MAX] = MAX_NORMAL_LUMA
         }
 
         private fun setDefaultLightLightnessValues(target: Target) {
-            target.mLightnessTargets[INDEX_MIN] = MIN_LIGHT_LUMA
-            target.mLightnessTargets[INDEX_TARGET] = TARGET_LIGHT_LUMA
+            target.lightnessTargets[INDEX_MIN] = MIN_LIGHT_LUMA
+            target.lightnessTargets[INDEX_TARGET] = TARGET_LIGHT_LUMA
         }
 
         private fun setDefaultVibrantSaturationValues(target: Target) {
-            target.mSaturationTargets[INDEX_MIN] = MIN_VIBRANT_SATURATION
-            target.mSaturationTargets[INDEX_TARGET] = TARGET_VIBRANT_SATURATION
+            target.saturationTargets[INDEX_MIN] = MIN_VIBRANT_SATURATION
+            target.saturationTargets[INDEX_TARGET] = TARGET_VIBRANT_SATURATION
         }
 
         private fun setDefaultMutedSaturationValues(target: Target) {
-            target.mSaturationTargets[INDEX_TARGET] = TARGET_MUTED_SATURATION
-            target.mSaturationTargets[INDEX_MAX] = MAX_MUTED_SATURATION
+            target.saturationTargets[INDEX_TARGET] = TARGET_MUTED_SATURATION
+            target.saturationTargets[INDEX_MAX] = MAX_MUTED_SATURATION
         }
     }
 }
