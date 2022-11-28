@@ -14,6 +14,8 @@ sealed class InnerDeviceContextState {
     object AndroidEvenRebootNeed:InnerDeviceContextState()
 //    object RecoveryRebootNeed:InnerDeviceContextState()
     object SideloadRebootNeed:InnerDeviceContextState()
+    // its wireless
+    object Unconnected:InnerDeviceContextState()
     object Connected:InnerDeviceContextState()
     companion object {
         @Composable
@@ -26,9 +28,9 @@ val InnerDeviceContextState.isAvailable
 
 @Composable
 fun InnerDeviceContextState.color():CardColors = when(this) {
-    Connected, Unavailable ->
+    Connected, Unavailable, ->
         MaterialTheme.colorScheme.secondaryContainer
-    Reconnect, SideloadRebootNeed,AndroidEvenRebootNeed ->
+    Reconnect, SideloadRebootNeed,AndroidEvenRebootNeed,Unconnected ->
         MaterialTheme.colorScheme.tertiaryContainer
 }.let {
     CardDefaults.cardColors(it)
@@ -39,7 +41,8 @@ fun ADBDevice.DeviceState.toContext() = with(ADBDevice.DeviceState) {
         // unavailable
         bootloader, notfound -> Unavailable
         // reconnect-able
-        authorizing, host, offline -> Reconnect
+        authorizing, offline -> Reconnect
+        host-> Unconnected
         device -> if (isSideload) SideloadRebootNeed else Connected
         recovery -> if (isSideload) SideloadRebootNeed else AndroidEvenRebootNeed
         sideload -> if (isSideload) Connected else SideloadRebootNeed

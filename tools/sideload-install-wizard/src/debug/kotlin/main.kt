@@ -42,7 +42,7 @@ class DebugDevice(
 @OptIn(ExperimentalSplitPaneApi::class, ExperimentalComposeUiApi::class)
 fun main() {
     singleWindowApplication {
-        Context.Ready()
+//        Context.Ready()
 //        object : Context.Invoke {
 //        override val smallTitle: String = "s"
 //        override val message: String = "m"
@@ -62,6 +62,7 @@ fun main() {
                     DebugDevice("recovery",ADBDevice.DeviceState.recovery),
                     DebugDevice("offline",ADBDevice.DeviceState.offline),
                     DebugDevice("sideload",ADBDevice.DeviceState.sideload),
+                    DebugDevice("0.0.0.0",ADBDevice.DeviceState.host),
                 )
                 override var isWaiting: Boolean by mutableStateOf(false)
                 override val packageDetails: Map<String, Array<String>>
@@ -70,14 +71,6 @@ fun main() {
                 override val titleName: String = "名字"
                 override val packageName: String = "包名"
                 override val version: String = "版本名称"
-
-                override fun addDevice(serial: String): Boolean {
-                    return true
-                }
-
-                override fun switchMode() {
-                    isSideload = !isSideload
-                }
 
                 override fun nextStep() {
 
@@ -93,7 +86,7 @@ fun main() {
             }
 
         }
-//        homeViewModel()
+        homeViewModel()
 
 
 //        var isOpen by remember { mutableStateOf(true) }

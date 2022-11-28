@@ -2,10 +2,9 @@
 
 package me.heizi.flashing_tool.adb
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import me.heizi.flashing_tool.adb.ADB.wirelessSuccess
 import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.device
 import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.isConnected
 import me.heizi.kotlinx.logger.error
@@ -23,19 +22,18 @@ object ADB {
             require(it is CommandResult.Success) {
                 "its not ready to collecting devices!"
             }
-            it.message
-        }.lineSequence()
-        .filter {
+            it.message.lines().asFlow()
+        }.filter {
             val it = it.trim()
-            it.isNotEmpty() && it.first()!='*'&& it !in arrayOf("List of devices attached","adb devices")
+            it.isNotEmpty() &&
+            it.first()!='*'&&
+            it !in arrayOf("List of devices attached","adb devices")
         }.map {
             it.split(' ','	')
         }.filter {
             it.size == 2
         }.map {
             AdbDeviceImpl(it.first(), ADBDevice.DeviceState(it.last()))
-        }.forEach {
-            emit(it)
         }
     }
     val savedDevices:Flow<ADBDevice> = LocalDevice.asFlow().map {
@@ -70,16 +68,17 @@ object ADB {
         }
     }
 
-    suspend fun wireless(host:String)
-        = "connected" in (execute("connect $host").await().let {
-            when(it) {
-                is CommandResult.Success -> it.message
-                is CommandResult.Failed -> {
-                    error("connect command execute failed ${it.code}",it.processingMessage,it.errorMessage)
-                    ""
-                }
-            }
-        })
+    private fun CommandResult.wirelessSuccess() = "connected" in when(this) {
+        is CommandResult.Success -> message
+        is CommandResult.Failed -> {
+            error("connect command execute failed $code",processingMessage,errorMessage)
+            ""
+        }
+    }
+
+    suspend fun wireless(host:String) = execute("connect $host").let{
+        it.await().also { result -> if (result.wirelessSuccess()) LocalDevice+= host }
+    }
 
 
 

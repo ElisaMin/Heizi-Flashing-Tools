@@ -43,7 +43,7 @@ fun DeviceScreen(
     selected:List<String>,
     isWaiting:Boolean,
     onSelecting: (serial: String) -> Boolean,
-    addDevice:(serial:String)->Boolean,
+    addDevice:(host:String)->Boolean,
     onConnectRequest: (context: InnerDeviceContextState, serial:String) -> Unit
 )= Row(modifier) {
 
@@ -97,7 +97,7 @@ fun DeviceScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun addDeviceDialog(
-    onSubmit:(String)->Boolean={true},
+    onSubmit:(String,)->Boolean={true},
     onDismissing:()->Unit={}
 ) {
     Popup(alignment = Alignment.Center, onDismissRequest = onDismissing, focusable = true) {
@@ -196,9 +196,11 @@ fun ADBDevice.DeviceState.notify(
             device -> append("安卓设备")
             recovery -> append("Recovery模式")
             sideload -> append("Sideload模式")
+            host-> append("无线设备")
             else -> append("不可用")
         }
         append(when(context) {
+            InnerDeviceContextState.Unconnected,
             InnerDeviceContextState.Reconnect -> " | 点击重新连接"
             InnerDeviceContextState.SideloadRebootNeed -> " | 点击重启至线刷模式"
             InnerDeviceContextState.AndroidEvenRebootNeed -> " | 点击重起"

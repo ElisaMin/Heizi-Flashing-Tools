@@ -11,6 +11,7 @@ import me.heizi.flashing_tool.sideloader.*
 import me.heizi.flashing_tool.sideloader.Context.Companion.deviceFilter
 import me.heizi.kotlinx.shell.CommandResult
 import net.dongliu.apk.parser.bean.ApkIcon
+import java.nio.charset.Charset
 
 @Stable
 interface HomeViewModel {
@@ -31,7 +32,7 @@ interface HomeViewModel {
     val snacks: SnackbarHostState
 
     fun onSelecting(serial: String):Boolean
-    fun addDevice(serial:String):Boolean
+    fun addDevice(host:String):Boolean
     fun onConnectRequest(contextState: InnerDeviceContextState, serial:String)
 
     fun switchMode()
@@ -47,9 +48,25 @@ interface HomeViewModel {
 /**
  * Impl device reconnect witch part of [HomeViewModel]
  * Impl selecting [Context.selected]
+ * Impl add device [Context.devices]
  */
 abstract class AbstractHomeViewModel:HomeViewModel {
 
+
+    // switchMode
+    final override fun switchMode() {
+        isSideload=!isSideload
+    }
+    // add device
+    final override fun addDevice(host: String): Boolean {
+        if (host.isBlank()) {
+            return true
+        }
+        scope.launch {
+            connect({ ADB.wireless(host)  },serial = host)
+        }
+        return true
+    }
 
     // selected
     @get:Composable
@@ -101,44 +118,52 @@ abstract class AbstractHomeViewModel:HomeViewModel {
                 dismiss()
         }
     }
-    private suspend fun connect(contextState: InnerDeviceContextState, serial: String) = coroutineScope {
+    private suspend fun connect(contextState: InnerDeviceContextState, serial: String) {
         val head = "-s $serial"
         when(contextState) {
-            InnerDeviceContextState.AndroidEvenRebootNeed ->
-                ADB execute "$head reboot"
-            InnerDeviceContextState.Unavailable ,
+            InnerDeviceContextState.Unavailable,
             InnerDeviceContextState.Reconnect ->
                 ADB execute "reconnect "
+            InnerDeviceContextState.Unconnected->
+                ADB execute "connect $serial"
+            InnerDeviceContextState.AndroidEvenRebootNeed ->
+                ADB execute "$head reboot"
             InnerDeviceContextState.SideloadRebootNeed ->
                 ADB execute "$head reboot sideload"
             InnerDeviceContextState.Connected -> null
-        }?.let {s->
-            isWaiting = true
+        }?.let { connect({ it.await() },serial) }
+    }
+    private suspend fun connect(result:suspend ()->CommandResult, serial: String) = coroutineScope {
+        isWaiting = true
 
-            launch {
-                snacks.showSnackbar("正在连接$serial，请稍后。", actionLabel = "关闭")
-            }
-
-            checkTheBar()
-            delay(300)
-            checkTheBar()
-            val msg = s.await().let {r->
-                if (r is CommandResult.Failed) {
-                    """|连接失败：${r.code}
-                       |${r.processingMessage}
-                       ${r.errorMessage?.let { "|$it" }?:""}
-                    """.trimMargin()
-                } else "连接成功"
-            }
-            checkTheBar()
-            launch {
-                cutTheBar()
-            }
-            snacks.showSnackbar(msg, duration = SnackbarDuration.Short)
-            checkTheBar()
-            isWaiting = false
-
+        launch {
+            snacks.showSnackbar("正在连接$serial，请稍后。", actionLabel = "关闭")
         }
+
+        checkTheBar()
+        delay(500)
+        checkTheBar()
+        val r = result()
+        val msg = (if (r is CommandResult.Failed)
+            """|连接失败：${r.code}
+                      |${r.processingMessage}
+                       ${r.errorMessage?.let { "|$it" }?:""}
+                      """.trimMargin()
+        else
+            "连接成功"+((r as CommandResult.Success).message
+                .takeIf {
+                    it.isNotBlank()
+                }?.let { "\n"+it } ?:"")).let {
+            String(it.toByteArray(Charset.forName("GBK")),Charsets.UTF_8) }
+
+        checkTheBar()
+        launch {
+            cutTheBar()
+        }
+        snacks.showSnackbar(msg, duration = SnackbarDuration.Short)
+        checkTheBar()
+        isWaiting = false
+        r
     }
     final override fun onConnectRequest(contextState: InnerDeviceContextState, serial: String)  {
         scope.launch { connect(contextState,serial) }
