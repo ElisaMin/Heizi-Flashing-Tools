@@ -28,3 +28,7 @@ object Resources {
 
     val iconASTUgly = ImageIO.read(this["ic_ast_ugly.png"]!!).toPainter()
 }
+
+fun main(args: Array<String>) {
+
+}

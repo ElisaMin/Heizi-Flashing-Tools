@@ -4,7 +4,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.*
@@ -13,38 +13,83 @@ import me.heizi.kotlinx.shell.CommandResult
 import net.dongliu.apk.parser.bean.ApkIcon
 import java.nio.charset.Charset
 
-
 @Composable
-fun SingleFileContext.toViewModel(
-) {
-
+operator fun SingleFileContext.invoke() {
+    val viewModel:HomeViewModel = remember {
+        object :StateHomeViewModel(this){}
+    }
+    viewModel()
 }
-private abstract class HomeVMiMPL(
-    val context: SingleFileContext
-):AbstractHomeViewModel() {
-    override val packageDetails: Map<String, Array<String>>
-        = context.details
-    override val icon: ApkIcon<*>? = context.icon
-    override val titleName: String = context.name
-    override val packageName: String? = context.packageName
-    override val version: String?=context.version
-
+abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeViewModel() {
+    var currentContext by mutableStateOf(initContext)
     override var isWaiting: Boolean by mutableStateOf(false)
-
-
-    override fun switchMode() {
-        TODO("Not yet implemented")
+    // loop
+    override var devices: List<ADBDevice> by mutableStateOf(listOf())
+        protected set
+    var isAlive = true
+        protected set
+    val job = Context.scope.launch(Dispatchers.IO,start = CoroutineStart.LAZY) {
+        isAlive = true
+        launch {
+            context.shareIn(this, started = SharingStarted.Eagerly)
+                .takeWhile { it is SingleFileContext || it is Context.Ready }
+                .filterIsInstance<SingleFileContext>()
+                .collect {
+                    isWaiting = true
+                    currentContext = it
+                    isSideload = !it.isApk!!
+                    isWaiting = false
+                }
+            isAlive = false
+            runCatching { cancel() }
+        }
+        while (isAlive) {
+            delay(3000)
+            isWaiting = true
+            devices = Context.devices.toList()
+            isWaiting = false
+        }
+        runCatching { cancel() }
     }
 
-    override fun nextStep() {
-        TODO("Not yet implemented")
+    final override var icon: ApkIcon<*>? by mutableStateOf(null)
+        protected set
+    final override var version: String? by mutableStateOf(null)
+        protected set
+    final override var packageName: String? by mutableStateOf(null)
+        protected set
+    final override var titleName: String by mutableStateOf("")
+        protected set
+    final override var packageDetails: Map<String, Array<String>> by mutableStateOf(mapOf())
+        protected set
+
+    final override fun switchMode() {
+        context.value = currentContext.toApkOrSideload()
     }
 
-    override suspend fun CoroutineScope.onStart() {
+    final override fun nextStep() {
+        context.value = Context.Invoking(currentContext)
     }
 
-    override fun onStop() {
-        TODO("Not yet implemented")
+    final override suspend fun CoroutineScope.onStart() {
+        job.start()
+    }
+
+
+    override fun onUpdateEffect() {
+        icon = currentContext.icon
+        version = currentContext.version
+        packageName = currentContext.packageName
+        titleName = currentContext.name
+        packageDetails = currentContext.details
+    }
+
+
+    final override fun onStop() {
+        isAlive = false
+        job.runCatching {
+            cancel()
+        }
     }
 
 
@@ -59,6 +104,7 @@ interface HomeViewModel {
     @get:Composable
     val selected:List<String>
     val isWaiting:Boolean
+
 
     val packageDetails:Map<String,Array<String>>
     val icon: ApkIcon<*>?
@@ -77,6 +123,7 @@ interface HomeViewModel {
     fun nextStep()
 
     suspend fun CoroutineScope.onStart()
+    fun onUpdateEffect()
     fun onStop()
 }
 
@@ -88,33 +135,6 @@ interface HomeViewModel {
  * Impl Loop Devices
  */
 abstract class AbstractHomeViewModel:HomeViewModel {
-
-
-
-    // loop
-    override var devices: List<ADBDevice> by mutableStateOf(listOf())
-        protected set
-    var isAlive = true
-        protected set
-    val job = Context.scope.launch(Dispatchers.IO,start = CoroutineStart.LAZY) {
-        while (isAlive) {
-            delay(3000)
-            isWaiting = true
-            devices = Context.devices.toList()
-            isWaiting = false
-        }
-    }
-
-    override suspend fun CoroutineScope.onStart() {
-        job.start()
-    }
-
-    override fun onStop() {
-        isAlive = false
-        job.runCatching {
-            cancel()
-        }
-    }
 
 
     // add device

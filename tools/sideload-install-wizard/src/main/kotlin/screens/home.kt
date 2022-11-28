@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -58,6 +59,9 @@ fun HomeViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.p
 }
 @Composable
 fun HomeViewModel.first() {
+    SideEffect {
+        onUpdateEffect()
+    }
     Info(
         modifier = Modifier.fillMaxSize().padding(8.dp),
         packageDetail =packageDetails,

@@ -32,7 +32,7 @@ sealed interface Context {
     }
 
      @OptIn(FlowPreview::class)
-     class Invoking private constructor(
+     class Invoking constructor(
          private val parent: Context
      ) :Context by parent,Invoke {
          override var smallTitle by mutableStateOf("正在预热中...")
@@ -57,7 +57,7 @@ sealed interface Context {
              }
          }
          private suspend fun start(context: Context) {
-             val isApk = context.isAPk
+             val isApk = context.isApk
                  ?:error("unexpected context:$context, is not apk or sideload")
              if (isApk) start { file,device->
                  require(file is Install.Info) {
@@ -128,9 +128,6 @@ sealed interface Context {
     }
     companion object {
 
-        operator fun invoke(files: List<File>):Context {
-            TODO()
-        }
 
         val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
 
@@ -147,7 +144,7 @@ sealed interface Context {
             }
     }
 }
-val Context.isAPk get() = when (this) {
+val Context.isApk get() = when (this) {
     is Sideload -> false
     is Install -> true
     else -> null
