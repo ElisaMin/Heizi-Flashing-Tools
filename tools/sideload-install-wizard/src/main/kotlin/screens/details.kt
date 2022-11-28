@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.sideloader.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.heizi.apk.parser.ktx.Image
 import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.isSideload
 import net.dongliu.apk.parser.bean.ApkIcon
@@ -62,8 +64,7 @@ fun Info(
 @Composable
 private fun IconCard(icon: ApkIcon<*>) {
     Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(colors.current.primary)) {
-        icon
-        //TODO icon here
+        Image(icon, modifier = Modifier.fillMaxSize())
     }
 }
 @Composable
