@@ -8,7 +8,6 @@ import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.adb.install
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
-import net.dongliu.apk.parser.bean.ApkIcon
 import java.io.File
 import kotlin.math.roundToLong
 
@@ -24,48 +23,6 @@ sealed interface Context {
             get() = emptyList()
     }
 
-    abstract class SingleFileContext(
-        val file:File
-    ):Context {
-        override val files: List<File> = listOf(file)
-        open val name get() =  file.fileName
-        open val packageName:String?=null
-        open val version:String?=null
-        open val icon:ApkIcon<*>?=null
-        open val details = mapOf(
-            "路径" to arrayOf(file.absolutePath),
-            "大小" to arrayOf(file.size),
-        )
-    }
-
-
-    abstract class Sideload
-    private constructor(file:File): SingleFileContext(file) {
-    }
-    //TODO Apk detail map,invoke prm
-    abstract class Install private constructor(
-
-    ):Context {
-
-
-
-        interface Info {
-            @Text("替换")
-            val isReplaceExisting:Boolean
-            @Text("测试")
-            val isTestAllow:Boolean
-            @Text("Debug")
-            val isDebugAllow:Boolean
-            @Text("权限通行")
-            val isGrantAllPms:Boolean
-            @Text("临时")
-            val isInstant:Boolean
-            val abi:String?
-            private annotation class Text(val text:String)
-        }
-
-    }
-
     interface Invoke:Context {
         val smallTitle:String
         val message:String
@@ -75,7 +32,7 @@ sealed interface Context {
     }
 
      @OptIn(FlowPreview::class)
-     class SingleInvoking private constructor(
+     class Invoking private constructor(
          private val parent: Context
      ) :Context by parent,Invoke {
          override var smallTitle by mutableStateOf("正在预热中...")
@@ -191,8 +148,8 @@ sealed interface Context {
     }
 }
 val Context.isAPk get() = when (this) {
-    is Context.Sideload -> false
-    is Context.Install -> true
+    is Sideload -> false
+    is Install -> true
     else -> null
 }
 

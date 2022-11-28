@@ -16,11 +16,11 @@ import org.jetbrains.compose.splitpane.*
 @Composable
 operator fun HomeViewModel.invoke() {
     LaunchedEffect("launchOnHome") {
-        onLaunching()
+        onStart()
     }
     DisposableEffect("DisposableOnHome") {
         onDispose {
-            onOut()
+            onStop()
         }
     }
     Scaffold(

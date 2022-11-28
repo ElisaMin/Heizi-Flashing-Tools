@@ -2,9 +2,9 @@ package me.heizi.flashing_tool.sideloader.screens
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.toList
 import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.*
@@ -12,6 +12,43 @@ import me.heizi.flashing_tool.sideloader.Context.Companion.deviceFilter
 import me.heizi.kotlinx.shell.CommandResult
 import net.dongliu.apk.parser.bean.ApkIcon
 import java.nio.charset.Charset
+
+
+@Composable
+fun SingleFileContext.toViewModel(
+) {
+
+}
+private abstract class HomeVMiMPL(
+    val context: SingleFileContext
+):AbstractHomeViewModel() {
+    override val packageDetails: Map<String, Array<String>>
+        = context.details
+    override val icon: ApkIcon<*>? = context.icon
+    override val titleName: String = context.name
+    override val packageName: String? = context.packageName
+    override val version: String?=context.version
+
+    override var isWaiting: Boolean by mutableStateOf(false)
+
+
+    override fun switchMode() {
+        TODO("Not yet implemented")
+    }
+
+    override fun nextStep() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun CoroutineScope.onStart() {
+    }
+
+    override fun onStop() {
+        TODO("Not yet implemented")
+    }
+
+
+}
 
 @Stable
 interface HomeViewModel {
@@ -39,24 +76,47 @@ interface HomeViewModel {
 
     fun nextStep()
 
-    suspend fun CoroutineScope.onLaunching()
-    fun onOut()
-
-
+    suspend fun CoroutineScope.onStart()
+    fun onStop()
 }
+
 
 /**
  * Impl device reconnect witch part of [HomeViewModel]
  * Impl selecting [Context.selected]
  * Impl add device [Context.devices]
+ * Impl Loop Devices
  */
 abstract class AbstractHomeViewModel:HomeViewModel {
 
 
-    // switchMode
-    final override fun switchMode() {
-        isSideload=!isSideload
+
+    // loop
+    override var devices: List<ADBDevice> by mutableStateOf(listOf())
+        protected set
+    var isAlive = true
+        protected set
+    val job = Context.scope.launch(Dispatchers.IO,start = CoroutineStart.LAZY) {
+        while (isAlive) {
+            delay(3000)
+            isWaiting = true
+            devices = Context.devices.toList()
+            isWaiting = false
+        }
     }
+
+    override suspend fun CoroutineScope.onStart() {
+        job.start()
+    }
+
+    override fun onStop() {
+        isAlive = false
+        job.runCatching {
+            cancel()
+        }
+    }
+
+
     // add device
     final override fun addDevice(host: String): Boolean {
         if (host.isBlank()) {

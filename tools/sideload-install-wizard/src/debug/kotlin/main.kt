@@ -72,14 +72,18 @@ fun main() {
                 override val packageName: String = "包名"
                 override val version: String = "版本名称"
 
+                override fun switchMode() {
+                    isSideload=!isSideload
+                }
+
                 override fun nextStep() {
 
                 }
 
-                override suspend fun CoroutineScope.onLaunching() {
+                override suspend fun CoroutineScope.onStart() {
                 }
 
-                override fun onOut() {
+                override fun onStop() {
 
                 }
 

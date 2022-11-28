@@ -18,9 +18,8 @@ var isSideload by mutableStateOf(false)
 
 val files = MutableStateFlow(listOf<File>())
 
-val context = compositionLocalOf<Context> {
-    Context.Ready
-}
+val context: MutableStateFlow<Context> =
+    MutableStateFlow(Context.Ready)
 operator fun List<ADBDevice>.get(serial:String) = find { it.serial == serial }
 
 
