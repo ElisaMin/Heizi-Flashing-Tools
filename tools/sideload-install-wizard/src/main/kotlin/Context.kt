@@ -9,6 +9,7 @@ import me.heizi.flashing_tool.adb.install
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
 import java.io.File
+import java.time.Instant
 import kotlin.math.roundToLong
 
 
@@ -140,6 +141,11 @@ sealed interface Context {
                     devices[serial]?.isContextConnected == true
                 }
             }
+
+        suspend operator fun invoke(file: File) =
+            Install(file).takeIf { it.apk!=null }
+                ?: Sideload(file)
+
     }
 }
 val Context.isApk get() = when (this) {

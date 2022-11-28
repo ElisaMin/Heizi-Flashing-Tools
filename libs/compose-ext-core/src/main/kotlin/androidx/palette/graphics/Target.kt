@@ -15,7 +15,6 @@
  */
 package androidx.palette.graphics
 
-import androidx.annotation.FloatRange
 import androidx.palette.graphics.Target.Builder
 
 /**
@@ -60,42 +59,42 @@ class Target {
     /**
      * The minimum saturation value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val minimumSaturation: Float
         get() = mSaturationTargets[INDEX_MIN]
 
     /**
      * The target saturation value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val targetSaturation: Float
         get() = mSaturationTargets[INDEX_TARGET]
 
     /**
      * The maximum saturation value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val maximumSaturation: Float
         get() = mSaturationTargets[INDEX_MAX]
 
     /**
      * The minimum lightness value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val minimumLightness: Float
         get() = mLightnessTargets[INDEX_MIN]
 
     /**
      * The target lightness value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val targetLightness: Float
         get() = mLightnessTargets[INDEX_TARGET]
 
     /**
      * The maximum lightness value for this target.
      */
-    @get:FloatRange(from = 0, to = 1)
+    
     val maximumLightness: Float
         get() = mLightnessTargets[INDEX_MAX]
 
@@ -188,7 +187,7 @@ class Target {
         /**
          * Set the minimum saturation value for this target.
          */
-        fun setMinimumSaturation(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setMinimumSaturation(value: Float): Builder {
             mTarget.mSaturationTargets[INDEX_MIN] = value
             return this
         }
@@ -196,7 +195,7 @@ class Target {
         /**
          * Set the target/ideal saturation value for this target.
          */
-        fun setTargetSaturation(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setTargetSaturation(value: Float): Builder {
             mTarget.mSaturationTargets[INDEX_TARGET] = value
             return this
         }
@@ -204,7 +203,7 @@ class Target {
         /**
          * Set the maximum saturation value for this target.
          */
-        fun setMaximumSaturation(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setMaximumSaturation(value: Float): Builder {
             mTarget.mSaturationTargets[INDEX_MAX] = value
             return this
         }
@@ -212,7 +211,7 @@ class Target {
         /**
          * Set the minimum lightness value for this target.
          */
-        fun setMinimumLightness(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setMinimumLightness(value: Float): Builder {
             mTarget.mLightnessTargets[INDEX_MIN] = value
             return this
         }
@@ -220,7 +219,7 @@ class Target {
         /**
          * Set the target/ideal lightness value for this target.
          */
-        fun setTargetLightness(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setTargetLightness(value: Float): Builder {
             mTarget.mLightnessTargets[INDEX_TARGET] = value
             return this
         }
@@ -228,7 +227,7 @@ class Target {
         /**
          * Set the maximum lightness value for this target.
          */
-        fun setMaximumLightness(@FloatRange(from = 0, to = 1) value: Float): Builder {
+        fun setMaximumLightness(value: Float): Builder {
             mTarget.mLightnessTargets[INDEX_MAX] = value
             return this
         }
@@ -246,7 +245,7 @@ class Target {
          *
          * @see .setTargetSaturation
          */
-        fun setSaturationWeight(@FloatRange(from = 0) weight: Float): Builder {
+        fun setSaturationWeight( weight: Float): Builder {
             mTarget.mWeights[INDEX_WEIGHT_SAT] = weight
             return this
         }
@@ -264,7 +263,7 @@ class Target {
          *
          * @see .setTargetLightness
          */
-        fun setLightnessWeight(@FloatRange(from = 0) weight: Float): Builder {
+        fun setLightnessWeight( weight: Float): Builder {
             mTarget.mWeights[INDEX_WEIGHT_LUMA] = weight
             return this
         }
@@ -281,7 +280,7 @@ class Target {
          * A weight of 0 means that it has no weight, and thus has no
          * bearing on the selection.
          */
-        fun setPopulationWeight(@FloatRange(from = 0) weight: Float): Builder {
+        fun setPopulationWeight( weight: Float): Builder {
             mTarget.mWeights[INDEX_WEIGHT_POP] = weight
             return this
         }

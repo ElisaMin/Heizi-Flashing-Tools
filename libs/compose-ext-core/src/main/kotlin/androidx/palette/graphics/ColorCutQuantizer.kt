@@ -15,11 +15,12 @@
  */
 package androidx.palette.graphics
 
-import android.graphics.Color
-import androidx.core.graphics.ColorUtils
+import ColorUtils
+import androidx.compose.ui.graphics.Color
 import androidx.palette.graphics.Palette.Swatch
-import java.util.Arrays
-import java.util.PriorityQueue
+import java.awt.Color.*
+import java.util.*
+
 
 /**
  * An color quantizer based on the Median-cut algorithm, but optimized for picking out distinct
@@ -320,18 +321,18 @@ internal class ColorCutQuantizer(
         for (i in pixels.indices) {
             val quantizedColor: Int = quantizeFromRgb888(pixels.get(i))
             // Now update the pixel value to the quantized value
-            pixels.get(i) = quantizedColor
+            pixels[i] = quantizedColor
             // And update the histogram
-            hist.get(quantizedColor)++
+            hist[quantizedColor]++
         }
         // Now let's count the number of distinct colors
         var distinctColorCount: Int = 0
         for (color in hist.indices) {
-            if (hist.get(color) > 0 && shouldIgnoreColor(color)) {
+            if (hist[color] > 0 && shouldIgnoreColor(color)) {
                 // If we should ignore the color, set the population to 0
-                hist.get(color) = 0
+                hist[color] = 0
             }
-            if (hist.get(color) > 0) {
+            if (hist[color] > 0) {
                 // If the color has population, increase the distinct color count
                 distinctColorCount++
             }
@@ -342,14 +343,14 @@ internal class ColorCutQuantizer(
         var distinctColorIndex: Int = 0
         for (color in hist.indices) {
             if (hist.get(color) > 0) {
-                colors.get(distinctColorIndex++) = color
+                colors[distinctColorIndex++] = color
             }
         }
         if (distinctColorCount <= maxColors) {
             // The image has fewer colors than the maximum requested, so just return the colors
             mQuantizedColors = ArrayList()
             for (color: Int in colors) {
-                mQuantizedColors.add(Swatch(approximateToRgb888(color), hist.get(color)))
+                (mQuantizedColors as ArrayList<Swatch>).add(Swatch(approximateToRgb888(color), hist.get(color)))
             }
         } else {
             // We need use quantization to reduce the number of colors
@@ -358,11 +359,11 @@ internal class ColorCutQuantizer(
     }
 
     companion object {
-        val COMPONENT_RED: Int = -3
-        val COMPONENT_GREEN: Int = -2
-        val COMPONENT_BLUE: Int = -1
-        private val QUANTIZE_WORD_WIDTH: Int = 5
-        private val QUANTIZE_WORD_MASK: Int = (1 shl QUANTIZE_WORD_WIDTH) - 1
+        const val COMPONENT_RED: Int = -3
+        const val COMPONENT_GREEN: Int = -2
+        const val COMPONENT_BLUE: Int = -1
+        private const val QUANTIZE_WORD_WIDTH: Int = 5
+        private const val QUANTIZE_WORD_MASK: Int = (1 shl QUANTIZE_WORD_WIDTH) - 1
 
         /**
          * Modify the significant octet in a packed color int. Allows sorting based on the value of a
@@ -381,7 +382,7 @@ internal class ColorCutQuantizer(
                     var i: Int = lower
                     while (i <= upper) {
                         val color: Int = a.get(i)
-                        a.get(i) =
+                        a[i] =
                             (quantizedGreen(color) shl (QUANTIZE_WORD_WIDTH + QUANTIZE_WORD_WIDTH)
                                     ) or (quantizedRed(color) shl QUANTIZE_WORD_WIDTH
                                     ) or quantizedBlue(color)
@@ -394,7 +395,7 @@ internal class ColorCutQuantizer(
                     var i: Int = lower
                     while (i <= upper) {
                         val color: Int = a.get(i)
-                        a.get(i) =
+                        a[i] =
                             (quantizedBlue(color) shl (QUANTIZE_WORD_WIDTH + QUANTIZE_WORD_WIDTH)
                                     ) or (quantizedGreen(color) shl QUANTIZE_WORD_WIDTH
                                     ) or quantizedRed(color)
@@ -425,6 +426,7 @@ internal class ColorCutQuantizer(
 
         /**
          * Quantized RGB888 values to have a word width of {@value #QUANTIZE_WORD_WIDTH}.
+         * TODO
          */
         fun approximateToRgb888(r: Int, g: Int, b: Int): Int {
             return Color.rgb(
@@ -464,15 +466,33 @@ internal class ColorCutQuantizer(
         }
 
         private fun modifyWordWidth(value: Int, currentWidth: Int, targetWidth: Int): Int {
-            val newValue: Int
-            if (targetWidth > currentWidth) {
+            val newValue: Int = if (targetWidth > currentWidth) {
                 // If we're approximating up in word width, we'll shift up
-                newValue = value shl (targetWidth - currentWidth)
+                value shl (targetWidth - currentWidth)
             } else {
                 // Else, we will just shift and keep the MSB
-                newValue = value shr (currentWidth - targetWidth)
+                value shr (currentWidth - targetWidth)
             }
             return newValue and ((1 shl targetWidth) - 1)
         }
     }
+}
+
+internal fun Color.Companion.red(color: Int): Int {
+    return color shr 16 and 0xFF
+}
+internal fun Color.Companion.green(color: Int): Int {
+    return color shr 8 and 0xFF
+}
+internal fun Color.Companion.blue(color: Int): Int {
+    return color and 0xFF
+}
+internal fun Color.Companion.alpha(color: Int): Int {
+    return color ushr 24
+}
+internal fun Color.Companion.rgb(red:Int,green:Int,blue:Int): Int {
+    return -0x1000000 or (red shl 16) or (green shl 8) or blue
+}
+internal fun Color.Companion.argb(alpha:Int,red:Int,green:Int,blue:Int): Int {
+    return alpha shl 24 or (red shl 16) or (green shl 8) or blue
 }

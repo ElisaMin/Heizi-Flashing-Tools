@@ -16,20 +16,22 @@
 package androidx.palette.graphics
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.Rect
-import android.os.AsyncTask
-import android.util.Log
 import android.util.SparseBooleanArray
-import androidx.annotation.ColorInt
-import androidx.annotation.Px
 import androidx.collection.SimpleArrayMap
-import androidx.core.graphics.ColorUtils
+import androidx.compose.ui.graphics.Color
 import androidx.core.util.Preconditions
 import androidx.palette.graphics.Palette.Builder
 import androidx.palette.graphics.Palette.PaletteAsyncListener
 import java.util.Arrays
 import java.util.Collections
+import kotlin.math.abs
+
+@Deprecated("not this shit", replaceWith = ReplaceWith(""))
+annotation class ColorInt
+@Deprecated("not this shit")
+annotation class Px
+
 
 /**
  * A helper class to extract prominent colors from an image.
@@ -70,7 +72,7 @@ import java.util.Collections
  */
 class Palette internal constructor(
     private val mSwatches: List<Swatch>,
-    private val mTargets: List<Target>?
+    private val mTargets: List<Target>
 ) {
     /**
      * Listener to be used with [.generateAsync] or
@@ -162,8 +164,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getVibrantSwatch
      */
-    @ColorInt
-    fun getVibrantColor(@ColorInt defaultColor: Int): Int {
+    fun getVibrantColor(defaultColor: Int): Int {
         return getColorForTarget(Target.VIBRANT, defaultColor)
     }
 
@@ -173,8 +174,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getLightVibrantSwatch
      */
-    @ColorInt
-    fun getLightVibrantColor(@ColorInt defaultColor: Int): Int {
+    fun getLightVibrantColor(defaultColor: Int): Int {
         return getColorForTarget(Target.LIGHT_VIBRANT, defaultColor)
     }
 
@@ -184,8 +184,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getDarkVibrantSwatch
      */
-    @ColorInt
-    fun getDarkVibrantColor(@ColorInt defaultColor: Int): Int {
+    fun getDarkVibrantColor(defaultColor: Int): Int {
         return getColorForTarget(Target.DARK_VIBRANT, defaultColor)
     }
 
@@ -195,8 +194,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getMutedSwatch
      */
-    @ColorInt
-    fun getMutedColor(@ColorInt defaultColor: Int): Int {
+    fun getMutedColor(defaultColor: Int): Int {
         return getColorForTarget(Target.MUTED, defaultColor)
     }
 
@@ -206,8 +204,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getLightMutedSwatch
      */
-    @ColorInt
-    fun getLightMutedColor(@ColorInt defaultColor: Int): Int {
+    fun getLightMutedColor(defaultColor: Int): Int {
         return getColorForTarget(Target.LIGHT_MUTED, defaultColor)
     }
 
@@ -217,8 +214,7 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getDarkMutedSwatch
      */
-    @ColorInt
-    fun getDarkMutedColor(@ColorInt defaultColor: Int): Int {
+    fun getDarkMutedColor(defaultColor: Int): Int {
         return getColorForTarget(Target.DARK_MUTED, defaultColor)
     }
 
@@ -235,8 +231,7 @@ class Palette internal constructor(
      *
      * @param defaultColor value to return if the swatch isn't available
      */
-    @ColorInt
-    fun getColorForTarget(target: Target, @ColorInt defaultColor: Int): Int {
+    fun getColorForTarget(target: Target, defaultColor: Int): Int {
         val swatch = getSwatchForTarget(target)
         return swatch?.rgb ?: defaultColor
     }
@@ -247,9 +242,8 @@ class Palette internal constructor(
      * @param defaultColor value to return if the swatch isn't available
      * @see .getDominantSwatch
      */
-    @ColorInt
-    fun getDominantColor(@ColorInt defaultColor: Int): Int {
-        return if (dominantSwatch != null) dominantSwatch.rgb else defaultColor
+    fun getDominantColor(defaultColor: Int): Int {
+        return dominantSwatch?.rgb ?: defaultColor
     }
 
     fun  // TODO(b/141959297): Suppressed during upgrade to AGP 3.6.
@@ -308,14 +302,14 @@ class Palette internal constructor(
         var saturationScore = 0f
         var luminanceScore = 0f
         var populationScore = 0f
-        val maxPopulation = if (dominantSwatch != null) dominantSwatch.population else 1
+        val maxPopulation = dominantSwatch?.population ?: 1
         if (target.saturationWeight > 0) {
             saturationScore = (target.saturationWeight
-                    * (1f - Math.abs(hsl[1] - target.targetSaturation)))
+                    * (1f - abs(hsl[1] - target.targetSaturation)))
         }
         if (target.lightnessWeight > 0) {
             luminanceScore = (target.lightnessWeight
-                    * (1f - Math.abs(hsl[2] - target.targetLightness)))
+                    * (1f - abs(hsl[2] - target.targetLightness)))
         }
         if (target.populationWeight > 0) {
             populationScore = (target.populationWeight
@@ -344,7 +338,7 @@ class Palette internal constructor(
      * Represents a color swatch generated from an image's palette. The RGB color can be retrieved
      * by calling [.getRgb].
      */
-    class Swatch(@ColorInt color: Int, population: Int) {
+    class Swatch(color: Int, population: Int) {
         private val mRed: Int
         private val mGreen: Int
         private val mBlue: Int
@@ -352,7 +346,6 @@ class Palette internal constructor(
         /**
          * @return this swatch's RGB color value
          */
-        @get:ColorInt
         val rgb: Int
 
         /**
@@ -362,7 +355,7 @@ class Palette internal constructor(
         private var mGeneratedTextColors = false
         private var mTitleTextColor = 0
         private var mBodyTextColor = 0
-        private var mHsl: FloatArray?
+        private var mHsl: FloatArray? = null
 
         init {
             mRed = Color.red(color)
@@ -391,7 +384,6 @@ class Palette internal constructor(
          * Returns an appropriate color to use for any 'title' text which is displayed over this
          * [Swatch]'s color. This color is guaranteed to have sufficient contrast.
          */
-        @get:ColorInt
         val titleTextColor: Int
             get() {
                 ensureTextColorsGenerated()
@@ -402,7 +394,6 @@ class Palette internal constructor(
          * Returns an appropriate color to use for any 'body' text which is displayed over this
          * [Swatch]'s color. This color is guaranteed to have sufficient contrast.
          */
-        @get:ColorInt
         val bodyTextColor: Int
             get() {
                 ensureTextColorsGenerated()
@@ -464,14 +455,14 @@ class Palette internal constructor(
         }
 
         // TODO Remove @Nullable once AGP 3.3. Fixed by I32b659c4e842ba5ac3d45b2d75b080b810fe1fe8.
-        override fun equals(o: Any?): Boolean {
-            if (this === o) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
                 return true
             }
-            if (o == null || javaClass != o.javaClass) {
+            if (other == null || javaClass != other.javaClass) {
                 return false
             }
-            val swatch = o as Swatch
+            val swatch = other as Swatch
             return population == swatch.population && rgb == swatch.rgb
         }
 
@@ -517,7 +508,7 @@ class Palette internal constructor(
          * Typically only used for testing.
          */
         constructor(swatches: List<Swatch>) {
-            if (swatches == null || swatches.isEmpty()) {
+            if (swatches.isEmpty()) {
                 throw IllegalArgumentException("List of Swatches is not valid")
             }
             mFilters.add(DEFAULT_FILTER)
@@ -591,9 +582,7 @@ class Palette internal constructor(
          * @param filter filter to add.
          */
         fun addFilter(filter: Filter): Builder {
-            if (filter != null) {
-                mFilters.add(filter)
-            }
+            mFilters.add(filter)
             return this
         }
 
@@ -697,7 +686,7 @@ class Palette internal constructor(
                 throw AssertionError()
             }
             // Now create a Palette instance
-            val p = Palette(swatches, mTargets)
+            val p = mTargets?.let { Palette(swatches, it) }!!
             // And make it generate itself
             p.generate()
             return p
@@ -799,7 +788,7 @@ class Palette internal constructor(
          *
          * @see Builder.addFilter
          */
-        fun isAllowed(@ColorInt rgb: Int, hsl: FloatArray): Boolean
+        fun isAllowed(rgb: Int, hsl: FloatArray): Boolean
     }
 
     init {
@@ -809,12 +798,12 @@ class Palette internal constructor(
     }
 
     companion object {
-        val DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
-        val DEFAULT_CALCULATE_NUMBER_COLORS = 16
-        val MIN_CONTRAST_TITLE_TEXT = 3.0f
-        val MIN_CONTRAST_BODY_TEXT = 4.5f
-        val LOG_TAG = "Palette"
-        val LOG_TIMINGS = false
+        const val DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
+        const val DEFAULT_CALCULATE_NUMBER_COLORS = 16
+        const val MIN_CONTRAST_TITLE_TEXT = 3.0f
+        const val MIN_CONTRAST_BODY_TEXT = 4.5f
+        const val LOG_TAG = "Palette"
+        const val LOG_TIMINGS = false
 
         /**
          * Start generating a [Palette] with the returned [Builder] instance.
@@ -872,23 +861,23 @@ class Palette internal constructor(
              * @return true if the color represents a color which is close to black.
              */
             private fun isBlack(hslColor: FloatArray): Boolean {
-                return androidx.palette.graphics.hslColor.get(2) <= BLACK_MAX_LIGHTNESS
+                return hslColor[2] <= BLACK_MAX_LIGHTNESS
             }
 
             /**
              * @return true if the color represents a color which is close to white.
              */
             private fun isWhite(hslColor: FloatArray): Boolean {
-                return androidx.palette.graphics.hslColor.get(2) >= WHITE_MIN_LIGHTNESS
+                return hslColor[2] >= WHITE_MIN_LIGHTNESS
             }
 
             /**
              * @return true if the color lies close to the red side of the I line.
              */
             private fun isNearRedILine(hslColor: FloatArray): Boolean {
-                return (androidx.palette.graphics.hslColor.get(0) >= 10f) && (androidx.palette.graphics.hslColor.get(
+                return (hslColor[0] >= 10f) && (hslColor.get(
                     0
-                ) <= 37f) && (androidx.palette.graphics.hslColor.get(1) <= 0.82f)
+                ) <= 37f) && (hslColor[1] <= 0.82f)
             }
         }
     }
