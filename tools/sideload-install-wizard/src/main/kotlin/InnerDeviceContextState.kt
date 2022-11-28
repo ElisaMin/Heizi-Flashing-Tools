@@ -20,7 +20,7 @@ sealed class InnerDeviceContextState {
     companion object {
         @Composable
         fun clickedColor() =
-            CardDefaults.cardColors(MaterialTheme.colorScheme.primary)
+            CardDefaults.cardColors(colors.current.primary)
     }
 }
 val InnerDeviceContextState.isAvailable
@@ -29,9 +29,9 @@ val InnerDeviceContextState.isAvailable
 @Composable
 fun InnerDeviceContextState.color():CardColors = when(this) {
     Connected, Unavailable, ->
-        MaterialTheme.colorScheme.secondaryContainer
+        colors.current.secondaryContainer
     Reconnect, SideloadRebootNeed,AndroidEvenRebootNeed,Unconnected ->
-        MaterialTheme.colorScheme.tertiaryContainer
+        colors.current.tertiaryContainer
 }.let {
     CardDefaults.cardColors(it)
 }

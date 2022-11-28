@@ -83,6 +83,10 @@ fun main() {
                 override suspend fun CoroutineScope.onStart() {
                 }
 
+                override fun onUpdateEffect() {
+
+                }
+
                 override fun onStop() {
 
                 }

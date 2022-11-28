@@ -12,8 +12,6 @@ import java.io.File
 import kotlin.math.roundToLong
 
 
-// TODO make it close to [ViewModel]
-// TODO new class of files
 sealed interface Context {
 
     val files:List<File>
@@ -50,6 +48,7 @@ sealed interface Context {
 
          override fun start() {
              scope.launch {
+//                 context.value = Ready
                  delay(500)
                  updateSubTitle("开始执行。")
                  start(parent)
@@ -127,7 +126,6 @@ sealed interface Context {
 
     }
     companion object {
-
 
         val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
 

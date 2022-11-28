@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.isSideload
 import net.dongliu.apk.parser.bean.ApkIcon
 
@@ -46,8 +47,8 @@ fun Info(
             content = {
                 Text(if (isSideload) "这是APK？" else "这是刷机包?") },
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
+                containerColor = colors.current.secondary,
+                contentColor = colors.current.onSecondary
             )
         )
         Detail(
@@ -60,7 +61,7 @@ fun Info(
 
 @Composable
 private fun IconCard(icon: ApkIcon<*>) {
-    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)) {
+    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(colors.current.primary)) {
         icon
         //TODO icon here
     }

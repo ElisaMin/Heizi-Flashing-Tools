@@ -17,12 +17,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.sideloader.Context
+import me.heizi.flashing_tool.sideloader.colors
 import kotlin.system.exitProcess
 
 @Composable
 operator fun Context.Ready.invoke(
-    color: Color = MaterialTheme.colorScheme.onBackground,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    color: Color = colors.current.onBackground,
+    backgroundColor: Color = colors.current.background,
 )  {
     Box(Modifier.fillMaxSize().background(backgroundColor)) {
         Text(
@@ -72,11 +73,11 @@ fun Invoke(
     smallTitle:String,
     closeBtnClick: () -> Unit = {},
     scope: CoroutineScope = rememberCoroutineScope(),
-    color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    whiteBordColor:Color = MaterialTheme.colorScheme.background,
-    primary: Color = MaterialTheme.colorScheme.primary,
-    onPrimary: Color = MaterialTheme.colorScheme.onPrimary,
+    color: Color = colors.current.onPrimaryContainer,
+    backgroundColor: Color = colors.current.primaryContainer,
+    whiteBordColor:Color = colors.current.background,
+    primary: Color = colors.current.primary,
+    onPrimary: Color = colors.current.onPrimary,
 ) = CompositionLocalProvider(LocalContentColor.provides(color)) {
 
     Scaffold (
