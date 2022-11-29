@@ -18,28 +18,16 @@
 package androidx.palette.graphics
 
 import RGBToHSL
-import androidx.collection.SparseArrayCompat
 import androidx.compose.ui.graphics.Color
 import androidx.palette.graphics.Palette.Builder
 import calculateMinimumAlpha
+import kotlinx.coroutines.*
 import org.jetbrains.skia.*
 import setAlphaComponent
 import java.util.*
+import kotlin.collections.LinkedHashMap
 import kotlin.math.abs
 import kotlin.math.ceil
-
-private val Color.Companion.WHITE: Int
-    get() = White.value.toInt()
-private val Color.Companion.BLACK: Int
-    get() = Black.value.toInt()
-
-@Deprecated("not this shit", replaceWith = ReplaceWith(""))
-annotation class ColorInt
-@Deprecated("not this shit")
-annotation class Px
-
-typealias SparseBooleanArrayList
-    = SparseArrayCompat<Boolean>
 
 /**
  * A helper class to extract prominent colors from an image.
@@ -84,7 +72,9 @@ class Palette internal constructor(
 ) {
 
     private val selectedSwatches: MutableMap<Targets, Swatch> = hashMapOf()
-    private val usedColors: SparseBooleanArrayList = SparseBooleanArrayList()
+    private val usedColors: MutableMap<Int,Boolean> = LinkedHashMap()
+
+    val all: Map<Targets, Swatch> get() = selectedSwatches
 
     /**
      * Returns the dominant swatch from the palette.
@@ -104,51 +94,40 @@ class Palette internal constructor(
     operator fun get(target: Targets) = selectedSwatches[target]
 
 
-    fun generate() {
-        // TODO didnt working
+    // Check whether the HSL values are within the correct ranges, and this color hasn't
+    // been used yet.
+    private infix fun Targets.check(swatch: Swatch) = swatch.hsl.let { hsl->
+            !(usedColors.get(swatch.rgb)?:false)
+                && hsl[1] in minimumSaturation..maximumSaturation
+                && hsl[2] in minimumLightness..maximumLightness
+    }
+    suspend fun generate() {
         // We need to make sure that the scored targets are generated first. This is so that
         // inherited targets have something to inherit from
-        for (target in targets) {
-            target.normalizeWeights()
-            generateScoredTarget(target)?.let { selectedSwatches.put(target, it) }
-        }
-        println(selectedSwatches.size)
-        // We now clear out the used colors
-        usedColors.clear()
-    }
-
-
-    private fun generateScoredTarget(target: Targets) =
-        getMaxScoredSwatchForTarget(target)?.also {maxScoreSwatch ->
-            // If we have a swatch, and the target is exclusive, add the color to the used list
-            if (target.isExclusive) usedColors.append(maxScoreSwatch.rgb, true)
-        }
-
-
-    private fun getMaxScoredSwatchForTarget(target: Targets): Swatch? {
-        var maxScore = 0f
-        var maxScoreSwatch: Swatch? = null
-        swatches.asSequence().filter {
-            shouldBeScoredForTarget(it, target)
-        }.forEach { swatch ->
-            if (maxScoreSwatch==null) maxScoreSwatch= swatch
-            generateScore(swatch,target).takeIf { it>maxScore }?.let {
-                maxScore = it
-                maxScoreSwatch = swatch
+        val targetsSequence = targets.asSequence()
+        targetsSequence.forEach { it.normalizeWeights() }
+        swatches.asSequence().flatMap {color->
+            // 2 target after map and filter, 2 * swatches.size
+            // filtering all not allow that target is null
+            targetsSequence.mapNotNull {
+                // six time in here ,all should here is swatches.size * 6
+                it.takeIf { it check color }?.let { it to color }
             }
-            println("$target max $maxScoreSwatch")
+        }.groupBy(keySelector = {it.first}, valueTransform = {it.second}
+            // group to map
+        ).map {(target,swatches)->
+            // computing score and filtering to max score
+            target to swatches
+                .asSequence()
+                .map { swatch -> swatch to generateScore(swatch, target) }
+                .maxBy { it.second }
+                .first
+        }.forEach { (target, swatch) ->
+            // finally done
+            if (target.isExclusive) usedColors.put(swatch.rgb, true)
+            selectedSwatches[target]=swatch
         }
-        return maxScoreSwatch
     }
-
-    private fun shouldBeScoredForTarget(swatch: Swatch, target: Targets): Boolean =
-        // Check whether the HSL values are within the correct ranges, and this color hasn't
-        // been used yet.
-        target.run {
-            val hsl = swatch.hsl
-            hsl[1] in minimumSaturation..maximumSaturation && hsl[2] in minimumLightness..maximumLightness
-        } && (!usedColors.get(swatch.rgb,false))
-
     private fun generateScore(swatch: Swatch, target: Targets): Float {
         val hsl = swatch.hsl
         var saturationScore = 0f
@@ -255,48 +234,52 @@ class Palette internal constructor(
 
         private fun ensureTextColorsGenerated() {
             if (!mGeneratedTextColors) {
+
+
+                val white = Color.White.value.toInt()
+                val black = Color.Black.value.toInt()
                 // First check white, as most colors will be dark
                 val lightBodyAlpha = calculateMinimumAlpha(
-                    Color.WHITE, rgb, MIN_CONTRAST_BODY_TEXT
+                    white, rgb, MIN_CONTRAST_BODY_TEXT
                 )
                 val lightTitleAlpha = calculateMinimumAlpha(
-                    Color.WHITE, rgb, MIN_CONTRAST_TITLE_TEXT
+                    white, rgb, MIN_CONTRAST_TITLE_TEXT
                 )
                 if (lightBodyAlpha != -1 && lightTitleAlpha != -1) {
                     // If we found valid light values, use them and return
-                    mBodyTextColor = setAlphaComponent(Color.WHITE, lightBodyAlpha)
-                    mTitleTextColor = setAlphaComponent(Color.WHITE, lightTitleAlpha)
+                    mBodyTextColor = setAlphaComponent(white, lightBodyAlpha)
+                    mTitleTextColor = setAlphaComponent(white, lightTitleAlpha)
                     mGeneratedTextColors = true
                     return
                 }
                 val darkBodyAlpha = calculateMinimumAlpha(
-                    Color.BLACK, rgb, MIN_CONTRAST_BODY_TEXT
+                    black, rgb, MIN_CONTRAST_BODY_TEXT
                 )
                 val darkTitleAlpha = calculateMinimumAlpha(
-                    Color.BLACK, rgb, MIN_CONTRAST_TITLE_TEXT
+                    black, rgb, MIN_CONTRAST_TITLE_TEXT
                 )
                 if (darkBodyAlpha != -1 && darkTitleAlpha != -1) {
                     // If we found valid dark values, use them and return
-                    mBodyTextColor = setAlphaComponent(Color.BLACK, darkBodyAlpha)
-                    mTitleTextColor = setAlphaComponent(Color.BLACK, darkTitleAlpha)
+                    mBodyTextColor = setAlphaComponent(black, darkBodyAlpha)
+                    mTitleTextColor = setAlphaComponent(black, darkTitleAlpha)
                     mGeneratedTextColors = true
                     return
                 }
                 // FIXME:
                 if (darkBodyAlpha== -1) {
-                    mBodyTextColor = Color.WHITE
+                    mBodyTextColor = white
                     return
                 }
                 // If we reach here then we can not find title and body values which use the same
                 // lightness, we need to use mismatched values
                 mBodyTextColor = if (lightBodyAlpha != -1) setAlphaComponent(
-                    Color.WHITE,
+                    white,
                     lightBodyAlpha
-                ) else setAlphaComponent(Color.BLACK, darkBodyAlpha)
+                ) else setAlphaComponent(black, darkBodyAlpha)
                 mTitleTextColor = if (lightTitleAlpha != -1) setAlphaComponent(
-                    Color.WHITE,
+                    white,
                     lightTitleAlpha
-                ) else setAlphaComponent(Color.BLACK, darkTitleAlpha)
+                ) else setAlphaComponent(black, darkTitleAlpha)
                 mGeneratedTextColors = true
             }
         }
@@ -332,7 +315,7 @@ class Palette internal constructor(
     data class Builder private constructor(
         var swatches: List<Swatch> = emptyList(),
         var bitmap: Bitmap? = null,
-        val targets: MutableSet<Targets> = mutableSetOf(),
+        val targets: MutableSet<Targets> = Targets.all.toMutableSet(),
         var maxColors: Int = DEFAULT_CALCULATE_NUMBER_COLORS,
         val filters: MutableList<Filter> = arrayListOf(DEFAULT_FILTER),
 //        var region: Rect? = null,
@@ -351,13 +334,6 @@ class Palette internal constructor(
                     }
 
                     swatches = emptyList()
-                    // Add the default targets
-                    targets.add(Targets.VibrantLight)
-                    targets.add(Targets.Vibrant)
-                    targets.add(Targets.VibrantDark)
-                    targets.add(Targets.MutedLight)
-                    targets.add(Targets.Muted)
-                    targets.add(Targets.MutedDark)
                 }
                 swatches.isNotEmpty() -> {
                     bitmap = null
@@ -408,31 +384,6 @@ class Palette internal constructor(
             resizeMaxDimension = -1
         }
 
-
-//        /**
-//         * Set a region of the bitmap to be used exclusively when calculating the palette.
-//         *
-//         * This only works when the original input is a [Bitmap].
-//         *
-//         * @param left The left side of the rectangle used for the region.
-//         * @param top The top of the rectangle used for the region.
-//         * @param right The right side of the rectangle used for the region.
-//         * @param bottom The bottom of the rectangle used for the region.
-//         */
-//        fun setRegion(left: Float, top: Float,right: Float,bottom: Float) {
-//            if (bitmap != null) {
-//                if (region == null) region = Rect()
-//                // Set the Rect to be initially the whole Bitmap
-//                region!![0, 0, bitmap.width] = bitmap.height
-//                // Now just get the intersection with the region
-//                if (!region!!.intersect(left, top, right, bottom)) {
-//                    throw IllegalArgumentException(
-//                        "The given region must intersect with "
-//                                + "the Bitmap's dimensions."
-//                    )
-//                }
-//            }
-//        }
         /**
          * Generate and return the [Palette] synchronously.
          */

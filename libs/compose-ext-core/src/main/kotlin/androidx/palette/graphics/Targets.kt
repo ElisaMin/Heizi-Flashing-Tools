@@ -129,31 +129,19 @@ sealed class Targets {
         }
 
     }
-    @Suppress("NAME_SHADOWING")
     fun normalizeWeights() {
         var sum = 0f
-        var i = 0
-        val z = weights.size
-        while (i < z) {
-            val weight = weights[i]
-            if (weight > 0) {
-                sum += weight
-            }
-            i++
+        for (weight in weights) {
+            if (weight > 0) sum += weight
         }
-        if (sum != 0f) {
-            var i = 0
-            val z = weights.size
-            while (i < z) {
-                if (weights[i] > 0) {
-                    weights[i] /= sum
-                }
-                i++
-            }
+        if (sum!=0f) repeat(weights.size) {
+            if (weights[it]>0)
+                weights[it] /= sum
         }
     }
 
     companion object {
+        val all = arrayOf(VibrantLight, Vibrant, VibrantDark, MutedLight, Muted, MutedDark)
         private val defaultArray get() = arrayOf(0f,0.5f,1f)
         private const val TARGET_DARK_LUMA = 0.26f
         private const val MAX_DARK_LUMA = 0.45f

@@ -6,6 +6,3 @@ dependencies(
     reflect = true,
     apkParser = true
 )
-dependencies {
-    implementation("androidx.collection:collection-ktx:${rootProject.versions["androidx.collection"]}")
-}
