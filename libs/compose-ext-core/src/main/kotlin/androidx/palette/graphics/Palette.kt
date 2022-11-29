@@ -18,7 +18,6 @@
 package androidx.palette.graphics
 
 import RGBToHSL
-import androidx.collection.SimpleArrayMap
 import androidx.collection.SparseArrayCompat
 import androidx.compose.ui.graphics.Color
 import androidx.palette.graphics.Palette.Builder
@@ -81,10 +80,10 @@ typealias SparseBooleanArrayList
  */
 class Palette internal constructor(
     private val swatches: List<Swatch>,
-    private val targets: List<Target>
+    private val targets: Set<Targets>
 ) {
 
-    private val mSelectedSwatches: SimpleArrayMap<Target, Swatch?> = SimpleArrayMap()
+    private val selectedSwatches: MutableMap<Targets, Swatch> = hashMapOf()
     private val usedColors: SparseBooleanArrayList = SparseBooleanArrayList()
 
     /**
@@ -101,199 +100,56 @@ class Palette internal constructor(
     /**
      * Returns the selected swatch for the given target from the palette, or `null` if one
      * could not be found.
-     *
-     * @see Palette.getSwatchForTarget
      */
-    operator fun get(target: Target) = getSwatchForTarget(target)
+    operator fun get(target: Targets) = selectedSwatches[target]
 
-    /**
-     * Returns the most vibrant swatch in the palette. Might be null.
-     *
-     * @see Target.VIBRANT
-     */
-    val vibrantSwatch: Swatch?
-        get() = getSwatchForTarget(Target.VIBRANT)
-
-    /**
-     * Returns a light and vibrant swatch from the palette. Might be null.
-     *
-     * @see Target.LIGHT_VIBRANT
-     */
-    val lightVibrantSwatch: Swatch?
-        get() = getSwatchForTarget(Target.LIGHT_VIBRANT)
-
-    /**
-     * Returns a dark and vibrant swatch from the palette. Might be null.
-     *
-     * @see Target.DARK_VIBRANT
-     */
-    val darkVibrantSwatch: Swatch?
-        get() = getSwatchForTarget(Target.DARK_VIBRANT)
-
-    /**
-     * Returns a muted swatch from the palette. Might be null.
-     *
-     * @see Target.MUTED
-     */
-    val mutedSwatch: Swatch?
-        get() = getSwatchForTarget(Target.MUTED)
-
-    /**
-     * Returns a muted and light swatch from the palette. Might be null.
-     *
-     * @see Target.LIGHT_MUTED
-     */
-    val lightMutedSwatch: Swatch?
-        get() = getSwatchForTarget(Target.LIGHT_MUTED)
-
-    /**
-     * Returns a muted and dark swatch from the palette. Might be null.
-     *
-     * @see Target.DARK_MUTED
-     */
-    val darkMutedSwatch: Swatch?
-        get() = getSwatchForTarget(Target.DARK_MUTED)
-
-    /**
-     * Returns the most vibrant color in the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getVibrantSwatch
-     */
-    fun getVibrantColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.VIBRANT, defaultColor)
-    }
-
-    /**
-     * Returns a light and vibrant color from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getLightVibrantSwatch
-     */
-    fun getLightVibrantColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.LIGHT_VIBRANT, defaultColor)
-    }
-
-    /**
-     * Returns a dark and vibrant color from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getDarkVibrantSwatch
-     */
-    fun getDarkVibrantColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.DARK_VIBRANT, defaultColor)
-    }
-
-    /**
-     * Returns a muted color from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getMutedSwatch
-     */
-    fun getMutedColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.MUTED, defaultColor)
-    }
-
-    /**
-     * Returns a muted and light color from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getLightMutedSwatch
-     */
-    fun getLightMutedColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.LIGHT_MUTED, defaultColor)
-    }
-
-    /**
-     * Returns a muted and dark color from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getDarkMutedSwatch
-     */
-    fun getDarkMutedColor(defaultColor: Int): Int {
-        return getColorForTarget(Target.DARK_MUTED, defaultColor)
-    }
-
-    /**
-     * Returns the selected swatch for the given target from the palette, or `null` if one
-     * could not be found.
-     */
-    fun getSwatchForTarget(target: Target): Swatch? {
-        return mSelectedSwatches[target]
-    }
-
-    /**
-     * Returns the selected color for the given target from the palette as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     */
-    fun getColorForTarget(target: Target, defaultColor: Int): Int {
-        val swatch = getSwatchForTarget(target)
-        return swatch?.rgb ?: defaultColor
-    }
-
-    /**
-     * Returns the color of the dominant swatch from the palette, as an RGB packed int.
-     *
-     * @param defaultColor value to return if the swatch isn't available
-     * @see .getDominantSwatch
-     */
-    fun getDominantColor(defaultColor: Int): Int {
-        return dominantSwatch?.rgb ?: defaultColor
-    }
 
     fun generate() {
         // TODO didnt working
         // We need to make sure that the scored targets are generated first. This is so that
         // inherited targets have something to inherit from
-        var i = 0
-        val count = targets.size
-        while (i < count) {
-            val target = targets[i]
+        for (target in targets) {
             target.normalizeWeights()
-            mSelectedSwatches.put(target, generateScoredTarget(target))
-            i++
+            generateScoredTarget(target)?.let { selectedSwatches.put(target, it) }
         }
+        println(selectedSwatches.size)
         // We now clear out the used colors
         usedColors.clear()
     }
 
-    private fun generateScoredTarget(target: Target): Swatch? {
-        val maxScoreSwatch = getMaxScoredSwatchForTarget(target)
-        if (maxScoreSwatch != null && target.isExclusive) {
-            // If we have a swatch, and the target is exclusive, add the color to the used list
-            usedColors.append(maxScoreSwatch.rgb, true)
-        }
-        return maxScoreSwatch
-    }
 
-    private fun getMaxScoredSwatchForTarget(target: Target): Swatch? {
+    private fun generateScoredTarget(target: Targets) =
+        getMaxScoredSwatchForTarget(target)?.also {maxScoreSwatch ->
+            // If we have a swatch, and the target is exclusive, add the color to the used list
+            if (target.isExclusive) usedColors.append(maxScoreSwatch.rgb, true)
+        }
+
+
+    private fun getMaxScoredSwatchForTarget(target: Targets): Swatch? {
         var maxScore = 0f
         var maxScoreSwatch: Swatch? = null
-        var i = 0
-        val count = swatches.size
-        while (i < count) {
-            val swatch = swatches[i]
-            if (shouldBeScoredForTarget(swatch, target)) {
-                val score = generateScore(swatch, target)
-                if (maxScoreSwatch == null || score > maxScore) {
-                    maxScoreSwatch = swatch
-                    maxScore = score
-                }
+        swatches.asSequence().filter {
+            shouldBeScoredForTarget(it, target)
+        }.forEach { swatch ->
+            if (maxScoreSwatch==null) maxScoreSwatch= swatch
+            generateScore(swatch,target).takeIf { it>maxScore }?.let {
+                maxScore = it
+                maxScoreSwatch = swatch
             }
-            i++
+            println("$target max $maxScoreSwatch")
         }
         return maxScoreSwatch
     }
 
-    private fun shouldBeScoredForTarget(swatch: Swatch, target: Target): Boolean {
+    private fun shouldBeScoredForTarget(swatch: Swatch, target: Targets): Boolean =
         // Check whether the HSL values are within the correct ranges, and this color hasn't
         // been used yet.
-        val hsl = swatch.hsl
-        return ((hsl[1] >= target.minimumSaturation && hsl[1] <= target.maximumSaturation) && hsl[2] >= target.minimumLightness) && hsl[2] <= target.maximumLightness && !(usedColors[swatch.rgb]?:false)
-    }
+        target.run {
+            val hsl = swatch.hsl
+            hsl[1] in minimumSaturation..maximumSaturation && hsl[2] in minimumLightness..maximumLightness
+        } && (!usedColors.get(swatch.rgb,false))
 
-    private fun generateScore(swatch: Swatch, target: Target): Float {
+    private fun generateScore(swatch: Swatch, target: Targets): Float {
         val hsl = swatch.hsl
         var saturationScore = 0f
         var luminanceScore = 0f
@@ -334,11 +190,12 @@ class Palette internal constructor(
      * Represents a color swatch generated from an image's palette. The RGB color can be retrieved
      * by calling [.getRgb].
      */
-    class Swatch(color: Int, population: Int) {
+    class Swatch(color: Int, population: Int){
         private val mRed: Int
         private val mGreen: Int
         private val mBlue: Int
 
+        val color = Color(color)
         /**
          * @return this swatch's RGB color value
          */
@@ -425,7 +282,11 @@ class Palette internal constructor(
                     mGeneratedTextColors = true
                     return
                 }
-                if (darkBodyAlpha== -1) return
+                // FIXME:
+                if (darkBodyAlpha== -1) {
+                    mBodyTextColor = Color.WHITE
+                    return
+                }
                 // If we reach here then we can not find title and body values which use the same
                 // lightness, we need to use mismatched values
                 mBodyTextColor = if (lightBodyAlpha != -1) setAlphaComponent(
@@ -443,7 +304,7 @@ class Palette internal constructor(
         override fun toString(): String {
             return StringBuilder(javaClass.simpleName)
                 .append(" [RGB: #").append(Integer.toHexString(rgb)).append(']')
-                .append(" [HSL: ").append(Arrays.toString(hsl)).append(']')
+                .append(" [HSL: ").append(hsl.contentToString()).append(']')
                 .append(" [Population: ").append(population).append(']')
                 .append(" [Title Text: #").append(Integer.toHexString(titleTextColor))
                 .append(']')
@@ -471,7 +332,7 @@ class Palette internal constructor(
     data class Builder private constructor(
         var swatches: List<Swatch> = emptyList(),
         var bitmap: Bitmap? = null,
-        val targets: MutableList<Target> = ArrayList(),
+        val targets: MutableSet<Targets> = mutableSetOf(),
         var maxColors: Int = DEFAULT_CALCULATE_NUMBER_COLORS,
         val filters: MutableList<Filter> = arrayListOf(DEFAULT_FILTER),
 //        var region: Rect? = null,
@@ -491,12 +352,12 @@ class Palette internal constructor(
 
                     swatches = emptyList()
                     // Add the default targets
-                    targets.add(Target.LIGHT_VIBRANT)
-                    targets.add(Target.VIBRANT)
-                    targets.add(Target.DARK_VIBRANT)
-                    targets.add(Target.LIGHT_MUTED)
-                    targets.add(Target.MUTED)
-                    targets.add(Target.DARK_MUTED)
+                    targets.add(Targets.VibrantLight)
+                    targets.add(Targets.Vibrant)
+                    targets.add(Targets.VibrantDark)
+                    targets.add(Targets.MutedLight)
+                    targets.add(Targets.Muted)
+                    targets.add(Targets.MutedDark)
                 }
                 swatches.isNotEmpty() -> {
                     bitmap = null
@@ -603,13 +464,9 @@ class Palette internal constructor(
                 }
             }
             // Now create a Palette instance
-            val p = Palette(swatches, targets)
+            val p = Palette(swatches, targets.toSet())
             // And make it generate itself
             p.generate()
-            swatches.sortedBy { it.population }.forEach { println(it) }
-            for (target in targets) {
-                println(target)
-            }
             return p
         }
         /**
