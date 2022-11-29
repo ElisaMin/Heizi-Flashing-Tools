@@ -47,41 +47,43 @@ import kotlin.math.min
  */
 
 fun compositeColors(foreground: Color, background: Color): Color {
-    if (!(foreground.model == background.model)) {
-        throw IllegalArgumentException(
-            ("Color models must match (" + foreground.model + " vs. "
-                    + background.model + ")")
-        )
+    require(foreground.model == background.model) {
+        "Color models must match (${foreground.model} vs. ${background.model})"
     }
-    val s =
-        if ((background.colorSpace == foreground.colorSpace)) foreground else foreground.convert(
-            background.colorSpace
+    var dst = background
+    var res = if (background.colorSpace == foreground.colorSpace)
+        foreground else foreground.convert(background.colorSpace)
+
+    dst = dst.copy(
+        // Final alpha: src_alpha + dst_alpha * (1 - src_alpha)
+        alpha = res.alpha+(
+           // Destination alpha pre-composited
+            background.alpha * (1.0f - res.alpha)
         )
-    val src = s.components
-    val dst = background.components
-    var sa = s.alpha()
-    // Destination alpha pre-composited
-    var da = background.alpha() * (1.0f - sa)
-
-    // Index of the alpha component
-    @SuppressLint("Range") val ai// TODO Remove after upgrading AGP to 3.1 or newer.
-            = background.componentCount - 1
-
-    // Final alpha: src_alpha + dst_alpha * (1 - src_alpha)
-    dst[ai] = sa + da
-
+    )
     // Divide by final alpha to return non pre-multiplied color
-    if (dst[ai] > 0) {
-        sa /= dst[ai]
-        da /= dst[ai]
+    if (dst.alpha>0) {
+        res = res.copy(alpha = res.alpha.div(dst.alpha))
+        dst = dst.copy(alpha = dst.alpha.div(dst.alpha))
     }
 
     // Composite non-alpha components
-    for (i in 0 until ai) {
-        dst[i] = src[i] * sa + dst[i] * da
-    }
-    return Color.valueOf(dst, background.colorSpace)
+    dst = dst.copy(
+        alpha = res.alpha *res.alpha+dst.alpha*dst.alpha,
+        red   = res.red   *res.alpha+dst.red  *dst.alpha,
+        green = res.green *res.alpha+dst.green*dst.alpha,
+        blue  = res.blue  *res.alpha+dst.blue *dst.alpha,
+    )
+
+    return dst.convert(background.colorSpace)
 }
+
+private val Color.components
+    get() = arrayOf(component1(),component2(),component3(),component4())
+
+private val Color.model
+    get() = colorSpace.model
+
 /**
  * A set of color-related utility methods, building upon those available in `Color`.
  */
@@ -172,7 +174,7 @@ private fun calculateContrast(foreground: Int, background: Int): Double {
     }
     if (Color.alpha(foreground) < 255) {
         // If the foreground is translucent, composite the foreground over the background
-        foreground = compositeColors(foreground, background).value.toInt()
+        foreground = compositeColors(Color(foreground), Color(background)).value.toInt()
     }
     val luminance1 = calculateLuminance(foreground) + 0.05
     val luminance2 = calculateLuminance(background) + 0.05
