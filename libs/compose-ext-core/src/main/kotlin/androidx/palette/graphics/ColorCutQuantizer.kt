@@ -37,12 +37,12 @@ import kotlin.math.roundToInt
  * colors.
  */
 internal class ColorCutQuantizer(
-    pixels: IntArray,
+    pixels: Array<Int>,
     maxColors: Int,
     val mFilters: Array<Palette.Filter>?
 ) {
-    val mColors: IntArray
-    val mHistogram: IntArray
+    val colors: IntArray
+    val histogram: IntArray = IntArray(1 shl (QUANTIZE_WORD_WIDTH * 3))
     var mQuantizedColors: MutableList<Swatch>? = null
     private val mTempHsl: FloatArray = FloatArray(3)
 
@@ -57,7 +57,7 @@ internal class ColorCutQuantizer(
         // split the largest box in the queue
         val pq: PriorityQueue<Vbox> = PriorityQueue(maxColors, VBOX_COMPARATOR_VOLUME)
         // To start, offer a box which contains all of the colors
-        pq.offer(Vbox(0, mColors.size - 1))
+        pq.offer(Vbox(0, colors.size - 1))
         // Now go through the boxes, splitting them until we have reached maxColors or there are no
         // more boxes to split
         splitBoxes(pq, maxColors)
@@ -138,8 +138,8 @@ internal class ColorCutQuantizer(
          * Recomputes the boundaries of this box to tightly fit the colors within the box.
          */
         fun fitBox() {
-            val colors: IntArray = mColors
-            val hist: IntArray = mHistogram
+            val colors: IntArray = colors
+            val hist: IntArray = histogram
             // Reset the min and max to opposite values
             var minRed: Int
             var minGreen: Int
@@ -234,8 +234,8 @@ internal class ColorCutQuantizer(
          */
         fun findSplitPoint(): Int {
             val longestDimension: Int = longestColorDimension
-            val colors: IntArray = mColors
-            val hist: IntArray = mHistogram
+            val colors: IntArray = colors
+            val hist: IntArray = histogram
             // We need to sort the colors in this box based on the longest color dimension.
             // As we can't use a Comparator to define the sort logic, we modify each color so that
             // its most significant is the desired dimension
@@ -264,8 +264,8 @@ internal class ColorCutQuantizer(
          */
         val averageColor: Swatch
             get() {
-                val colors: IntArray = mColors
-                val hist: IntArray = mHistogram
+                val colors: IntArray = colors
+                val hist: IntArray = histogram
                 var redSum: Int = 0
                 var greenSum: Int = 0
                 var blueSum: Int = 0
@@ -317,8 +317,7 @@ internal class ColorCutQuantizer(
      * @param filters Set of filters to use in the quantization stage
      */
     init {
-        mHistogram = IntArray(1 shl (QUANTIZE_WORD_WIDTH * 3))
-        val hist: IntArray = mHistogram
+        val hist: IntArray = histogram
         for (i in pixels.indices) {
             val quantizedColor: Int = quantizeFromRgb888(pixels.get(i))
             // Now update the pixel value to the quantized value
@@ -339,8 +338,8 @@ internal class ColorCutQuantizer(
             }
         }
         // Now lets go through create an array consisting of only distinct colors
-        mColors = IntArray(distinctColorCount)
-        val colors: IntArray = mColors
+        colors = IntArray(distinctColorCount)
+        val colors: IntArray = colors
         var distinctColorIndex: Int = 0
         for (color in hist.indices) {
             if (hist.get(color) > 0) {
