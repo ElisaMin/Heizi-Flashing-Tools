@@ -22,7 +22,7 @@ import kotlin.reflect.*
  * A class which allows custom selection of colors in a [Palette]'s generation. Instances
  *
  *
- * To use the target, use the [Palette.Builder.addTarget] API when building a
+ * To use the target, use the [Palette.Builder.targets] API when building a
  * Palette.
  */
 data class Target(
@@ -31,19 +31,10 @@ data class Target(
     val weights: FloatArray = FloatArray(3),
 ) {
 
-
-    class IndexOf(
-        val a:FloatArray,
-        val i:Int
-    ) {
-        operator fun getValue(target: Target, property: KProperty<*>): Float {
-            return (property as KProperty1<Target,Float>).get(target)
-        }
-
-        operator fun setValue(target: Target, property: KProperty<*>, fl: Float) {
-            (property as KMutableProperty1<Target,Float>).set(target,fl)
-        }
-
+    init {
+        setTargetDefaultValues(saturationTargets)
+        setTargetDefaultValues(lightnessTargets)
+        setDefaultWeights()
     }
 
     /**
@@ -54,11 +45,20 @@ data class Target(
      */
     var isExclusive = true // default to true
 
-    init {
-        setTargetDefaultValues(saturationTargets)
-        setTargetDefaultValues(lightnessTargets)
-        setDefaultWeights()
+    class IndexOf(
+        val a:FloatArray,
+        val i:Int
+    ) {
+        operator fun getValue(target: Target, property: KProperty<*>): Float {
+            return a[i]
+        }
+
+        operator fun setValue(target: Target, property: KProperty<*>, fl: Float) {
+            a[i]=fl
+        }
+
     }
+
     /**
      * The minimum saturation value for this target.
      */

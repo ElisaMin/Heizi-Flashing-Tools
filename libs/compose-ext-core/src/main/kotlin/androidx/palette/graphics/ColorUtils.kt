@@ -24,7 +24,7 @@ import kotlin.math.min
 
 /**
  * Composites two translucent colors together. More specifically, adds two colors using
- * the [source over][android.graphics.PorterDuff.Mode.SRC_OVER] blending mode. The
+ * the [source over]android.graphics.PorterDuff.Mode.SRC_OVER blending mode. The
  * colors must not be pre-multiplied and the result is a non pre-multiplied color.
  *
  *
@@ -43,7 +43,7 @@ import kotlin.math.min
  * *Note:* This method requires API 26 or newer.
  *
  * @throws IllegalArgumentException if the
- * [models][android.graphics.Color.getModel] of the colors do not match
+ * [models][androidx.compose.ui.graphics.colorspace.ColorModel] of the colors do not match
  */
 
 fun compositeColors(foreground: Color, background: Color): Color {
@@ -69,7 +69,7 @@ fun compositeColors(foreground: Color, background: Color): Color {
 
     // Composite non-alpha components
     dst = dst.copy(
-        alpha = res.alpha *res.alpha+dst.alpha*dst.alpha,
+        alpha = (res.alpha *res.alpha+dst.alpha*dst.alpha)*0.1f,
         red   = res.red   *res.alpha+dst.red  *dst.alpha,
         green = res.green *res.alpha+dst.green*dst.alpha,
         blue  = res.blue  *res.alpha+dst.blue *dst.alpha,
@@ -77,9 +77,6 @@ fun compositeColors(foreground: Color, background: Color): Color {
 
     return dst.convert(background.colorSpace)
 }
-
-private val Color.components
-    get() = arrayOf(component1(),component2(),component3(),component4())
 
 private val Color.model
     get() = colorSpace.model
@@ -164,6 +161,7 @@ fun colorToHSL(color: Int, outHsl: FloatArray) {
  * Formula defined
  * [here](http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef).
  */
+@Suppress("NAME_SHADOWING")
 private fun calculateContrast(foreground: Int, background: Int): Double {
     var foreground = foreground
     if (Color.alpha(background) != 255) {
@@ -221,37 +219,6 @@ fun calculateLuminance(color: Int): Double {
     colorToXYZ(color, result)
     // Luminance is the Y component
     return result[1] / 100
-}
-
-/**
- * Composites two translucent colors together. More specifically, adds two colors using
- * the [source over][android.graphics.PorterDuff.Mode.SRC_OVER] blending mode. The
- * colors must not be pre-multiplied and the result is a non pre-multiplied color.
- *
- *
- * If the two colors have different color spaces, the foreground color is converted to the
- * color space of the background color.
- *
- *
- * The following example creates a purple color by blending opaque blue with
- * semi-translucent red:
- *
- * <pre>`Color purple = ColorUtils.compositeColors(
- * Color.valueOf(1f, 0f, 0f, 0.5f),
- * Color.valueOf(0f, 0f, 1f));
-`</pre> *
- *
- * *Note:* This method requires API 26 or newer.
- *
- * @throws IllegalArgumentException if the
- * [models][android.graphics.Color.getModel] of the colors do not match
- */
-private fun compositeAlpha(foregroundAlpha: Int, backgroundAlpha: Int): Int {
-    return 0xFF - (0xFF - backgroundAlpha) * (0xFF - foregroundAlpha) / 0xFF
-}
-
-private fun compositeComponent(fgC: Int, fgA: Int, bgC: Int, bgA: Int, a: Int): Int {
-    return if (a == 0) 0 else ((0xFF * fgC * fgA) + (bgC * bgA * (0xFF - fgA))) / (a * 0xFF)
 }
 
 /**
@@ -341,79 +308,6 @@ private fun RGBToXYZ(
     outXyz[1] = 100 * ((sr * 0.2126) + (sg * 0.7152) + (sb * 0.0722))
     outXyz[2] = 100 * ((sr * 0.0193) + (sg * 0.1192) + (sb * 0.9505))
 }
-private const val XYZ_WHITE_REFERENCE_X = 95.047
-private const val XYZ_WHITE_REFERENCE_Y = 100.0
-private const val XYZ_WHITE_REFERENCE_Z = 108.883
-private const val XYZ_EPSILON = 0.008856
-private const val XYZ_KAPPA = 903.3
-
-/**
- * Converts a color from CIE Lab to CIE XYZ representation.
- *
- *
- * The resulting XYZ representation will use the D65 illuminant and the CIE
- * 2° Standard Observer (1931).
- *
- *
- *  * outXyz[0] is X [0, 95.047)
- *  * outXyz[1] is Y [0, 100)
- *  * outXyz[2] is Z [0, 108.883)
- *
- *
- * @param l L component value [0, 100]
- * @param a A component value [-128, 127)
- * @param b B component value [-128, 127)
- * @param outXyz 3-element array which holds the resulting XYZ components
- */
-private fun LABToXYZ(
-    l: Double,
-    a: Double,
-    b: Double,
-    outXyz: DoubleArray
-) {
-    val fy = (l + 16) / 116
-    val fx = a / 500 + fy
-    val fz = fy - b / 200
-    var tmp = Math.pow(fx, 3.0)
-    val xr = if (tmp > XYZ_EPSILON) tmp else (116 * fx - 16) / XYZ_KAPPA
-    val yr = if (l > XYZ_KAPPA * XYZ_EPSILON) Math.pow(fy, 3.0) else l / XYZ_KAPPA
-    tmp = Math.pow(fz, 3.0)
-    val zr = if (tmp > XYZ_EPSILON) tmp else (116 * fz - 16) / XYZ_KAPPA
-    outXyz[0] = xr * XYZ_WHITE_REFERENCE_X
-    outXyz[1] = yr * XYZ_WHITE_REFERENCE_Y
-    outXyz[2] = zr * XYZ_WHITE_REFERENCE_Z
-}
-
-/**
- * Converts a color from CIE XYZ to its RGB representation.
- *
- *
- * This method expects the XYZ representation to use the D65 illuminant and the CIE
- * 2° Standard Observer (1931).
- *
- * @param x X component value [0, 95.047)
- * @param y Y component value [0, 100)
- * @param z Z component value [0, 108.883)
- * @return int containing the RGB representation
- */
-
-private fun XYZToColor(
-    x: Double,
-    y: Double,
-    z: Double
-): Int {
-    var r = ((x * 3.2406) + (y * -1.5372) + (z * -0.4986)) / 100
-    var g = ((x * -0.9689) + (y * 1.8758) + (z * 0.0415)) / 100
-    var b = ((x * 0.0557) + (y * -0.2040) + (z * 1.0570)) / 100
-    r = if (r > 0.0031308) 1.055 * Math.pow(r, 1 / 2.4) - 0.055 else 12.92 * r
-    g = if (g > 0.0031308) 1.055 * Math.pow(g, 1 / 2.4) - 0.055 else 12.92 * g
-    b = if (b > 0.0031308) 1.055 * Math.pow(b, 1 / 2.4) - 0.055 else 12.92 * b
-    return Color.rgb(
-        constrain(Math.round(r * 255).toInt(), 0, 255),
-        constrain(Math.round(g * 255).toInt(), 0, 255),
-        constrain(Math.round(b * 255).toInt(), 0, 255)
-    )
-}
 
 /**
  * Set the alpha component of `color` to be `alpha`.
@@ -429,25 +323,9 @@ fun setAlphaComponent(
     return (color and 0x00ffffff) or (alpha shl 24)
 }
 
+@Suppress("SameParameterValue")
 private fun constrain(amount: Float, low: Float, high: Float): Float {
-    return if (amount < low) low else Math.min(amount, high)
-}
-
-private fun circularInterpolate(a: Float, b: Float, f: Float): Float {
-    var a = a
-    var b = b
-    if (Math.abs(b - a) > 180) {
-        if (b > a) {
-            a += 360f
-        } else {
-            b += 360f
-        }
-    }
-    return (a + ((b - a) * f)) % 360
-}
-
-private fun constrain(amount: Int, low: Int, high: Int): Int {
-    return if (amount < low) low else Math.min(amount, high)
+    return if (amount < low) low else amount.coerceAtMost(high)
 }
 
 private const val MIN_ALPHA_SEARCH_MAX_ITERATIONS = 10

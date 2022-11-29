@@ -18,7 +18,6 @@ package androidx.palette.graphics
 import androidx.compose.ui.graphics.Color
 import androidx.palette.graphics.Palette.Swatch
 import colorToHSL
-import java.awt.Color.*
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -36,12 +35,10 @@ import kotlin.math.roundToInt
  * This means that the color space is divided into distinct colors, rather than representative
  * colors.
  */
-internal class ColorCutQuantizer(
-    pixels: Array<Int>,
-    maxColors: Int,
-    val mFilters: Array<Palette.Filter>?
+internal class ColorCutQuantizer private constructor(
+    val filters: Array<Palette.Filter>?
 ) {
-    val colors: IntArray
+    var colors: IntArray = IntArray(0)
     val histogram: IntArray = IntArray(1 shl (QUANTIZE_WORD_WIDTH * 3))
     var mQuantizedColors: MutableList<Swatch>? = null
     private val mTempHsl: FloatArray = FloatArray(3)
@@ -52,12 +49,12 @@ internal class ColorCutQuantizer(
     val quantizedColors: List<Swatch>?
         get() = mQuantizedColors
 
-    private fun quantizePixels(maxColors: Int): MutableList<Swatch> {
+    private suspend fun quantizePixels(maxColors: Int): MutableList<Swatch> {
         // Create the priority queue which is sorted by volume descending. This means we always
         // split the largest box in the queue
         val pq: PriorityQueue<Vbox> = PriorityQueue(maxColors, VBOX_COMPARATOR_VOLUME)
         // To start, offer a box which contains all of the colors
-        pq.offer(Vbox(0, colors.size - 1))
+        pq.offer(vbox(0, colors.size - 1))
         // Now go through the boxes, splitting them until we have reached maxColors or there are no
         // more boxes to split
         splitBoxes(pq, maxColors)
@@ -74,7 +71,7 @@ internal class ColorCutQuantizer(
      * @param queue [java.util.PriorityQueue] to poll for boxes
      * @param maxSize Maximum amount of boxes to split
      */
-    private fun splitBoxes(queue: PriorityQueue<Vbox>, maxSize: Int) {
+    private suspend fun splitBoxes(queue: PriorityQueue<Vbox>, maxSize: Int) {
         while (queue.size < maxSize) {
             val vbox: Vbox? = queue.poll()
             if (vbox != null && vbox.canSplit()) {
@@ -102,10 +99,15 @@ internal class ColorCutQuantizer(
         return colors
     }
 
+    private suspend fun vbox(mLowerIndex: Int, mUpperIndex: Int): Vbox
+        = Vbox(mLowerIndex,mUpperIndex).apply {
+            fitBox()
+        }
+
     /**
      * Represents a tightly fitting box around a color space.
      */
-    private inner class Vbox internal constructor(// lower and upper index are inclusive
+    private inner class Vbox constructor(// lower and upper index are inclusive
         private val mLowerIndex: Int, private var mUpperIndex: Int
     ) {
         // Population of colors within this box
@@ -117,9 +119,6 @@ internal class ColorCutQuantizer(
         private var mMinBlue: Int = 0
         private var mMaxBlue: Int = 0
 
-        init {
-            fitBox()
-        }
 
         val volume: Int
             get() = ((mMaxRed - mMinRed + 1) * (mMaxGreen - mMinGreen + 1) *
@@ -137,23 +136,17 @@ internal class ColorCutQuantizer(
         /**
          * Recomputes the boundaries of this box to tightly fit the colors within the box.
          */
-        fun fitBox() {
+        suspend fun fitBox() {
             val colors: IntArray = colors
             val hist: IntArray = histogram
             // Reset the min and max to opposite values
-            var minRed: Int
-            var minGreen: Int
-            var minBlue: Int
-            minBlue = Int.MAX_VALUE
-            minGreen = minBlue
-            minRed = minGreen
-            var maxRed: Int
-            var maxGreen: Int
-            var maxBlue: Int
-            maxBlue = Int.MIN_VALUE
-            maxGreen = maxBlue
-            maxRed = maxGreen
-            var count: Int = 0
+            var minRed = Int.MAX_VALUE
+            var minGreen = Int.MAX_VALUE
+            var minBlue = Int.MAX_VALUE
+            var maxRed = Int.MIN_VALUE
+            var maxGreen = Int.MIN_VALUE
+            var maxBlue = Int.MIN_VALUE
+            var count = 0
             for (i in mLowerIndex..mUpperIndex) {
                 val color: Int = colors.get(i)
                 count += hist.get(color)
@@ -193,13 +186,13 @@ internal class ColorCutQuantizer(
          *
          * @return the new ColorBox
          */
-        fun splitBox(): Vbox {
+        suspend fun splitBox(): Vbox {
             if (!canSplit()) {
                 throw IllegalStateException("Can not split a box with only 1 color")
             }
             // find median along the longest dimension
             val splitPoint: Int = findSplitPoint()
-            val newBox: Vbox = Vbox(splitPoint + 1, mUpperIndex)
+            val newBox: Vbox = vbox(splitPoint + 1, mUpperIndex)
             // Now change this box's upperIndex and recompute the color boundaries
             mUpperIndex = splitPoint
             fitBox()
@@ -246,7 +239,7 @@ internal class ColorCutQuantizer(
             modifySignificantOctet(colors, longestDimension, mLowerIndex, mUpperIndex)
             val midPoint: Int = mPopulation / 2
             var i: Int = mLowerIndex
-            var count: Int = 0
+            var count = 0
             while (i <= mUpperIndex) {
                 count += hist.get(colors.get(i))
                 if (count >= midPoint) {
@@ -266,10 +259,10 @@ internal class ColorCutQuantizer(
             get() {
                 val colors: IntArray = colors
                 val hist: IntArray = histogram
-                var redSum: Int = 0
-                var greenSum: Int = 0
-                var blueSum: Int = 0
-                var totalPopulation: Int = 0
+                var redSum = 0
+                var greenSum = 0
+                var blueSum = 0
+                var totalPopulation = 0
                 for (i in mLowerIndex..mUpperIndex) {
                     val color: Int = colors.get(i)
                     val colorPopulation: Int = hist.get(color)
@@ -296,11 +289,11 @@ internal class ColorCutQuantizer(
     }
 
     private fun shouldIgnoreColor(rgb: Int, hsl: FloatArray): Boolean {
-        if (mFilters != null && mFilters.size > 0) {
-            var i: Int = 0
-            val count: Int = mFilters.size
+        if (!filters.isNullOrEmpty()) {
+            var i = 0
+            val count = filters.size
             while (i < count) {
-                if (!mFilters.get(i).isAllowed(rgb, hsl)) {
+                if (!filters.get(i).isAllowed(rgb, hsl)) {
                     return true
                 }
                 i++
@@ -308,25 +301,20 @@ internal class ColorCutQuantizer(
         }
         return false
     }
-
-    /**
-     * Constructor.
-     *
-     * @param pixels histogram representing an image's pixel data
-     * @param maxColors The maximum number of colors that should be in the result palette.
-     * @param filters Set of filters to use in the quantization stage
-     */
-    init {
+    private suspend fun init(
+        pixels: Array<Int>,
+        maxColors: Int,
+    ) {
         val hist: IntArray = histogram
         for (i in pixels.indices) {
-            val quantizedColor: Int = quantizeFromRgb888(pixels.get(i))
+            val quantizedColor = quantizeFromRgb888(pixels[i])
             // Now update the pixel value to the quantized value
             pixels[i] = quantizedColor
             // And update the histogram
             hist[quantizedColor]++
         }
         // Now let's count the number of distinct colors
-        var distinctColorCount: Int = 0
+        var distinctColorCount = 0
         for (color in hist.indices) {
             if (hist[color] > 0 && shouldIgnoreColor(color)) {
                 // If we should ignore the color, set the population to 0
@@ -340,7 +328,7 @@ internal class ColorCutQuantizer(
         // Now lets go through create an array consisting of only distinct colors
         colors = IntArray(distinctColorCount)
         val colors: IntArray = colors
-        var distinctColorIndex: Int = 0
+        var distinctColorIndex = 0
         for (color in hist.indices) {
             if (hist.get(color) > 0) {
                 colors[distinctColorIndex++] = color
@@ -357,13 +345,30 @@ internal class ColorCutQuantizer(
             mQuantizedColors = quantizePixels(maxColors)
         }
     }
-
     companion object {
+
         const val COMPONENT_RED: Int = -3
         const val COMPONENT_GREEN: Int = -2
         const val COMPONENT_BLUE: Int = -1
         private const val QUANTIZE_WORD_WIDTH: Int = 5
         private const val QUANTIZE_WORD_MASK: Int = (1 shl QUANTIZE_WORD_WIDTH) - 1
+
+
+        /**
+         * Constructor.
+         *
+         * @param pixels histogram representing an image's pixel data
+         * @param maxColors The maximum number of colors that should be in the result palette.
+         * @param filters Set of filters to use in the quantization stage
+         */
+        suspend operator fun invoke(
+            pixels: Array<Int>,
+            maxColors: Int,
+            filters: Array<Palette.Filter>?
+        ) = ColorCutQuantizer(filters).apply {
+            init(pixels, maxColors)
+        }
+
 
         /**
          * Modify the significant octet in a packed color int. Allows sorting based on the value of a
@@ -493,6 +498,6 @@ internal fun Color.Companion.alpha(color: Int): Int {
 internal fun Color.Companion.rgb(red:Int,green:Int,blue:Int): Int {
     return -0x1000000 or (red shl 16) or (green shl 8) or blue
 }
-internal fun Color.Companion.argb(alpha:Int,red:Int,green:Int,blue:Int): Int {
-    return alpha shl 24 or (red shl 16) or (green shl 8) or blue
-}
+//internal fun Color.Companion.argb(alpha:Int,red:Int,green:Int,blue:Int): Int {
+//    return alpha shl 24 or (red shl 16) or (green shl 8) or blue
+//}

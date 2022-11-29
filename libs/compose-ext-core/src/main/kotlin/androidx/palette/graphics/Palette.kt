@@ -21,25 +21,18 @@ import RGBToHSL
 import androidx.collection.SimpleArrayMap
 import androidx.collection.SparseArrayCompat
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PixelMap
-import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.palette.graphics.Palette.Builder
 import calculateMinimumAlpha
 import org.jetbrains.skia.*
-import org.jetbrains.skiko.toBufferedImage
 import setAlphaComponent
-import java.awt.Image.SCALE_DEFAULT
-import java.awt.image.BufferedImage
-import java.util.Arrays
-import java.util.BitSet
-import java.util.Collections
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.ceil
 
 private val Color.Companion.WHITE: Int
-    get() = Color.White.value.toInt()
+    get() = White.value.toInt()
 private val Color.Companion.BLACK: Int
-    get() = Color.Black.value.toInt()
+    get() = Black.value.toInt()
 
 @Deprecated("not this shit", replaceWith = ReplaceWith(""))
 annotation class ColorInt
@@ -87,23 +80,12 @@ typealias SparseBooleanArrayList
 </pre> *
  */
 class Palette internal constructor(
-    private val mSwatches: List<Swatch>,
-    private val mTargets: List<Target>
+    private val swatches: List<Swatch>,
+    private val targets: List<Target>
 ) {
-    /**
-     * Listener to be used with [.generateAsync] or
-     * [.generateAsync]
-     */
-    interface PaletteAsyncListener {
-        /**
-         * Called when the [Palette] has been generated. `null` will be passed when an
-         * error occurred during generation.
-         */
-        fun onGenerated(palette: Palette?)
-    }
 
     private val mSelectedSwatches: SimpleArrayMap<Target, Swatch?> = SimpleArrayMap()
-    private val mUsedColors: SparseBooleanArrayList = SparseBooleanArrayList()
+    private val usedColors: SparseBooleanArrayList = SparseBooleanArrayList()
 
     /**
      * Returns the dominant swatch from the palette.
@@ -112,19 +94,17 @@ class Palette internal constructor(
      * The dominant swatch is defined as the swatch with the greatest population (frequency)
      * within the palette.
      */
-    val dominantSwatch: Swatch?
+    val dominantSwatch: Swatch? by lazy {
+        findDominantSwatch()
+    }
 
     /**
-     * Returns all of the swatches which make up the palette.
+     * Returns the selected swatch for the given target from the palette, or `null` if one
+     * could not be found.
+     *
+     * @see Palette.getSwatchForTarget
      */
-    val swatches: List<Swatch>
-        get() = Collections.unmodifiableList(mSwatches)
-
-    /**
-     * Returns the targets used to generate this palette.
-     */
-    val targets: List<Target>
-        get() = Collections.unmodifiableList(mTargets)
+    operator fun get(target: Target) = getSwatchForTarget(target)
 
     /**
      * Returns the most vibrant swatch in the palette. Might be null.
@@ -262,27 +242,27 @@ class Palette internal constructor(
         return dominantSwatch?.rgb ?: defaultColor
     }
 
-    fun  // TODO(b/141959297): Suppressed during upgrade to AGP 3.6.
-            generate() {
+    fun generate() {
+        // TODO didnt working
         // We need to make sure that the scored targets are generated first. This is so that
         // inherited targets have something to inherit from
         var i = 0
-        val count = mTargets!!.size
+        val count = targets.size
         while (i < count) {
-            val target = mTargets[i]
+            val target = targets[i]
             target.normalizeWeights()
             mSelectedSwatches.put(target, generateScoredTarget(target))
             i++
         }
         // We now clear out the used colors
-        mUsedColors.clear()
+        usedColors.clear()
     }
 
     private fun generateScoredTarget(target: Target): Swatch? {
         val maxScoreSwatch = getMaxScoredSwatchForTarget(target)
         if (maxScoreSwatch != null && target.isExclusive) {
             // If we have a swatch, and the target is exclusive, add the color to the used list
-            mUsedColors.append(maxScoreSwatch.rgb, true)
+            usedColors.append(maxScoreSwatch.rgb, true)
         }
         return maxScoreSwatch
     }
@@ -291,9 +271,9 @@ class Palette internal constructor(
         var maxScore = 0f
         var maxScoreSwatch: Swatch? = null
         var i = 0
-        val count = mSwatches.size
+        val count = swatches.size
         while (i < count) {
-            val swatch = mSwatches[i]
+            val swatch = swatches[i]
             if (shouldBeScoredForTarget(swatch, target)) {
                 val score = generateScore(swatch, target)
                 if (maxScoreSwatch == null || score > maxScore) {
@@ -310,7 +290,7 @@ class Palette internal constructor(
         // Check whether the HSL values are within the correct ranges, and this color hasn't
         // been used yet.
         val hsl = swatch.hsl
-        return ((hsl[1] >= target.minimumSaturation && hsl[1] <= target.maximumSaturation) && hsl[2] >= target.minimumLightness) && hsl[2] <= target.maximumLightness && !mUsedColors[swatch.rgb]!!
+        return ((hsl[1] >= target.minimumSaturation && hsl[1] <= target.maximumSaturation) && hsl[2] >= target.minimumLightness) && hsl[2] <= target.maximumLightness && !(usedColors[swatch.rgb]?:false)
     }
 
     private fun generateScore(swatch: Swatch, target: Target): Float {
@@ -338,9 +318,9 @@ class Palette internal constructor(
         var maxPop = Int.MIN_VALUE
         var maxSwatch: Swatch? = null
         var i = 0
-        val count = mSwatches.size
+        val count = swatches.size
         while (i < count) {
-            val swatch = mSwatches[i]
+            val swatch = swatches[i]
             if (swatch.population > maxPop) {
                 maxSwatch = swatch
                 maxPop = swatch.population
@@ -445,6 +425,7 @@ class Palette internal constructor(
                     mGeneratedTextColors = true
                     return
                 }
+                if (darkBodyAlpha== -1) return
                 // If we reach here then we can not find title and body values which use the same
                 // lightness, we need to use mismatched values
                 mBodyTextColor = if (lightBodyAlpha != -1) setAlphaComponent(
@@ -521,7 +502,7 @@ class Palette internal constructor(
                     bitmap = null
                 }
             }
-            if (bitmap==null || swatches.isEmpty()) {
+            if (bitmap==null && swatches.isEmpty()) {
                 throw NotImplementedError()
             }
         }
@@ -533,7 +514,7 @@ class Palette internal constructor(
             private set
 
         /**
-         * Set the resize value when using a [android.graphics.Bitmap] as the source.
+         * Set the resize value when using a [org.jetbrains.skia.Bitmap] as the source.
          * If the bitmap's largest dimension is greater than the value specified, then the bitmap
          * will be resized so that its largest dimension matches `maxDimension`. If the
          * bitmap is smaller or equal, the original is used as-is.
@@ -548,7 +529,7 @@ class Palette internal constructor(
         }
 
         /**
-         * Set the resize value when using a [android.graphics.Bitmap] as the source.
+         * Set the resize value when using a [Bitmap] as the source.
          * If the bitmap's area is greater than the value specified, then the bitmap
          * will be resized so that its area matches `area`. If the
          * bitmap is smaller or equal, the original is used as-is.
@@ -595,33 +576,40 @@ class Palette internal constructor(
          * Generate and return the [Palette] synchronously.
          */
         suspend fun generate(): Palette {
-            val swatches: List<Swatch>
-            if (bitmap != null) {
-                // We have a Bitmap so we need to use quantization to reduce the number of colors
-                // First we'll scale down the bitmap if needed
-                val bitmap = scaleBitmapDown(bitmap!!)
-                // Now generate a quantizer from the Bitmap
-                val quantizer = ColorCutQuantizer(
-                    bitmap.readPixels()!!.map { it.toInt() }.toTypedArray(),
-                    maxColors,
-                    if (filters.isEmpty()) null else filters.toTypedArray()
-                )
-                // If created a new bitmap, recycle it
-                if (bitmap != this.bitmap) {
-                    bitmap.reset()
+            val swatches: List<Swatch> = when {
+                bitmap != null -> {
+                    // We have a Bitmap so we need to use quantization to reduce the number of colors
+                    // First we'll scale down the bitmap if needed
+                    val bitmap = scaleBitmapDown(bitmap!!)
+                    // Now generate a quantizer from the Bitmap
+                    val quantizer = ColorCutQuantizer(
+                        bitmap.readPixels()!!.map { it.toInt() }.toTypedArray(),
+                        maxColors,
+                        if (filters.isEmpty()) null else filters.toTypedArray()
+                    )
+                    // If created a new bitmap, recycle it
+                    if (bitmap != this.bitmap) {
+                        bitmap.reset()
+                    }
+                    quantizer.quantizedColors!!
                 }
-                swatches = quantizer.quantizedColors!!
-            } else if (this.swatches!!.isNotEmpty()) {
-                // Else we're using the provided swatches
-                swatches = this.swatches
-            } else {
-                // The constructors enforce either a bitmap or swatches are present.
-                throw AssertionError()
+                swatches.isNotEmpty() -> {
+                    // Else we're using the provided swatches
+                    swatches
+                }
+                else -> {
+                    // The constructors enforce either a bitmap or swatches are present.
+                    throw AssertionError()
+                }
             }
             // Now create a Palette instance
             val p = Palette(swatches, targets)
             // And make it generate itself
             p.generate()
+            swatches.sortedBy { it.population }.forEach { println(it) }
+            for (target in targets) {
+                println(target)
+            }
             return p
         }
         /**
@@ -648,6 +636,8 @@ class Palette internal constructor(
                 val height = ceil(bitmap.height * scaleRatio).toInt()
                 Bitmap().apply {
                     setImageInfo(ImageInfo(width, height, bitmap.colorType, bitmap.alphaType))
+                    allocPixels()
+
                     require(Image.makeFromBitmap(bitmap).scalePixels(peekPixels()!!, SamplingMode.DEFAULT,true)) {
                         "fail to create bitmap"
                     }
@@ -670,13 +660,9 @@ class Palette internal constructor(
          *
          * @return true if the color is allowed, false if not.
          *
-         * @see Builder.addFilter
+         * @see Builder.filters
          */
         fun isAllowed(rgb: Int, hsl: FloatArray): Boolean
-    }
-
-    init {
-        dominantSwatch = findDominantSwatch()
     }
 
     companion object {
@@ -684,34 +670,6 @@ class Palette internal constructor(
         const val DEFAULT_CALCULATE_NUMBER_COLORS = 16
         const val MIN_CONTRAST_TITLE_TEXT = 3.0f
         const val MIN_CONTRAST_BODY_TEXT = 4.5f
-        const val LOG_TAG = "Palette"
-        const val LOG_TIMINGS = false
-
-//        /**
-//         * Start generating a [Palette] with the returned [Builder] instance.
-//         */
-//        fun from(bitmap: Bitmap): Builder {
-//            return Builder(bitmap)
-//        }
-//
-//        /**
-//         * Generate a [Palette] from the pre-generated list of [Palette.Swatch] swatches.
-//         * This is useful for testing, or if you want to resurrect a [Palette] instance from a
-//         * list of swatches. Will return null if the `swatches` is null.
-//         */
-//        fun from(swatches: List<Swatch>): Palette {
-//            return Builder(swatches).generate()
-//        }
-//
-//        @Deprecated("Use {@link Builder} to generate the Palette.")
-//        fun generate(bitmap: Bitmap): Palette {
-//            return from(bitmap).generate()
-//        }
-//
-//        @Deprecated("Use {@link Builder} to generate the Palette.")
-//        fun generate(bitmap: Bitmap, numColors: Int): Palette {
-//            return from(bitmap).maximumColorCount(numColors).generate()
-//        }
 
         private const val BLACK_MAX_LIGHTNESS = 0.05f
         private const val WHITE_MIN_LIGHTNESS = 0.95f
