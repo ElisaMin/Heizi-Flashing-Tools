@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.heizi.apk.parser.ktx.Image
+import me.heizi.apk.parser.ktx.color
 import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.isSideload
 import net.dongliu.apk.parser.bean.ApkIcon
@@ -61,7 +62,25 @@ fun Info(
 
 @Composable
 private fun IconCard(icon: ApkIcon<*>) {
-    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(colors.current.primary)) {
+    var background by mutableStateOf(colors.current.primary)
+    var theIcon:ApkIcon<*>? = icon
+    if (icon is ApkIcon.Adaptive) {
+        theIcon = icon.foreground
+        when(val b = icon.background) {
+            is ApkIcon.Empty -> background = colors.current.background
+            is ApkIcon.Color -> background = b.color
+            else -> {
+                theIcon = null
+            }
+        }
+    }
+    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(background)) {
+
+        theIcon?.let {
+            if (icon is ApkIcon.Adaptive)
+            Image(theIcon, modifier = Modifier.fillMaxSize(),)
+            else Image(theIcon,modifier = Modifier.fillMaxSize())
+        }
         // FIXME:
 //        Image(icon, modifier = Modifier.fillMaxSize())
     }

@@ -27,9 +27,10 @@ class Install constructor(
     override val name: String
         get() = meta?.label?: super.name
     override val icon: ApkIcon<*>?
-        get() = apk?.icons?.takeIf { it.isNotEmpty() }?.let {
-            it.find { it is ApkIcon.Adaptive }
-                ?:it.first()
+        get() = apk?.icons?.takeIf { it.isNotEmpty() }?.let { its ->
+            its.find { it is ApkIcon.Adaptive }
+            ?:its.find{ it.density == 0 }
+            ?:its.maxBy { it.density }
         }
     override val packageName: String?
         get() = apk?.apkMeta?.packageName
