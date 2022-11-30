@@ -40,13 +40,13 @@ class Install constructor(
             putAll(super.details)
             val meta = meta ?: return@buildMap
 
-            meta.usesPermissions.filterNotNull().takeIf { it.isNotEmpty() }?.let {
-                this["使用权限"] = it.toTypedArray()
-            }
             this["权限"] = meta.permissions.map { "${it.group}:${it.name}" }.toTypedArray()
             this["SDK"] = arrayOf("min:${meta.minSdkVersion}","compile:${meta.compileSdkVersion}")
             if (meta.isDebuggable)
                 this["isDebuggable"] = arrayOf("是")
+            meta.usesPermissions.filterNotNull().takeIf { it.isNotEmpty() }?.let {
+                this["使用权限"] = it.toTypedArray()
+            }
         }
 
     override fun toApkOrSideload(): SingleFileContext
@@ -91,8 +91,6 @@ sealed class SingleFileContext (
 
 }
 class Sideload constructor(file: File): SingleFileContext(file) {
-
     override fun toApkOrSideload(): SingleFileContext
             = Install(this.file)
-
 }

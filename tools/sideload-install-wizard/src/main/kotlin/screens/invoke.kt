@@ -1,6 +1,5 @@
 package me.heizi.flashing_tool.sideloader.screens
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,18 +48,21 @@ operator fun Context.Invoke.invoke(
 ) {
     if (isDone == null) {
         Context.Ready.invoke()
-    } else Invoke(
-        title = if (!isDone!!) "正在执行" else when(isSuccess) {
+    } else {
+        val title = if (!isDone!!) "正在执行" else when(isSuccess) {
             true->"执行成功"
             false->"执行失败"
             null->"正在执行"
-        },smallTitle = smallTitle,
-        isDone = isDone!!,
-        text = message,
-        closeBtnClick = exit
-    )
-    LaunchedEffect("invoking command") {
-        start()
+        }
+        Invoke(
+            title = title,smallTitle = smallTitle,
+            isDone = isDone!!,
+            text = message,
+            closeBtnClick = exit
+        )
+    }
+    LaunchedEffect(this) {
+        if (this@invoke !is Context.Done) start()
     }
 }
 
@@ -133,12 +135,12 @@ fun SelectableTextWithScrolling(modifier: Modifier, text: String,afterTextUpdate
 @Composable
 fun Title(
     modifier: Modifier,
-    smallTitle: String,
     title: String,
+    smallTitle: String,
 ) = Box(modifier) {
     Column(modifier = Modifier.padding(top = 16.dp,start = 24.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineLarge)
+        TextEllipsisEnd(title, style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.padding(4.dp))
-        Text(smallTitle,style = MaterialTheme.typography.titleLarge)
+        TextEllipsisEnd(smallTitle,style = MaterialTheme.typography.titleLarge)
     }
 }

@@ -1,14 +1,12 @@
-@file:Suppress("NAME_SHADOWING")
-
 package me.heizi.flashing_tool.adb
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import me.heizi.flashing_tool.adb.ADB.wirelessSuccess
-import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.device
 import me.heizi.flashing_tool.adb.ADBDevice.DeviceState.Companion.isConnected
+import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.error
 import me.heizi.kotlinx.shell.CommandResult
+import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
 import kotlin.coroutines.CoroutineContext
 
@@ -17,31 +15,38 @@ object ADB {
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    val devices: Flow<ADBDevice> = flow {
-        Shell("adb devices").await().let {
-            require(it is CommandResult.Success) {
-                "its not ready to collecting devices!"
-            }
-            it.message.lines().asFlow()
-        }.filter {
-            val it = it.trim()
-            it.isNotEmpty() &&
-            it.first()!='*'&&
-            it !in arrayOf("List of devices attached","adb devices")
-        }.map {
-            it.split(' ','	')
-        }.filter {
-            it.size == 2
-        }.map {
-            AdbDeviceImpl(it.first(), ADBDevice.DeviceState(it.last()))
+    @OptIn(FlowPreview::class)
+    val devices: Flow<ADBDevice> get() = Shell("adb devices", ).takeWhile {
+        if (it is ProcessingResults.CODE) require(it.code == 0) {
+            "its not ready to collecting devices!"
         }
+        it !is ProcessingResults.Closed || it !is ProcessingResults.CODE
+    }.filterIsInstance<ProcessingResults.Message>().flatMapConcat { message ->
+        message.message.split("\n").asSequence()
+            .map { it.trim() }
+            .filter { it.isNotBlank() && it.isNotEmpty() }
+            .filter {
+                it.first()!='*'&& it !in arrayOf("List of devices attached","adb devices")
+            }.map { it.split(' ','	') }.filter {
+                it.size == 2
+            }
+            .asFlow()
+    }.map {
+        AdbDeviceImpl(it.first(), ADBDevice.DeviceState(it.last()))
     }
     val savedDevices:Flow<ADBDevice> = LocalDevice.asFlow().map {
         AdbDeviceImpl(it,ADBDevice.DeviceState.host)
     }
 
-    fun execute(command:String,isStart:Boolean =true)
-            = Shell("adb $command", runCommandOnPrefix = true, startWithCreate = isStart)
+    fun execute(command:String,isStart:Boolean =true): Shell {
+        debug("executor","invoking $command")
+        return Shell(
+            coroutineContext = scope.coroutineContext,
+            startWithCreate = isStart,
+            prefix = arrayOf("cmd","/c","adb $command"),
+            onRun = {}
+        )
+    }
 
     infix fun execute(command:String)
             = execute(command,true)

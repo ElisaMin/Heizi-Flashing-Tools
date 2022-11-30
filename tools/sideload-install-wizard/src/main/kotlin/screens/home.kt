@@ -7,10 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
 import org.jetbrains.compose.splitpane.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +35,8 @@ fun HomeViewModel.snackbar() {
 
 @Composable
 fun HomeViewModel.fab() {
-    if (!isWaiting) ExtendedFloatingActionButton(
+    val isShow = !isWaiting && selected.isNotEmpty()
+    if (isShow) ExtendedFloatingActionButton(
         onClick = ::nextStep,
         text = { Text("安装") },
         icon = { Icon(Icons.Default.Send,"start") },
@@ -59,9 +58,6 @@ fun HomeViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.p
 }
 @Composable
 fun HomeViewModel.first() {
-    SideEffect {
-        onUpdateEffect()
-    }
     Info(
         modifier = Modifier.fillMaxSize().padding(8.dp),
         packageDetail =packageDetails,

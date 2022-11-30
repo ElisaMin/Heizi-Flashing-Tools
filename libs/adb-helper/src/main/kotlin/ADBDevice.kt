@@ -24,17 +24,18 @@ infix fun ADBDevice.shell(command:String)
 infix fun ADBDevice.reboot(mode: DeviceMode)
         = execute("reboot",mode.rebootTo)
 
-infix fun ADBDevice.sideload(zip: File)
-    = execute()
+//infix fun ADBDevice.sideload(zip: File)
+//    = execute()
 
 fun ADBDevice.install(
-    apk: File,
+    apk: String,
     isReplaceExisting:Boolean = false,
     isTestAllow:Boolean = false,
     isDebugAllow:Boolean = false,
     isGrantAllPms:Boolean = false,
     isInstant:Boolean = false,
     abi:String?=null,
+    isStart: Boolean = true,
     resultNeeding: Boolean = false,
 ) = buildList {
     add("install")
@@ -46,9 +47,9 @@ fun ADBDevice.install(
     abi?.let {abi->
         addAll(arrayOf("--abi",abi))
     }
-    add(apk.absolutePath)
+    add(apk)
 }.toTypedArray().let {
-    resultNeeding(*it,resultNeeding = resultNeeding)
+    resultNeeding(*it,resultNeeding = resultNeeding, isStart = isStart)
 }
 
 suspend fun ADBDevice.blockingStateChecking() {

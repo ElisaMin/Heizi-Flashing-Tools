@@ -18,6 +18,9 @@ operator fun SingleFileContext.invoke() {
     val viewModel:HomeViewModel = remember {
         object :StateHomeViewModel(this){}
     }
+    SideEffect {
+        viewModel.onUpdateEffect()
+    }
     viewModel()
 }
 abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeViewModel() {
@@ -30,7 +33,7 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
         protected set
     val job = Context.scope.launch(Dispatchers.IO,start = CoroutineStart.LAZY) {
         isAlive = true
-        launch {
+        val innerJob = launch {
             context.shareIn(this, started = SharingStarted.Eagerly)
                 .takeWhile { it is SingleFileContext || it is Context.Ready }
                 .filterIsInstance<SingleFileContext>()
@@ -44,12 +47,18 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
             runCatching { cancel() }
         }
         while (isAlive) {
-            delay(3000)
             isWaiting = true
             devices = Context.devices.toList()
+            delay(1000)
             isWaiting = false
+            delay(5000)
         }
-        runCatching { cancel() }
+        runCatching {
+            cancel()
+        }
+        innerJob.runCatching { cancel() }
+        innerJob.join()
+
     }
 
     final override var icon: ApkIcon<*>? by mutableStateOf(null)
@@ -64,11 +73,22 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
         protected set
 
     final override fun switchMode() {
-        context.value = currentContext.toApkOrSideload()
+         currentContext.toApkOrSideload().let {
+             context.value = it
+             currentContext = it
+        }
+        onUpdateEffect()
     }
 
     final override fun nextStep() {
-        context.value = Context.Invoking(currentContext)
+        isAlive = false
+        runBlocking {
+            job.runCatching {
+                cancel()
+            }
+            job.join()
+            context.value = Context.Invoking(currentContext)
+        }
     }
 
     final override suspend fun CoroutineScope.onStart() {

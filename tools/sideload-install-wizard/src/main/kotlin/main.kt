@@ -1,17 +1,11 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.sideloader
 
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPainter
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.singleWindowApplication
+import androidx.compose.ui.window.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.screens.invoke
@@ -63,15 +57,23 @@ fun main(args: Array<String>) {
                 context.emit(Context(it))
             }
         }
-        when(val context = currentContext) {
+        println(currentContext::class.simpleName)
+        when(val current = currentContext) {
             is Context.Ready -> {
-                context()
+                current()
             }
             is SingleFileContext -> {
-                context.invoke()
+                window.title = "AST ${current.name} 选择设备"
+                current()
+            }
+            is Context.Done, ->  {
+                window.requestFocus()
+                window.title = "AST 执行结果: ${current.smallTitle}"
+                current()
             }
             is Context.Invoke -> {
-
+                window.title = "AST 执行中"
+                current()
             }
             else -> Unit
         }
