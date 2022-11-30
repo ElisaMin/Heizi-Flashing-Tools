@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.*
+import me.heizi.kotlinx.compose.desktop.core.components.DeviceCantFoundBtn
 
 
 /**
@@ -81,6 +82,9 @@ fun DeviceScreen(
             }, modifier =
             Modifier.fillMaxWidth(),
         )
+
+        DeviceCantFoundBtn()
+
     }
 
     VerticalScrollbar(ScrollbarAdapter(scrollState),)

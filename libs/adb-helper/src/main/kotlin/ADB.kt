@@ -16,7 +16,7 @@ object ADB {
     private val scope = CoroutineScope(Dispatchers.IO)
 
     @OptIn(FlowPreview::class)
-    val devices: Flow<ADBDevice> get() = Shell("adb devices", ).takeWhile {
+    val devices: Flow<ADBDevice> get() = execute("devices").takeWhile {
         if (it is ProcessingResults.CODE) require(it.code == 0) {
             "its not ready to collecting devices!"
         }
@@ -38,10 +38,10 @@ object ADB {
         AdbDeviceImpl(it,ADBDevice.DeviceState.host)
     }
 
-    fun execute(command:String,isStart:Boolean =true): Shell {
+    fun execute(command:String,isStart:Boolean =true,coroutineContext: CoroutineContext= scope.coroutineContext): Shell {
         debug("executor","invoking $command")
         return Shell(
-            coroutineContext = scope.coroutineContext,
+            coroutineContext = coroutineContext,
             startWithCreate = isStart,
             prefix = arrayOf("cmd","/c","adb $command"),
             onRun = {}

@@ -140,7 +140,9 @@ interface Context {
         val scope = CoroutineScope(CoroutineName("InvokeScope")+Dispatchers.IO)
 
         val devices = flow {
-            ADB.devices.collect(::emit)
+            ADB.devices.toList().forEach {
+                emit(it)
+            }
             ADB.savedDevices.collect(::emit)
         }
         val selected: MutableList<String> = mutableStateListOf()

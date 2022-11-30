@@ -13,6 +13,7 @@ import me.heizi.apk.parser.ktx.Image
 import me.heizi.apk.parser.ktx.color
 import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.isSideload
+import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import net.dongliu.apk.parser.bean.ApkIcon
 
 
@@ -127,7 +128,10 @@ private fun Detail(
     modifier: Modifier,
     data:Map<String,Array<String>>
 ) = Column(modifier) {
+    var i = 0
     for ((title,detail) in data) {
+        if (data.size>2&&i++==data.size-1)
+            AboutExtendCard(false)
         if (title == "name") continue
         Text(title, style = MaterialTheme.typography.labelMedium)
         for (s in detail) {

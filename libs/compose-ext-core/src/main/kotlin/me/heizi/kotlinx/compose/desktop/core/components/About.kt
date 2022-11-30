@@ -45,15 +45,24 @@ fun AboutExtendCard(init: Boolean = false) {
     val isExtend = remember {
         mutableStateOf(init)
     }
+
+    ExtendableCard(
+        states =  isExtend,
+        modifier = Modifier.fillMaxWidth(),
+        title = { Text("关于软件/捐赠/Bug") },
+        content = {AboutHeizi()}
+    )
+}
+
+@Composable
+fun AboutHeizi(modifier: Modifier = Modifier) {
     var failedUrl by remember {
         mutableStateOf<String?>(null)
     }
     fun launchUrlOrDisplay (url:String) {
         if (!openLink(url)) failedUrl = url
     }
-    ExtendableCard(isExtend, modifier = Modifier.fillMaxWidth()
-        , title = { Text("关于软件/捐赠/Bug") }
-    ) {
+    Column(modifier) {
         Column(Modifier.fillMaxWidth().padding(4.dp),) {
             if (failedUrl!=null)  SelectionContainer(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text("启动失败! 请用浏览器访问 $failedUrl  ",)
@@ -73,7 +82,6 @@ fun AboutExtendCard(init: Boolean = false) {
                     Text("刷机亡灵", fontSize = 30.sp)
                     Text("HeiziFlashTools", fontSize = 12.sp)
                 }
-
 
             }
         }
