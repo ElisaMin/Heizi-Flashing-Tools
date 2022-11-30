@@ -8,17 +8,20 @@ import java.io.File
 class Install constructor(
     file: File
 ): SingleFileContext(file) {
-    override val file: File = object: File(file.toURI()), Info {
-        override val isReplaceExisting: Boolean = false
-        override val isTestAllow: Boolean = false
-        override val isDebugAllow: Boolean = false
-        override val isGrantAllPms: Boolean = false
-        override val isInstant: Boolean = false
-        override val abi: String?=null
+    override val files: List<File> get() = super.files.map {file->
+        object: File(file.absolutePath), Info {
+            override val isReplaceExisting: Boolean = false
+            override val isTestAllow: Boolean = false
+            override val isDebugAllow: Boolean = false
+            override val isGrantAllPms: Boolean = false
+            override val isInstant: Boolean = false
+            override val abi: String?=null
+        }
     }
-
     val apk = runCatching {
         ApkFile(file)
+    }.onFailure {
+        println(it)
     }.getOrNull()
     val meta get() = apk?.apkMeta
     override val name: String

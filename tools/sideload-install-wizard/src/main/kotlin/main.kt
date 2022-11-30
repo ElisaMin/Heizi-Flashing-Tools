@@ -42,5 +42,50 @@ object Resources {
 }
 
 fun main(args: Array<String>) {
+    println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
+    requireAndStuck(args.size==1) {
+        "请输入正确的文件地址"
+    }
+    files.value = listOf(File(args[0]))
+    singleWindowApplication(
+        title = "",
+        icon = Resources.iconASTUgly,
+        exitProcessOnExit = true,
+        state = WindowState(position = WindowPosition(Alignment.Center))
+    ){
+        val scope = rememberCoroutineScope()
+        val currentContext by context.collectAsState(context = scope.coroutineContext)
+//        val primaryColor = MaterialTheme.colorScheme.primary
+
+        LaunchedEffect("init", files) {
+            // init color file
+            files.value.getOrNull(0)?.let {
+                context.emit(Context(it))
+            }
+        }
+        when(val context = currentContext) {
+            is Context.Ready -> {
+                context()
+            }
+            is SingleFileContext -> {
+                context.invoke()
+            }
+            is Context.Invoke -> {
+
+            }
+            else -> Unit
+        }
+
+
+
+    }
 
 }
+
+fun requireAndStuck(b: Boolean, function: () -> String) {
+    if (!b) {
+        println(function())
+        while (true) Unit
+    }
+}
+
