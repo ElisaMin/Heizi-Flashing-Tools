@@ -8,31 +8,66 @@
 
 > 注意：有用户反馈360会阻断该软件的IO，请退出各种管家软件再运行本软件。
 
-### 快速预览该软件的魅力：
-<iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>    
-<details> https://www.bilibili.com/video/BV1LS4y1G7b9 </details>  
+点击访问[官网](https://tools.lge.fun)（Github pages）获得更好的体验。
+
+## 什么是HFT？
+### 通过视频快速预览该软件的魅力：
+这是一个刷TWRP的视频，如果您熟悉这个操作应该会感到惊讶：  
+* https://www.bilibili.com/video/BV1LS4y1G7b9  
+<iframe src="//player.bilibili.com/player.html?aid=681350963&bvid=BV1LS4y1G7b9&cid=503446219&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+  
+
+### 简单的来说
+我开发了**一堆** (~~现在也就三个~~)零碎的、功能上互不相干的、各司其职的 刷机工具，准备开发更多的来组成了一个**刷机全家桶**。
+> 对 黑字刷机全家桶。
+### 理念上来说
+围绕ADB和Fastboot做GUI处理，致力于可高度扩展、**可下意识使用的刷机软件**(这点很重要)，以友好易用的方式连结小白和大佬。
+> f**k the manual  
+> 看一眼！直接上手！！！
+
+## 都有几个刷机工具？
+以后或许会更新更多，但是现在只有三个，分别是Fastboot设备管理工具、镜像刷入工具，安卓线载工具。
+### FFT - Fastboot设备管理工具 - **F**astboot **F**lash **T**ool 
+![FastbootFlashTool](docs/fft.png)   
+FFT基于Fastboot指令发展而来，在此之上实现了比较人性化的界面，同时针对不同的设备进行优化处理。所以你可以大胆的扔掉指令和黑色的垃圾CMD窗口，借助这个美丽的图形界面，进行切换AB分区、重启、查看详细信息和进行分区管理操作。  
+>状态: 完全可用
+
+### IFT - 分区镜像刷入工具 **I**mage **F**lash **T**ool  
+![Image Flash Tool](docs/ift.png)  
+你可以使用这个工具打开一个Boot镜像、System、Vbmeta分区镜像等，按照图形界面上的帮助，进行您的安装操作。例如你要刷whyred_twrp_recovery.img这个红米的twrp，不需要打开什么软件、cmd，直接双击文件，别告诉我你看不懂这个是啥意思。
+* 使用视频：【刷机工具】LG V60 一键刷TWRP | https://www.bilibili.com/video/BV1LS4y1G7b9  
+> 状态: 完全可用
+### AST - 安卓线载工具 Apk/Sideload Tool
+![Android Sideload Tool](docs/ast.png)
+IFT，但打开的是安装包和刷机包。
+> 状态: 第一个版本正在发行中。
+
+### 更多还在脑海中... 如：
+* ADB管理器工具
+* 指令执行器
+* QPST Alike
 
 ### 更多HFT使用教程：
-<iframe src="//player.bilibili.com/player.html?aid=423897399&bvid=BV1y3411j7xK&cid=507144254&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>   
 <details>
-https://www.bilibili.com/video/BV1y3411j7xK
-</details>
+* https://www.bilibili.com/video/BV1y3411j7xK  
+<iframe src="//player.bilibili.com/player.html?aid=423897399&bvid=BV1y3411j7xK&cid=507144254&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>      
 
+* https://www.bilibili.com/video/BV18Y4y157R1  
 <iframe src="//player.bilibili.com/player.html?aid=641789961&bvid=BV18Y4y157R1&cid=727635765&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>  
-<details>
-https://www.bilibili.com/video/BV18Y4y157R1
+
 </details>
 
 ### 使用了该软件的教程：
+<details>
 * LG-V50/V50S/G8X保姆级食用安卓12教程  
   https://www.coolapk.com/feed/38297082?shareKey=NzEwZDliN2Y2NGQyNjMxNjE5MDU~&shareUid=3174533&shareFrom=com.coolapk.market_12.4.2
 * LG V60 解BL教程  
   https://bbs.lge.fun/thread-2551.htm
 * LG V60三十秒刷TWRP  
   https://www.bilibili.com/video/BV1LS4y1G7b9
+</details>
 
-
-### 最新版本：0.0.7
+### 最新版本：0.0.8
 下载地址：任选其一
 * https://github.com/ElisaMin/Heizi-Flashing-Tools/releases
 * HFT(刷机亡灵)交流群   
@@ -62,33 +97,6 @@ https://www.bilibili.com/video/BV18Y4y157R1
     * 本来有Compose的[Fragment](https://github.com/ElisaMin/Heizi-Flashing-Tools/tree/fragment) 实现，但现在替换成了[Decompose](https://github.com/arkivanov/Decompose) 就把Fragment删了。#2
 * libs/Native File Dialog  
   call native file dialog by jna
-
-
-# What is HFT ? 刷级亡灵的具体定义
-## 大家都能听得懂的定义
-一个由各种各司其职的工具组成的桌面刷机工作站，但还在开发中，一切都会变。现在主要围绕ADB和Fastboot做GUI处理，致力于可高度扩展、可下意识使用的刷机软件，以友好易用的方式连结小白和大佬。
-> just f**k the manual
-
-## 都有啥各司其职的刷机工具？
-1. Fastboot设备管理工具    
-  **F**stboot **F**lash **T**ool , FFT  
-   ![FastbootFlashTool](docs/fft.png)  
-   整个工具基于Fastboot指令发展而来，在此之上实现了比较人性化的界面，同时针对不同的设备进行优化处理。所以你可以大胆的扔掉指令和黑色的垃圾CMD窗口，借助这个美丽的图形界面，进行切换AB分区、重启、查看详细信息和进行分区管理操作。  
-  状态: 完全可用
-
-2. 分区镜像刷入工具  
-  **I**mage **F**lash **T**ool , IFT  
-  ![Image Flash Tool](docs/ift.png)  
-  你可以使用这个工具打开一个Boot镜像、System、Vbmeta分区镜像等，按照图形界面上的帮助，进行您的安装操作。例如你要刷whyred_twrp_recovery.img这个红米的twrp，不需要打开什么软件、cmd，直接双击文件，别告诉我你看不懂这个是啥意思。
-  视频：【刷机工具】LG V60 一键刷TWRP | https://www.bilibili.com/video/BV1LS4y1G7b9  
-  状态: 完全可用
-3. APK/ZIP安装工具  
-   状态: 计划中
-
-更多还在脑海中... 如：
-* ADB管理器工具
-* 指令执行器
-* QPST Alike
 
 ## Why HFT? HFT的构思以及形成的原因 
 长期以来，大家都在用CLI刷机，在熟悉操作后实际上你会发现CLI是非常简便的，Fastboot基本上都是**大白话**的指令，不用脑子思考就能`表达`一个`需求`，各种教程也在教授这种刷机方式，教他们怎么打开CMD什么的。
