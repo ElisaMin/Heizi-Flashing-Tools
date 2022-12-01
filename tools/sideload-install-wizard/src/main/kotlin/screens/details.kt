@@ -143,4 +143,5 @@ private fun Detail(
         }
         Spacer(Modifier.padding(bottom = 8.dp))
     }
+    if (data.size<3) AboutExtendCard()
 }

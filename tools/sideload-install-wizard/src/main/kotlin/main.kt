@@ -8,12 +8,16 @@ import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.screens.invoke
+import me.heizi.kotlinx.logger.println
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
+import kotlin.system.exitProcess
 
 /**
  * false if apk parse success in initializing progress
@@ -59,7 +63,7 @@ fun main(args: Array<String>) {
                 context.emit(Context(it))
             }
         }
-        println(currentContext::class.simpleName)
+        "Context".println("current",currentContext::class.simpleName)
         val mode = if (isSideload) "线刷模式" else "安装模式"
         when(val current = currentContext) {
             is Context.Ready -> {
@@ -87,10 +91,11 @@ fun main(args: Array<String>) {
 
 }
 
-fun requireAndStuck(b: Boolean, function: () -> String) {
+fun requireAndStuck(b: Boolean, function: () -> String) = runBlocking {
     if (!b) {
         println(function())
-        while (true) Unit
+        delay(3000)
+        exitProcess(-1)
     }
 }
 

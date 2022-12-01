@@ -154,7 +154,7 @@ interface Context {
             }
 
         suspend operator fun invoke(file: File) =
-            Install(file).takeIf { it.apk!=null }
+            Install(file).takeIf { it.isApk }
                 ?: Sideload(file)
 
     }

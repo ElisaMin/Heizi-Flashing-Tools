@@ -25,6 +25,7 @@ operator fun SingleFileContext.invoke() {
 }
 abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeViewModel() {
     var currentContext by mutableStateOf(initContext)
+
     override var isWaiting: Boolean by mutableStateOf(false)
     // loop
     override var devices: List<ADBDevice> by mutableStateOf(listOf())
@@ -40,7 +41,7 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
                 .collect {
                     isWaiting = true
                     currentContext = it
-                    isSideload = !it.isApk!!
+                    isSideload = it is Sideload
                     isWaiting = false
                 }
             isAlive = false

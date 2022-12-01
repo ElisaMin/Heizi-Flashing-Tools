@@ -1,5 +1,6 @@
 package me.heizi.flashing_tool.sideloader
 
+import me.heizi.kotlinx.logger.println
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkIcon
 import java.io.File
@@ -18,20 +19,29 @@ class Install constructor(
             override val abi: String?=null
         }
     }
-    val apk = runCatching {
-        ApkFile(file)
+    private val apk = runCatching {
+        ApkFile(file).also {
+            it.apkMeta
+            it.icons
+        }
     }.onFailure {
-        println(it)
+        println("apk check","is not apk","${it::class.simpleName}: ${it.message}")
     }.getOrNull()
-    val meta get() = apk?.apkMeta
+
+    private val meta by lazy {
+        apk?.runCatching { apkMeta }?.getOrNull()
+    }
+    override val isApk = meta != null
     override val name: String
         get() = meta?.label?: super.name
-    override val icon: ApkIcon<*>?
-        get() = apk?.icons?.takeIf { it.isNotEmpty() }?.let { its ->
-            its.find { it is ApkIcon.Adaptive }
-            ?:its.find{ it.density == 0 }
-            ?:its.maxBy { it.density }
-        }
+    override val icon: ApkIcon<*>? by lazy {
+        apk?.runCatching {
+            icons.takeIf { it.isNotEmpty() }?.let { icons ->
+                icons.find { it is ApkIcon.Adaptive }
+                    ?:icons.find{ it.density == 0 }
+                    ?:icons.maxBy { it.density }
+            } }?.getOrNull()
+    }
     override val packageName: String?
         get() = apk?.apkMeta?.packageName
     override val version: String?
@@ -79,6 +89,12 @@ class Install constructor(
 sealed class SingleFileContext (
     open val file: File
 ): Context {
+    init {
+        isSideload = when(this) {
+            is Install -> false
+            is Sideload -> true
+        }
+    }
     override val files: List<File> = listOf(file)
     open val name get() =  file.fileName
     open val packageName:String?=null
@@ -88,10 +104,12 @@ sealed class SingleFileContext (
         "路径" to arrayOf(file.absolutePath),
         "大小" to arrayOf(file.size),
     )
+    open val isApk = this is Install
     abstract fun toApkOrSideload(): SingleFileContext
 
 }
 class Sideload constructor(file: File): SingleFileContext(file) {
+    override val isApk: Boolean get() = false
     override fun toApkOrSideload(): SingleFileContext
             = Install(this.file)
 }
