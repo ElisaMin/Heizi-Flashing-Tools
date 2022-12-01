@@ -45,19 +45,19 @@ fun HomeViewModel.fab() {
 
 @OptIn(ExperimentalSplitPaneApi::class) @Composable
 fun HomeViewModel.content(padding:PaddingValues) = BoxWithConstraints(Modifier.padding(padding)) {
-    if (maxWidth> 380.dp) HorizontalSplitPane(splitPaneState = rememberSplitPaneState(0.6f)) {
+    if (maxWidth> 420.dp) HorizontalSplitPane(splitPaneState = rememberSplitPaneState(0.6f)) {
         first(176.dp,) { first() }
         defaultSplitter()
         second { second(PaddingValues(8.dp)) }
-    } else VerticalSplitPane {
-        first((176+36-8).dp) { first() }
+    } else VerticalSplitPane(modifier = Modifier.padding(horizontal = 8.dp)) {
+        first((176+36+64).dp) { first() }
         defaultSplitter()
         second { second(PaddingValues(horizontal = 8.dp)) }
     }
 
 }
 @Composable
-fun HomeViewModel.first() {
+fun HomeViewModel.first() = Column {
     Info(
         modifier = Modifier.fillMaxSize().padding(8.dp),
         packageDetail =packageDetails,

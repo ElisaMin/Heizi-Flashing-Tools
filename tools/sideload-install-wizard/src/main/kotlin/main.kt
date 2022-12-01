@@ -5,6 +5,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.heizi.flashing_tool.adb.ADBDevice
@@ -45,7 +47,7 @@ fun main(args: Array<String>) {
         title = "",
         icon = Resources.iconASTUgly,
         exitProcessOnExit = true,
-        state = WindowState(position = WindowPosition(Alignment.Center))
+        state = WindowState(position = WindowPosition(Alignment.Center), size = DpSize(width = 420.dp, height = 580.dp))
     ){
         val scope = rememberCoroutineScope()
         val currentContext by context.collectAsState(context = scope.coroutineContext)
@@ -58,12 +60,13 @@ fun main(args: Array<String>) {
             }
         }
         println(currentContext::class.simpleName)
+        val mode = if (isSideload) "线刷模式" else "安装模式"
         when(val current = currentContext) {
             is Context.Ready -> {
                 current()
             }
             is SingleFileContext -> {
-                window.title = "AST ${current.name} 选择设备"
+                window.title = "AST $mode ${current.name} 选择设备"
                 current()
             }
             is Context.Done, ->  {
@@ -72,7 +75,7 @@ fun main(args: Array<String>) {
                 current()
             }
             is Context.Invoke -> {
-                window.title = "AST 执行中"
+                window.title = "AST 执行中 $mode"
                 current()
             }
             else -> Unit

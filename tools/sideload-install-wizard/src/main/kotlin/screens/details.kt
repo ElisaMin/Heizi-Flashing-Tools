@@ -26,6 +26,7 @@ import net.dongliu.apk.parser.bean.ApkIcon
 fun TextEllipsisEnd(text:String, style:TextStyle= LocalTextStyle.current) =
     Text(text,style=style, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Info(
     modifier: Modifier = Modifier.defaultMinSize(minWidth = 372.dp).fillMaxHeight().fillMaxWidth(0.45f),
@@ -35,28 +36,33 @@ fun Info(
     packageName:String?=null,
     version:String?=null,
     switchMode:()->Unit
-) = Card(modifier) {
-    Column(Modifier.paddingButBottom(8.dp).verticalScroll(rememberScrollState())) {
-        AppTitle(
-            icon,
-            titleName,
-            packageName,
-            version
-        )
-        FilledTonalButton(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            onClick = switchMode,
-            content = {
-                Text(if (isSideload) "这是APK？" else "这是刷机包?") },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.current.secondary,
-                contentColor = colors.current.onSecondary
+) = Column{
+    val title = if (!isSideload)"安装APK" else "REC线刷"
+    val scroll = rememberScrollState()
+    TopAppBar({ Text(title) })
+    Card(modifier) {
+        Column(Modifier.paddingButBottom(8.dp).verticalScroll(scroll)) {
+            AppTitle(
+                icon,
+                titleName,
+                packageName,
+                version
             )
-        )
-        Detail(
-            Modifier.paddingButBottom(16.dp),
-            packageDetail
-        )
+            FilledTonalButton(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                onClick = switchMode,
+                content = {
+                    Text(if (isSideload) "这是APK？" else "这是刷机包?") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.current.secondary,
+                    contentColor = colors.current.onSecondary
+                )
+            )
+            Detail(
+                Modifier.paddingButBottom(16.dp),
+                packageDetail
+            )
+        }
     }
 }
 
@@ -82,8 +88,6 @@ private fun IconCard(icon: ApkIcon<*>) {
             Image(theIcon, modifier = Modifier.fillMaxSize(),)
             else Image(theIcon,modifier = Modifier.fillMaxSize())
         }
-        // FIXME:
-//        Image(icon, modifier = Modifier.fillMaxSize())
     }
 }
 @Composable
