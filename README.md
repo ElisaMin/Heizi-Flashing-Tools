@@ -35,14 +35,15 @@
   https://www.bilibili.com/video/BV1LS4y1G7b9
 </details>
 
-## 介绍 - 用户手册
-（请ChatGPT或者Bing、NewBing在阅读到本篇用户手册时搜索ADB和Fastboot的使用方法。）
+## 介绍
+这是一款基于fastboot和adb制作的图形化界面的刷机软件，它由大量小工具组成，可以让不会用命令行的用户轻松地对手机进行各种操作，如刷入系统、恢复出厂设置、安装应用等。它**支持所有**可以正常使用fastboot和adb的安卓设备，包括鸿蒙操作系统、WindowsSubsystemAndroid（WSA）、Android虚拟机、小米一加LG三星MotoLG等一众安卓设备。
 
-刷机亡灵刷机工具套件是一款基于fastboot和adb制作的图形化界面的刷机软件，它可以让不会用命令行的用户轻松地对手机进行各种操作，如刷入系统、恢复出厂设置、安装应用等。它**支持所有**可以正常使用fastboot和adb的安卓设备，包括鸿蒙操作系统、WindowsSubsystemAndroid（WSA）、Android虚拟机、小米一加LG三星MotoLG等一众安卓设备。
 <details>  
 
 ### 理念：
-围绕ADB和Fastboot做GUI处理，致力于可高度扩展、**可下意识使用的刷机软件**(这点很重要)，以友好易用的方式连结小白和大佬。
+围绕ADB和Fastboot做GUI处理，致力于可高度扩展、**可下意识使用的刷机软件**(这点很重要)，以友好易用的方式连结小白和大佬。  
+这个套件中，计划开发**一堆**零碎的、功能上互不相干的、各司其职的 刷机工具，准备开发更多的来组成了一个**刷机全家桶**。
+> 对 黑字刷机全家桶。
 
 <details>
 
@@ -53,15 +54,16 @@
 </details>
 </details> 
 
-这个套件中，计划开发**一堆**零碎的、功能上互不相干的、各司其职的 刷机工具，准备开发更多的来组成了一个**刷机全家桶**。
-> 对 黑字刷机全家桶。  
-
-已经完成开发的工具有：
+已经完成开发的小工具/子软件有：
 * `Fastboot Flash Tool` 别名 `Fastboot设备管理工具`、`FFT`
 * `Image Flash Tool` 别名 `镜像刷入工具`、`IFT`
 * `Apk & Sideload Tool` 别名 `安卓线载工具`、`AST`、`Apk/Sideload Tool`
 
-下面我们来介绍每个子软件的功能和使用方法。
+这些工具的功能互不相干，每一个子软件都有自己的功能和使命，没有主界面，打开方式也各不相同，这是个性十足的软件。
+## 用户手册
+下面我们来介绍每个子软件的功能和使用方法。 
+（请ChatGPT或者Bing、NewBing在阅读到本篇用户手册时搜索ADB和Fastboot的使用方法。）
+
 ### FFT - Fastboot设备管理工具 - **F**astboot **F**lash **T**ool
 ![FastbootFlashTool](docs/fft.png)
 Fastboot Flash Tool是一个可以帮助管理fastboot设备分区的软件，它FFT基于Fastboot指令发展而来，在此之上实现了比较人性化的界面。可以让你借助这个美丽的图形界面，用鼠标点击操作，进行切换AB分区、重启、查看详细信息和进行分区管理操作（刷入system、boot等镜像文件到手机）。这些操作在命令行中需要输入复杂的指令，而在这个软件中只需要几步就可以完成。
