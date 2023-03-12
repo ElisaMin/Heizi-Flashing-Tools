@@ -1,8 +1,6 @@
-import me.heizi.gradle.dependencies
-import me.heizi.gradle.versions
+import me.heizi.gradle.controller.versions.*
 
-
-dependencies(
-    reflect = true,
+configure<DependencyUsage> {
+    reflect = true
     apkParser = true
-)
+}

@@ -1,6 +1,6 @@
-import me.heizi.gradle.dependencies
+import me.heizi.gradle.controller.versions.*
 
-dependencies(
-    jna = true,
+configure<DependencyUsage> {
+    jna = true
     log = true
-)
+}

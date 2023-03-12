@@ -1,12 +1,12 @@
-import me.heizi.gradle.dependencies
-import me.heizi.gradle.implProj
+import me.heizi.gradle.controller.versions.*
 
-dependencies(
-    compose = true,
-    composex = true,
-    apkParser = true,
+configure<DependencyUsage> {
+    compose = true
+    composex = true
+    apkParser = true
     khell = true
-)
+}
+
 dependencies {
     implProj(":adb-helper")
     implProj(":apk-parser")

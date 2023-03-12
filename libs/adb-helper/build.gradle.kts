@@ -1,8 +1,8 @@
-import me.heizi.gradle.dependencies
+import me.heizi.gradle.controller.versions.*
 
-dependencies(
-    log = true,
-    khell = true,
-    reflect = true,
-//    compose = false,
-)
+configure<DependencyUsage> {
+    log = true
+    khell = true
+    reflect = true
+//    compose = false
+}
