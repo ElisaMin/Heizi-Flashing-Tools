@@ -21,7 +21,7 @@ plugins { libs.run {
 
 // defined the info of the project
 allprojects {
-    version = rootProject.libs.versions.heizi.flash.tools
+    version = rootProject.libs.versions.heizi.flash.tools.get()
     group = when (this.projectDir.toPath().parent.fileName.toString()) {
         "libs" -> "me.heizi.kotlinx"
          else -> "me.heizi.flashing_tool"
