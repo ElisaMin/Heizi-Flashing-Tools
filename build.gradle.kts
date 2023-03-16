@@ -1,15 +1,13 @@
-@file:Suppress("UnstableApiUsage")
-import me.heizi.gradle.controller.versions.*
 import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION")
-plugins {
+plugins { libs.run {
     val apply = true
-    kotlin("jvm") apply apply.not()
-    libs.plugins.run {
+    plugins.run {
         arrayOf(
+            org.jetbrains.kotlin.jvm to apply.not(),
             me.heizi.gradle.controller.version to apply,
             org.jetbrains.compose to apply,
             com.github.ben.manes.versions to apply,
@@ -19,7 +17,7 @@ plugins {
             alias(dependent) apply enabled
         }
     }
-}
+} }
 
 // defined the info of the project
 allprojects {
@@ -82,15 +80,9 @@ subprojects {
     }
 }
 
-
-
-//versionCatalogUpdate {
-//    catalogFile.set(rootProject.file("gradle/libs.versions.toml"))
-//}
-
-
-
-
+versionCatalogUpdate {
+    catalogFile.set(rootProject.file("gradle/libs.versions.toml"))
+}
 
 
 tasks.getByName("build").dependsOn("clean")
