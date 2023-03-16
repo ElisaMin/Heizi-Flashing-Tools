@@ -1,28 +1,63 @@
 @file:Suppress("UnstableApiUsage")
 import me.heizi.gradle.controller.versions.*
 import org.jetbrains.compose.ComposePlugin
-import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+@Suppress("DSL_SCOPE_VIOLATION")
+plugins {
+    val apply = true
+    kotlin("jvm") apply apply.not()
+    libs.plugins.run {
+        arrayOf(
+            me.heizi.gradle.controller.version to apply,
+            org.jetbrains.compose to apply,
+            com.github.ben.manes.versions to apply,
+            com.github.johnrengelman.shadow to apply.not(),
+            nl.littlerobots.version.catalog.update to apply,
+        ).forEach { (dependent,enabled) ->
+            alias(dependent) apply enabled
+        }
+    }
+}
 
+// defined the info of the project
 allprojects {
-    group =
-        if (this.projectDir.toPath().parent.fileName.toString() == "libs")
-            "me.heizi.kotlinx"
-        else "me.heizi.flashing_tool"
-    version = versions["HFT"]
-
-    apply (plugin = "org.jetbrains.kotlin.jvm")
-    apply (plugin = "com.github.johnrengelman.shadow")
-
-
+    version = rootProject.libs.versions.heizi.flash.tools
+    group = when (this.projectDir.toPath().parent.fileName.toString()) {
+        "libs" -> "me.heizi.kotlinx"
+         else -> "me.heizi.flashing_tool"
+    }
     repositories {
         mavenCentral()
         google()
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
         maven { url = uri("https://raw.githubusercontent.com/ElisaMin/Maven/master/")}
-
     }
+}
+// config shadow jar
+allprojects {
+    apply (plugin = "com.github.johnrengelman.shadow")
+    tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+        // minimize()
+        manifest.attributes["Manifest-Version"] = rootProject.version
+    }
+}
+// config kotlin
+allprojects {
+    apply (plugin = "org.jetbrains.kotlin.jvm")
+    configure<KotlinProjectExtension> {
+        jvmToolchain(19)
+    }
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn", "-Xcontext-receivers", "-Xskip-prerelease-check")
+        }
+    }
+}
+// debug sources set
+allprojects {
+    apply (plugin = "org.jetbrains.kotlin.jvm")
     configure<SourceSetContainer> {
         val main by getting
         create("debug") {
@@ -37,36 +72,25 @@ allprojects {
             disablePublication()
         }
     }
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn", "-Xcontext-receivers", "-Xskip-prerelease-check")
-        }
-    }
-    kotlinExtension.run {
-        jvmToolchain(19)
-    }
-    tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-//        minimize()
-        manifest.attributes["Manifest-Version"] = rootProject.versions["HFT"]
-    }
 }
+// config compose
 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 subprojects {
+    apply(plugin ="org.jetbrains.compose")
     with(ComposePlugin.Dependencies(this)) {
         ext["composeDependencies"] = arrayOf(material3, desktop.currentOs)
     }
-    apply(plugin ="org.jetbrains.compose")
 }
-plugins {
-    kotlin("jvm") apply false
-    id("org.jetbrains.compose")
-    id("com.github.johnrengelman.shadow") apply false
-    id("me.heizi.gradle.controller.version")
-}
+
+
+
+//versionCatalogUpdate {
+//    catalogFile.set(rootProject.file("gradle/libs.versions.toml"))
+//}
+
+
 
 
 
 
 tasks.getByName("build").dependsOn("clean")
-
-

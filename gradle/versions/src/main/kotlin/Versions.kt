@@ -1,5 +1,6 @@
 package me.heizi.gradle.controller.versions
 
+import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
@@ -14,28 +15,30 @@ import kotlin.reflect.KProperty
 
 
 context(Project)
-fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){
-    val versions = rootProject.versions
+fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){ with(rootProject.the<LibrariesForLibs>()) {
+
+
     implementation(kotlin("stdlib"))
 
     if (khell) {
         if (!coroutine) coroutine = true
-        implementation("me.heizi.kotlinx:khell:${versions["khell"]}")
+        implementation(me.heizi.kotlinx.khell.asProvider())
     }
     if (log) {
-        api("me.heizi.kotlinx:khell-log:${versions["khell"]}")
-        runtimeOnly("org.slf4j:slf4j-log4j12:${versions["slf4j"]}")
+        api(me.heizi.kotlinx.khell.log)
+        runtimeOnly(org.slf4j.slf4j.log4j12)
     }
     if (coroutine)
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["coroutines"]}")
-    if (decompose){
-        implementation("com.arkivanov.decompose:decompose-jvm:${versions["decompose"]}")
-        implementation("com.arkivanov.decompose:extensions-compose-jetbrains:${versions["decompose"]}")
+        implementation(org.jetbrains.kotlinx.kotlinx.coroutines.core)
+
+    if (decompose) com.arkivanov.decompose.run {
+        implementation(decompose.jvm)
+        implementation(extensions.compose.jetbrains)
     }
 
-    if (jna) {
-        implementation("net.java.dev.jna:jna:${versions["jna"]}")
-        implementation("net.java.dev.jna:jna-platform:${versions["jna"]}")
+    if (jna) net.java.dev.jna.run {
+        implementation(jna.asProvider())
+        implementation(jna.platform)
     }
     if (composex)
         implementation(project(":compose-ext-core"))
@@ -46,18 +49,18 @@ fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){
         implementation(it as String)
     }
     if (apkParser) {
-        implementation("me.heizi.apk.parser:compose-desktop-ext:${versions["apk-parser"]}")
-        implementation("net.dongliu.apk.parser:apk-parser:${versions["apk-parser"]}")
+        implementation(me.heizi.apk.parser.compose.desktop.ext)
+        implementation(net.dongliu.apk.parser.apk.parser)
     }
-}
+} }
 class Versions: Plugin<Project> {
     override fun apply(project: Project):Unit = with(project) {
         with(gradle) {
             beforeProject {
-                extensions.create("dependencies",DependencyUsage::class.java)
+                extensions.create("dependenciesUsage",DependencyUsage::class.java)
             }
             afterProject {
-                val usage = runCatching { extensions["dependencies"] as DependencyUsage }
+                val usage = runCatching { extensions["dependenciesUsage"] as DependencyUsage }
                     .getOrNull()
                 if (usage != null) {
                     dependencies {

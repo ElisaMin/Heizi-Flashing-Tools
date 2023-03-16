@@ -1,15 +1,13 @@
 rootProject.name = "HeiziToolX"
 includeBuild("gradle/versions")
 //enableFeaturePreview ("VERSION_CATALOGS")
-//dependencyResolutionManagement {
-//    versionCatalogs {
-//        create ("libs") {
-//            fun get(key:String) :String= extra["$key.version"] as String
-//            library("compose",get("compose"))
-////            this.version()
-//        }
-//    }
-//}
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("dependentic") {
+            from(files("gradle/libs.versions.toml"))
+        }
+    }
+}
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -22,7 +20,10 @@ pluginManagement {
         kotlin("jvm") version get("kotlin")
         id ("org.jetbrains.compose") version get("compose")
         id("com.github.johnrengelman.shadow") version get("shadowJar")
-        id("me.heizi.gradle.controller.version") version  "0"
+//        id("me.heizi.gradle.controller.version") version  get("HFT")
+//        id("me.heizi.gradle.controller.version") version dependentic.
+        id("com.github.ben-manes.versions") version  "0.41.0"
+        id("nl.littlerobots.version-catalog-update") version  "0.8.0"
     }
 }
 
