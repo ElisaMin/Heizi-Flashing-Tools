@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "gradle" 
     directory: "/"
     schedule:
-      interval: "weekly
+      interval: "weekly"
     ignore:
       # Ignore any versions for these libraries that don't match their specified versions
       - dependency-name: "heizi_flash_tools"
