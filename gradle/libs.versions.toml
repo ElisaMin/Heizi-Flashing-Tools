@@ -13,7 +13,7 @@ kotlin-ui-compose-decompose = "1.0.0"
 # @keep parser to 0.0.1-alpha04 because net.dongliu.apk.parser is not current version
 ext-apk_parser = "0.0.1-alpha04"
 ext-khell = "0.0.0-alpha01"
-ext-androidx-collection = "1.3.0-alpha02"
+ext-androidx-collection = "1.3.0-dev01"
 
 gradle-shadowJar = "7.1.2"
 gradle-versionCatalogUpdate = "0.8.0"
