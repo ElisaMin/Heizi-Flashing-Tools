@@ -4,7 +4,6 @@
 	"name": "Java",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/java",
-
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
 			"installGradle": true,
@@ -18,10 +17,8 @@
 		// 	"build-tools": "30.0.3"
 		// }
 	},
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": [
 		"sudo mkdir -p /etc/apt/keyrings",
@@ -34,10 +31,19 @@
 		// "sudo ",
 		"java -version"
 	],
-	"postAttachCommand":"./gradlew build",
+	"postAttachCommand": "./gradlew build",
 	// Configure tool-specific properties.
-	// "customizations": {},
-
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"k--kato.intellij-idea-keybindings",
+				"richardwillis.vscode-gradle-extension-pack",
+				"vscjava.vscode-java-pack",
+				"ms-vscode.anycode-kotlin",
+				"sethjones.kotlin-on-vscode",
+			]
+		}
+	},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"
 }
