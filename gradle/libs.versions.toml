@@ -37,7 +37,6 @@ net-java-dev-jna-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jn
 net-java-dev-jna-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
 org-slf4j-slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12", version.ref = "java-slf4j" }
 
-org-apache-logging-log4j-log4j-core = "org.apache.logging.log4j:log4j-core:2.17.1"
 #org-jetbrains-annotations = "org.jetbrains:annotations:13.0"
 #org-jetbrains-compose-compiler = "org.jetbrains.compose.compiler:compiler:1.4.2"
 #org-jetbrains-compose-desktop-desktop-jvm-windows-x64 = "org.jetbrains.compose.desktop:desktop-jvm-windows-x64:1.3.1"
