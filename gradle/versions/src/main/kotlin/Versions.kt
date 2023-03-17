@@ -47,7 +47,7 @@ class Versions: Plugin<Project> {
                     dependencies {
                         use(usage)
                     }
-                } else println("no dependencies found. skip")
+                } else logger.info("no dependencies found. skip")
             }
         }
     }
