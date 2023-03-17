@@ -17,17 +17,27 @@
 		// 	"platforms": "33",
 		// 	"build-tools": "30.0.3"
 		// }
-	}
+	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "java -version",
-
+	"postCreateCommand": [
+		"sudo mkdir -p /etc/apt/keyrings",
+		"sudo wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo tee /etc/apt/keyrings/adoptium.asc",
+		"sudo echo \"deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main\" | sudo tee /etc/apt/sources.list.d/adoptium.list ",
+		"sudo apt update",
+		"sudo apt install -y temurin-19-jdk",
+		"sudo  cp -r /usr/lib/jvm/temurin-19-jdk-amd64 /usr/local/sdkman/candidates/java/current",
+		"sudo  cp -r /usr/lib/jvm/temurin-19-jdk-amd64/ /usr/lib/jvm/msopenjdk-current/",
+		// "sudo ",
+		"java -version"
+	],
+	"postAttachCommand":"./gradlew build",
 	// Configure tool-specific properties.
 	// "customizations": {},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"remoteUser": "root"
 }
