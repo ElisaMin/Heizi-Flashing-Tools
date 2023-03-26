@@ -32,6 +32,7 @@ open class DependencyUsage {
     var reflect: Boolean = false
     var compose: Boolean =true
     var apkParser: Boolean =false
+    var monet = false
 }
 
 class Versions: Plugin<Project> {
@@ -90,6 +91,9 @@ private fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){ wit
     if (apkParser) {
         implementation(me.heizi.apk.parser.compose.desktop.ext)
         implementation(net.dongliu.apk.parser.apk.parser)
+    }
+    if (monet) {
+        implementation(me.heizi.monet.kdrag0n.compose.m3.windows.jna)
     }
 } }
 
