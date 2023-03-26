@@ -9,14 +9,18 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.Rgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.flow.*
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.sqrt
 
-fun main() {
+suspend fun main() {
     // read buffered image "C:\Users\xmzho\Desktop\BK5KO3O@)FHVPFD$6Z5]]}0.gif" and covert it as a sequence of color
     val colors = ImageIO.read(File("C:\\Users\\xmzho\\Desktop\\BK5KO3O@)FHVPFD$6Z5]]}0.gif")).let {
         sequence {
@@ -26,13 +30,13 @@ fun main() {
         }
     }
     // run k-means algorithm k=5
-    val kMeans = kMeans(10,colors)
+    val kMeans = kMeansNew(120,colors.map { it.toRGB() })
     kMeans.forEach {
         println(it)
     }
     singleWindowApplication {
         LazyRow {
-            items(kMeans.toList()) {
+            items(kMeans.toList().map { it.toColor() }) {
                 //64x64dp box with color background
                 Box(modifier = Modifier.size(64.dp).background(it).padding(4.dp))
 
@@ -41,6 +45,135 @@ fun main() {
     }
 }
 
+
+
+//suspend fun Flow<RGB>.kMeans(k:Int,size: Int = -1): Flow<RGB> = coroutineScope {
+//    fun distance(a: RGB, b: RGB): Float {
+//        val rd = a.red - b.red
+//        val gd = a.green - b.green
+//        val bd = a.blue - b.blue
+//        return sqrt(rd * rd + gd * gd + bd * bd)
+//    }
+//    var size = size
+//    if (size < k)  size = count()
+//    require(size > k)
+//    withContext(Main) {
+//        val group = size/k
+//        var currentGroup = 0
+//        flow {
+//            var items = arrayListOf<RGB>()
+//            collectIndexed { index, color ->
+//                items.add(color)
+//                val current =  index / group
+//                if (currentGroup != current) {
+//                    currentGroup = current
+//                    emit(items.asFlow())
+//                    items = arrayListOf()
+//                }
+//            }
+//        }.map{
+//            async {
+//                it.map {
+//
+//                }
+//            }
+//        }
+//    }
+//
+//
+//    TODO()
+//}
+
+private typealias RGB = Triple<Float,Float,Float>
+private inline fun Color.toRGB() = RGB(red,green,blue)
+private inline fun RGB.toColor() = Color(red,green,blue)
+private inline val RGB.red get() = first
+private inline val RGB.green get() = second
+private inline val RGB.blue get() = third
+@Suppress("NAME_SHADOWING")
+suspend fun kMeansNew(k:Int, colors:Sequence<RGB>): Sequence<RGB> = coroutineScope {
+    fun distance(a: RGB, b: RGB): Float {
+        val rd = a.red - b.red
+        val gd = a.green - b.green
+        val bd = a.blue - b.blue
+        return sqrt(rd * rd + gd * gd + bd * bd)
+    }
+    var colors = colors.shuffled()
+
+    var centroids = colors.take(k)
+    var times = 0
+    while (true) {
+        println(times++)
+
+        val clusters = colors.groupBy { color ->
+            centroids.minByOrNull { item -> distance(item,color) }!!
+        }
+
+        var changed = false
+        println(centroids.count())
+        centroids = centroids.map {
+            return@map clusters[it]?.to(it)
+        }.filterNotNull().filter {(it,_)->
+            it.isNotEmpty()
+        }.map {(it,color) ->
+            it.asSequence() to color
+        }.map {(it,color) ->
+            RGB(
+                it.map { it.red }.average().toFloat(),
+                it.map { it.green }.average().toFloat(),
+                it.map { it.blue }.average().toFloat(),
+            ) to color
+
+        }.map {(new,old) ->
+//            println(new.value to old.value)
+            changed = changed || new != old
+            if (changed) return@map new
+            null
+        }.apply { if (null in this) return@coroutineScope centroids.sortedWith { a, b ->
+            when(val aIsBetter = a.toHSB() isBetterThen b.toHSB()) {
+                (aIsBetter == null) -> 0
+                aIsBetter -> -1
+                else -> 1
+            } }
+        }.filterNotNull()
+
+    }
+    throw IllegalStateException("Should not reach here")
+}
+
+//fun kMeans(k: Int,colors:Flow<Color>) = flow<> {
+//    fun distance(a: Color, b: Color): Double {
+//        val rd = (a.red - b.red).toDouble()
+//        val gd = (a.green - b.green).toDouble()
+//        val bd = (a.blue - b.blue).toDouble()
+//        return sqrt(rd * rd + gd * gd + bd * bd)
+//    }
+////    val clusters = mutableMapOf<Color,MutableList<Color>>()
+//    val size = colors.count()
+//    var centroids = flow {
+//        repeat(k) {
+//            var index = (Math.random() * size).toInt()
+//            var last:Color? = null
+//            colors.takeWhile { index > 0 }.collect {
+//                index--
+//                last = it
+//            }
+//            emit(last!!)
+//        }
+//    }
+//    var times = 0
+//    while (true) {
+//        println(times++)
+//        // Assign pixels to clusters based on closest centroid
+//        colors.collect {
+//            val closestCentroid = centroids.minByOrNull { item -> distance(item,it) }!!
+//            emit(closestCentroid)
+//        }
+//
+//    }
+//
+//
+//}
 /**
  * K-means algorithm
  * @param k number of clusters
@@ -112,7 +245,8 @@ private infix fun Triple<Float,Float,Float>.isBetterThen(other: Triple<Float,Flo
     return (2 + s1) * (b1 + 1) > (2 + s2) * (b2 + 1)
 }
 
-private fun Color.toHSB():Triple<Float,Float,Float>  {
+private fun Color.toHSB():Triple<Float,Float,Float> = Triple(red / 255f,green / 255f,blue / 255f)
+private fun RGB.toHSB():Triple<Float,Float,Float>  {
     val r = red / 255f
     val g = green / 255f
     val b = blue / 255f
