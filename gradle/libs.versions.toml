@@ -4,7 +4,7 @@
 heizi_flash_tools = "0.0.8"
 
 java-jna = "5.13.0"
-java-slf4j = "2.0.0"
+java-slf4j = "2.0.7"
 
 kotlin-lang = "1.8.10"
 kotlin-coroutines = "1.6.4"
