@@ -1,22 +1,10 @@
 package me.heizi.kotlinx.compose.desktop.core
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.singleWindowApplication
-import java.io.File
-import javax.imageio.ImageIO
 import kotlin.math.max
 
-
-
+private typealias RGB = Triple<Int, Int, Int>
 
 /**
  * Uses the octree algorithm to extract the dominant color from an iterable of colors.
@@ -24,7 +12,8 @@ import kotlin.math.max
  * @param maxLevel The maximum level of the octree.
  * @return The dominant color as an RGBColor object.
  */
-@JvmName("extractDominantColorComposeColorOfIterable") @Suppress("unused")
+@JvmName("extractDominantColorComposeColorOfIterable")
+@Suppress("unused")
 fun Iterable<Color>.extractDominantColor(maxLevel: Int = 8): List<Color> =
     asSequence().extractDominantColor(maxLevel)
 
@@ -36,16 +25,21 @@ fun Iterable<Color>.extractDominantColor(maxLevel: Int = 8): List<Color> =
  */
 @JvmName("extractDominantColorComposeColorOfSequence")
 fun Sequence<Color>.extractDominantColor(maxLevel: Int = 8): List<Color> =
-     map { it.triple }
-    .extractDominantColor(maxLevel)
-    .map { it.compose }
+    map { it.triple }
+        .extractDominantColor(maxLevel)
+        .map { it.compose }
 
-@JvmName("sortByHSBIterable") @Suppress("unused")
+/**
+ * Sorts the colors in an iterable/sequence by hue, saturation and brightness (HSB).
+ * @return The sorted list of colors.
+ */
+@JvmName("sortByHSBIterable")
+@Suppress("unused")
 fun Iterable<Color>.sortByHSB() =
-     asSequence()
-    .map { it.triple }
-    .sortByHSB()
-    .map { it.compose }
+    asSequence()
+        .map { it.triple }
+        .sortByHSB()
+        .map { it.compose }
 
 /**
  * Uses the octree algorithm to extract the dominant color from a sequence of RGB colors.
@@ -57,55 +51,30 @@ fun Iterable<Color>.sortByHSB() =
 fun Sequence<RGB>.extractDominantColor(maxLevel: Int = 8): List<RGB> =
     Octree(maxLevel).apply { forEach(::addColor) }.reduce().getColors()
 
+/**
+ * Sorts the colors in an iterable/sequence by hue, saturation and brightness (HSB).
+ * @return The sorted list of colors.
+ */
 @JvmName("sortByHSBSequence")
 fun Sequence<RGB>.sortByHSB() = sortedWith { a, b ->
-    when(a.toHSB() isBetterThen b.toHSB()) {
+    when (a.toHSB() isBetterThen b.toHSB()) {
         null -> 0
         true -> -1
         else -> 1
- } }
-
-suspend fun main() {
-    // read buffered image "C:\Users\xmzho\Desktop\BK5KO3O@)FHVPFD$6Z5]]}0.gif" and covert it as a sequence of color
-    val colors = ImageIO.read(
-        File(
-//        "C:\\Users\\xmzho\\Desktop\\BK5KO3O@)FHVPFD$6Z5]]}0.gif"
-            "C:\\Users\\xmzho\\Desktop\\dance till we die.jpg"
-        )
-    ).let {
-        sequence {
-            for (x in 0 until it.width)
-                for (y in 0 until it.height)
-                    yield(Color(it.getRGB(x, y)))
-        }
-    }
-    // run k-means algorithm k=5
-//    val kMeans = kMeansNew(120,colors.map { it.toRGB() })
-//    val kMeans = sequence { yield() }
-//    kMeans.forEach {
-//        println(it)
-//    }
-
-    singleWindowApplication {
-        LazyRow {
-
-            items(colors.extractDominantColor(8)) {
-                //64x64dp box with color background
-                Box(modifier = Modifier.size(64.dp).background(it).padding(4.dp))
-
-            }
-        }
     }
 }
 
 
-private typealias RGB = Triple<Int, Int, Int>
-private inline val RGB.compose get() = java.awt.Color(red, green, blue).run {
-    Color(red, green, blue)
-}
-private inline val Color.triple get () = java.awt.Color(toArgb()).run {
-    Triple(red, green, blue)
-}
+
+private inline val RGB.compose
+    get() = java.awt.Color(red, green, blue)
+        .run { Color(red, green, blue) }
+
+private inline val Color.triple
+    get() = java.awt.Color(toArgb())
+        .run { Triple(red, green, blue) }
+
+
 private inline val RGB.red get() = first
 private inline val RGB.green get() = second
 private inline val RGB.blue get() = third
@@ -139,6 +108,7 @@ private class Octree(private val maxLevel: Int) {
         // A constant that defines the number of colors to keep in the octree after reduction (parameter)
         private const val K = 16
     }
+
     // Reduces the octree by merging the least populated leaf nodes with their parent
     fun reduce(): Octree {
         while (leafCount > K) {
@@ -176,8 +146,9 @@ private class Octree(private val maxLevel: Int) {
     }
 
 }
+
 // A node in the octree
-private data class OctreeNode(
+private class OctreeNode(
     val level: Int,
     val parent: OctreeNode?,
     var pixelCount: Int = 0,
@@ -205,6 +176,7 @@ private data class OctreeNode(
         }
     }
 }
+
 private infix fun Triple<Float, Float, Float>.isBetterThen(other: Triple<Float, Float, Float>): Boolean? {
     val s1 = this.second
     val s2: Float = other.second
