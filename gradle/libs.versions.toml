@@ -13,8 +13,8 @@ kotlin-ui-compose-decompose = "1.0.0-compose-experimental"
 # @keep parser to 0.0.1-alpha04 because net.dongliu.apk.parser is not current version
 ext-apk_parser = "0.0.1-alpha04"
 ext-khell = "0.0.0-alpha01"
-ext-androidx-collection = "1.3.0-dev01"
-ext-monetKdrag0n = "0.0.0-alpha01"
+ext-color = "1.0.5"
+ext-monetKdrag0n = "0.0.1-alpha01"
 
 gradle-shadowJar = "8.1.0"
 gradle-versionCatalogUpdate = "0.8.0"
@@ -33,6 +33,8 @@ net-dongliu-apk-parser-apk_parser = { module ="net.dongliu.apk.parser:apk-parser
 me-heizi-apk-parser-compose-desktop-ext = { module = "me.heizi.apk.parser:compose-desktop-ext", version.ref = "ext-apk_parser" }
 
 me-heizi-monet-kdrag0n-compose-m3-windows-jna = { module = "me.heizi.monet-kdrag0n:compose-m3-windows-jna", version.ref = "ext-monetKdrag0n" }
+me-heizi-monet-kdrag0n-monet-kdrag0n-jvm = { module = "me.heizi.monet-kdrag0n:monet-kdrag0n-jvm", version.ref = "ext-monetKdrag0n" }
+dev-kdrag0n-colorkt = { module = "dev.kdrag0n:colorkt", version.ref = "ext-color" }
 
 net-java-dev-jna-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 net-java-dev-jna-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }

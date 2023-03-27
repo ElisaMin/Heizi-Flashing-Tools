@@ -94,6 +94,8 @@ private fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){ wit
     }
     if (monet) {
         implementation(me.heizi.monet.kdrag0n.compose.m3.windows.jna)
+        api(me.heizi.monet.kdrag0n.monet.kdrag0n.jvm)
+        api(dev.kdrag0n.colorkt)
     }
 } }
 
