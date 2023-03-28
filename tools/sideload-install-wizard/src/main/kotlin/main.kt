@@ -1,15 +1,27 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.sideloader
 
-import androidx.compose.material.Colors
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.toPainter
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.DrawScopeMarker
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.vector.VectorPainter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.loadXmlImageVector
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
@@ -21,6 +33,7 @@ import dev.kdrag0n.colorkt.ucs.lch.Oklch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.takeWhile
 import me.heizi.apk.parser.ktx.color
@@ -33,6 +46,7 @@ import me.heizi.kotlinx.compose.desktop.core.sortByHSB
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.println
 import net.dongliu.apk.parser.bean.ApkIcon
+import org.xml.sax.InputSource
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -82,8 +96,8 @@ fun main(args: Array<String>) {
     }
     frame.isVisible = true
 
-    Context.scope.launch {
-        init(args)
+    Context.scope.launch(Unconfined) {
+        init(args,frame)
     }
     println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
     requireAndStuck(args.size==1) {
@@ -126,6 +140,67 @@ fun app(frame:JFrame) = singleWindowApplication(
                     current()
                 }
                 is SingleFileContext -> {
+//                    var theVector by remember {
+//                        current.takeIf { it.isApk }?.icon?.takeIf {
+//                            (it is ApkIcon.Adaptive && (it.background is ApkIcon.Vector || it.foreground is ApkIcon.Vector)) || it is ApkIcon.Vector
+//                        }?.let {
+//                            when(it) {
+//                                is ApkIcon.Vector -> it
+//                                is ApkIcon.Adaptive -> (it.background.takeIf { it is ApkIcon.Vector } ?: it.foreground) as ApkIcon.Vector
+//                                else -> null
+//                            }
+//                        }.let(::mutableStateOf)
+//                    }
+//
+//                    theVector?.run {
+//                        data.toByteArray().inputStream().use {
+//                            loadXmlImageVector(InputSource(it), LocalDensity.current)
+//                        }.run {
+//                            val painter = rememberVectorPainter(this)
+//                            val imageBitmap = with(LocalDensity.current) { ImageBitmap(defaultHeight.roundToPx(), defaultWidth.roundToPx()) }
+//                            CanvasDrawScope().apply {
+//
+//                                with(painter) {
+//                                    draw(size)
+//                                }
+//
+//                            }
+//                            Box(Modifier.size(this.defaultWidth,this.defaultHeight)) {
+//                                Canvas(Modifier.fillMaxSize().align(Alignment.Center,)) {
+//
+//                                    with(painter) {
+//                                        draw(size)
+//                                    }
+//                                    drawImage(imageBitmap)
+//
+//                                    imageBitmap.run {
+//                                        IntArray(width*height).apply {
+//                                            readPixels(this,0,0,0,0,width,height)
+//                                        }
+//                                    }.asSequence().forEach { kotlin.io.println(it) }
+//                                }
+//                            }
+//                            singleWindowApplication {
+////                                val painter = reme
+//                                Image(imageBitmap,"what")
+//                            }
+
+//                            Canvas()
+//                            with(LocalDensity.current) {
+//                                ImageBitmap(defaultHeight.roundToPx(),defaultWidth.roundToPx()).apply {
+//                                    Canvas(this).drawImage(this, Offset.Zero,painter).run {
+//                                        extractDominantColor().run {
+//                                            color = Kdrag0nMonetThemeColorScheme.Dynamic[convert<Oklch>(convert<Srgb>(this))]
+//                                                .run {
+//                                                    if (isSystemDarkTheme) darkM3Scheme() else lightM3Scheme()
+//                                                }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+
                     window.title = "AST $mode ${current.name} 选择设备"
                     current()
                 }
@@ -145,9 +220,10 @@ fun app(frame:JFrame) = singleWindowApplication(
     }
 }
 val init_state: MutableStateFlow<String?> = MutableStateFlow("正在初始化中")
-suspend fun init(args: Array<String>) = Context.scope.launch {
+suspend fun init(args: Array<String>,frame: JFrame) = Context.scope.launch {
     // init adb
-    launch(IO) {
+    val adbJob =
+    launch(Default) {
         init_state.emit("正在初始化ADB")
         ADB.println("launching adb")
         ADB.devices.collect {
@@ -169,16 +245,23 @@ suspend fun init(args: Array<String>) = Context.scope.launch {
         init_state.emit("正在初始化文件")
         files.value = listOf(File(args[0]))
         init_state.emit("获取到文件：${files.value.size}个")
-        files.value.getOrNull(0)?.let {
+        files.value.filter { it.exists() && it.isFile }.getOrNull(0)?.let {
             Context(it)
         }?.also { ctx ->
             if ( ctx.isApk ) {
                 isSideload = false
                 init_state.emit("是APK")
                 // init colorscheme
-                ctx.icon?.valid?.let {
+                // init later while icon vector or background is vector
+                ctx.icon?.takeIf {when(it) {
+                    is ApkIcon.Adaptive -> it.background !is ApkIcon.Vector
+                    is ApkIcon.Vector -> false
+                    else -> true
+                } }
+                    ?.valid?.let {
                     init_state.emit("获取到主题颜色：${it.toArgb()}")
                     colorJob.cancel()
+                    colorJob.join()
                     color = Kdrag0nMonetThemeColorScheme.Dynamic[it.toArgb().let(::Srgb)].run {
                         if (isSystemDarkTheme) darkM3Scheme() else lightM3Scheme()
                     }
@@ -189,9 +272,17 @@ suspend fun init(args: Array<String>) = Context.scope.launch {
             }
 //            isColorLoaded = true
         }?.let { context.emit(it) } ?: run {
+            colorJob.cancel()
+            adbJob.cancel()
             init_state.emit("文件解析失败")
-            delay(3000)
-            exitProcess(-1)
+            init_state.emit("文件解析失败")
+            init_state.emit("文件解析失败")
+            init_state.emit(null)
+            delay(1000)
+            frame.isVisible = false
+            requireAndStuck(false) {
+                "文件解析失败"
+            }
         }
     }
 }
@@ -206,14 +297,8 @@ private inline val <T:Any> ApkIcon<T>.valid:Color?
 
 val <T:Any> ApkIcon<T>.seekColor:Color? get() {
     return when(this) {
-        is ApkIcon.Color -> {
-            Srgb(color.toArgb()).convert<Oklch>().run {
-                if (chroma in 0.05f..1f && lightness in 0.1f..0.9f) {
-                    return color
-                }
-            }
-            null
-        }
+        is ApkIcon.Color ->
+            color.takeIf { it.valid }
         is ApkIcon.Raster -> runCatching { sequence {
             val img = ImageIO.read(data.inputStream())
             repeat(img.width) { x -> repeat(img.height) { y ->
@@ -221,30 +306,56 @@ val <T:Any> ApkIcon<T>.seekColor:Color? get() {
             } }
         }.map {
             Color(it)
-        }.extractDominantColor().sortByHSB().first() }.getOrNull()
+        }.extractDominantColor()
+            .filter { it.valid }
+            .sortByHSB()
+//            .also {
+//            singleWindowApplication {
+//                //64x64 block display all it color
+//                Row  {
+//                    it.forEachIndexed { index, color ->
+//                        Box(Modifier.size(64.dp).background(color).border(1.dp,Color.Black))
+//                    }
+//                }
+//            }
+//            "Raster".debug("seekColor",it)
+//            }
+            .first() }.getOrNull()
 
         is ApkIcon.Adaptive -> background.seekColor ?: foreground.seekColor
 
-        is ApkIcon.Vector -> {
-            "(\"#[a-fA-F0-9]+\")".toRegex().findAll(data).run {
-                val size = count()
-                // less the zero rerun null
-                if (size <= 0) return null
-                val colors = map { it.value }.map {
-                    it.trim('"').replace("#","0x").toInt(16)
-                }
-                when(size) {
-                    // if only one color return it
-                    1 -> Color(colors.first())
-                    // if in 0..10 random one
-                    in 0..10 -> Color(colors.shuffled().first())
-                    // if more than 10 return the most dominant color
-                    else -> colors.map {
-                        Color(it)
-                    }.extractDominantColor().sortByHSB().first()
-                }
-            }
-        }
+        // fixme render android vector to bitmap
+
+        is ApkIcon.Vector -> runCatching {
+
+
+            return null
+//            data.toByteArray().inputStream().use {
+//                loadXmlImageVector(InputSource(it), Density(1f,1f))
+//            }
+
+
+
+//            "(\"#[a-fA-F0-9]+\")".toRegex().findAll(data).run {
+//                val size = count()
+//                // less the zero rerun null
+//                if (size <= 0) return null
+//                val colors = map { it.value }.map {
+//
+//                    it.trim('"').replace("#","0x").toInt(16)
+//                }
+//                when(size) {
+//                    // if only one color return it
+//                    1 -> Color(colors.first())
+//                    // if in 0..10 random one
+//                    in 0..10 -> colors.map { Color(it) }.filter { it.valid }.shuffled().first()
+//                    // if more than 10 return the most dominant color
+//                    else -> colors.map {
+//                        Color(it)
+//                    }.extractDominantColor().filter { it.valid }.sortByHSB().first()
+//                }
+//            }
+        }.getOrNull()
         is ApkIcon.Empty -> null
     }
 }
