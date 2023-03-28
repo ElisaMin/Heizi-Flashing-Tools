@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
+import com.mayakapps.compose.windowstyler.WindowBackdrop
+import com.mayakapps.compose.windowstyler.WindowCornerPreference
+import com.mayakapps.compose.windowstyler.WindowFrameStyle
+import com.mayakapps.compose.windowstyler.WindowStyle
 import dev.kdrag0n.colorkt.conversion.ConversionGraph.convert
 import dev.kdrag0n.colorkt.rgb.Srgb
 import dev.kdrag0n.colorkt.ucs.lch.Oklch
@@ -130,8 +134,18 @@ fun app(frame:JFrame) = singleWindowApplication(
 
     "Context".println("current",currentContext::class.simpleName)
     val mode = if (isSideload) "线刷模式" else "安装模式"
-
     CompositionLocalProvider(colors provides (color?: lightColorScheme())) {
+        val stylerColor = colors.current.surface
+        val stylerColor1 = colors.current.onSurface
+        val styler = remember(stylerColor1,stylerColor) {
+            WindowFrameStyle(
+                borderColor = stylerColor,
+                titleBarColor = stylerColor,
+                captionColor = stylerColor1,
+//                cornerPreference = WindowCornerPreference.ROUNDED,
+            )
+        }
+        WindowStyle(isSystemDarkTheme,WindowBackdrop.Default,styler)
         MaterialTheme(
             colorScheme = colors.current,
         ) {
@@ -225,11 +239,11 @@ suspend fun init(args: Array<String>,frame: JFrame) = Context.scope.launch {
     val adbJob =
     launch(Default) {
         init_state.emit("正在初始化ADB")
-        ADB.println("launching adb")
-        ADB.devices.collect {
-            "ADB".debug("devices",it)
-            init_state.emit("获取到设备：${it.serial}")
-        }
+//        ADB.println("launching adb")
+//        ADB.devices.collect {
+//            "ADB".debug("devices",it)
+//            init_state.emit("获取到设备：${it.serial}")
+//        }
     }
     val colorJob =
     // init color

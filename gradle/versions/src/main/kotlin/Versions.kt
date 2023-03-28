@@ -33,6 +33,7 @@ open class DependencyUsage {
     var compose: Boolean =true
     var apkParser: Boolean =false
     var monet = false
+    var windows11Styler = false
 }
 
 class Versions: Plugin<Project> {
@@ -96,6 +97,9 @@ private fun DependencyHandlerScope.use(usage: DependencyUsage)= with(usage){ wit
         implementation(me.heizi.monet.kdrag0n.compose.m3.windows.jna)
         api(me.heizi.monet.kdrag0n.monet.kdrag0n.jvm)
         api(dev.kdrag0n.colorkt)
+    }
+    if (windows11Styler) {
+        implementation(com.mayakapps.compose.window.styler)
     }
 } }
 

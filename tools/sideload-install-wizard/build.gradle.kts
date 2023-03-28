@@ -7,6 +7,7 @@ configure<DependencyUsage> {
     khell = true
     monet = true
     jna = true
+    windows11Styler = true
 }
 
 dependencies {
