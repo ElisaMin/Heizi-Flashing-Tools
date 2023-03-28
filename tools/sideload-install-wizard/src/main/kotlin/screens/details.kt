@@ -70,6 +70,13 @@ fun Info(
 @Composable
 private fun IconCard(icon: ApkIcon<*>) {
     var background by mutableStateOf(colors.current.primary)
+    if (icon is ApkIcon.Adaptive) {
+        when(val b = icon.background) {
+            is ApkIcon.Empty -> background = colors.current.background
+            is ApkIcon.Color -> background = b.color
+            else -> Unit
+        }
+    }
     var theIcon:ApkIcon<*>? = icon
     if (icon is ApkIcon.Adaptive) {
         theIcon = icon.foreground

@@ -5,6 +5,8 @@ configure<DependencyUsage> {
     composex = true
     apkParser = true
     khell = true
+    monet = true
+    jna = true
 }
 
 dependencies {
