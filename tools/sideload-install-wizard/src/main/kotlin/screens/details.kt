@@ -69,31 +69,15 @@ fun Info(
 
 @Composable
 private fun IconCard(icon: ApkIcon<*>) {
-    var background by mutableStateOf(colors.current.primary)
-    if (icon is ApkIcon.Adaptive) {
-        when(val b = icon.background) {
-            is ApkIcon.Empty -> background = colors.current.background
-            is ApkIcon.Color -> background = b.color
-            else -> Unit
-        }
-    }
-    var theIcon:ApkIcon<*>? = icon
-    if (icon is ApkIcon.Adaptive) {
-        theIcon = icon.foreground
-        when(val b = icon.background) {
-            is ApkIcon.Empty -> background = colors.current.background
-            is ApkIcon.Color -> background = b.color
-            else -> {
-                theIcon = null
-            }
-        }
-    }
-    Card(Modifier.size(126.dp), colors = CardDefaults.cardColors(background)) {
-
-        theIcon?.let {
-            if (icon is ApkIcon.Adaptive)
-            Image(theIcon, modifier = Modifier.fillMaxSize(),)
-            else Image(theIcon,modifier = Modifier.fillMaxSize())
+    var displayIcon = icon
+    // icon is adaptive icon then using foreground
+    if (icon is ApkIcon.Adaptive) displayIcon = icon.foreground
+    // if icon is not empty then display it
+    if (displayIcon !is ApkIcon.Empty) {
+        Card(Modifier.size(126.dp),
+//            colors = CardDefaults.cardColors(background)
+        ) {
+            Image(displayIcon, modifier = Modifier.fillMaxSize(),)
         }
     }
 }
