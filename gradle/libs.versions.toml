@@ -14,7 +14,7 @@ kotlin-ui-compose-decompose = "1.0.0-compose-experimental"
 ext-apk_parser = "0.0.1-alpha05"
 ext-khell = "0.0.0-alpha01"
 ext-color = "1.0.5"
-ext-monetKdrag0n = "0.0.1-alpha01"
+ext-monetKdrag0n = "0.0.1-alpha02"
 ext-windows10 = "0.3.2"
 
 gradle-shadowJar = "8.1.1"
@@ -33,7 +33,7 @@ me-heizi-kotlinx-khell-log = { module = "me.heizi.kotlinx:khell-log", version.re
 net-dongliu-apk-parser-apk_parser = { module ="net.dongliu.apk.parser:apk-parser", version.ref = "ext-apk_parser" }
 me-heizi-apk-parser-compose-desktop-ext = { module = "me.heizi.apk.parser:compose-desktop-ext", version.ref = "ext-apk_parser" }
 
-me-heizi-monet-kdrag0n-compose-m3-windows-jna = { module = "me.heizi.monet-kdrag0n:compose-m3-windows-jna", version.ref = "ext-monetKdrag0n" }
+me-heizi-monet-kdrag0n-compose-m3-windows-jna = { module = "me.heizi.monet-kdrag0n:compose-m3-window-styler", version.ref = "ext-monetKdrag0n" }
 me-heizi-monet-kdrag0n-monet-kdrag0n-jvm = { module = "me.heizi.monet-kdrag0n:monet-kdrag0n-jvm", version.ref = "ext-monetKdrag0n" }
 dev-kdrag0n-colorkt = { module = "dev.kdrag0n:colorkt", version.ref = "ext-color" }
 com-mayakapps-compose-window-styler = { module = "com.mayakapps.compose:window-styler", version.ref = "ext-windows10" }
