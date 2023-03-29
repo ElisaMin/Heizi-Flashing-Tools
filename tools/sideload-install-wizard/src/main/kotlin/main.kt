@@ -1,6 +1,7 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.sideloader
 
+import androidx.compose.foundation.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -23,6 +24,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.takeWhile
+import me.heizi.apk.parser.ktx.Image
 import me.heizi.apk.parser.ktx.color
 import me.heizi.compose.ext.monet.common.*
 import me.heizi.flashing_tool.adb.ADBDevice
@@ -74,8 +76,8 @@ suspend fun resources() = coroutineScope {
     debugTiming("init resources")
     Resources
     debugTiming("init resources go on")
-    Resources.iconASTUglyImage
-    debugTiming("read out")
+    val color = Resources.iconASTUglyImage?.getRGB(1,1)?.let { Color(it) }
+    debugTiming("color read out $color")
     Resources.iconASTUgly
     debugTiming("read out another")
 
@@ -114,9 +116,12 @@ fun reacting(args: Array<String>) {
             title = "正在加载中",
             icon = Resources.also {
                 debugTiming("icon go on")
-            }.iconASTUglys,
-
-            ) {}
+            }.iconASTUglys.also { debugTiming("pic go go go") },) {
+                LaunchedEffect("icon") {
+                    debugTiming("dialog go on")
+                }
+                Image(Resources.iconASTUglys, "icon")
+        }
     }
 }
 @Composable
@@ -459,7 +464,7 @@ object Resources {
         debugTiming("readed as awt image")
         img
     }
-    val iconASTUgly = ImageIO.read(this["ic_ast_ugly.png"]!!).toPainter()
+    val iconASTUgly = iconASTUglyImage!!.toPainter()
 
     val iconASTUglys = iconASTUglyImage!!.let {
         debugTiming("load ic_ast_ugly.png")
