@@ -1,34 +1,17 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.sideloader
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
-import androidx.compose.ui.graphics.drawscope.DrawScopeMarker
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.vector.VectorPainter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.loadXmlImageVector
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.singleWindowApplication
+import androidx.compose.ui.window.*
 import com.mayakapps.compose.windowstyler.WindowBackdrop
-import com.mayakapps.compose.windowstyler.WindowCornerPreference
 import com.mayakapps.compose.windowstyler.WindowFrameStyle
 import com.mayakapps.compose.windowstyler.WindowStyle
 import dev.kdrag0n.colorkt.conversion.ConversionGraph.convert
@@ -42,15 +25,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.takeWhile
 import me.heizi.apk.parser.ktx.color
 import me.heizi.compose.ext.monet.common.*
-import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.compose.desktop.core.extractDominantColor
 import me.heizi.kotlinx.compose.desktop.core.sortByHSB
-import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.println
 import net.dongliu.apk.parser.bean.ApkIcon
-import org.xml.sax.InputSource
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -60,12 +40,102 @@ import javax.swing.JPanel
 import kotlin.system.exitProcess
 import dev.kdrag0n.monet.theme.ColorScheme as Kdrag0nMonetThemeColorScheme
 
+var time = System.currentTimeMillis()
+fun debugTiming(vararg any: Any){
+    println("${
+        System.currentTimeMillis().let {
+            val t = it - time
+            time = it
+            t
+        }   
+    }ms ${any.joinToString(" ") { it.toString() }}")
+}
+
+object New {
+    @OptIn(DelicateCoroutinesApi::class)
+    @JvmStatic
+    fun main(args: Array<String>):Unit = runBlocking {
+        newSingleThreadContext("resources").run {
+            CoroutineScope(this).launch {
+                resources()
+            }
+        }
+        debugTiming("init")
+        debugTiming("init")
+        debugTiming("inita","aaaa")
+        debugTiming("init","bbbb")
+        debugTiming("init let the light in","i love you love you love you love yo")
+        debugTiming("init i need you need you need you need you","make yo back door yedl cuz i wanna commming","ohhhhh")
+        app(args)
+    }
+}
+
+suspend fun resources() = coroutineScope {
+    debugTiming("init resources")
+    Resources
+    debugTiming("init resources go on")
+    Resources.iconASTUglyImage
+    debugTiming("read out")
+    Resources.iconASTUgly
+    debugTiming("read out another")
+
+}
+suspend fun app(args: Array<String>) =  coroutineScope {
+    debugTiming("init app")
+    launchApplication {
+        debugTiming("init app launchApplication")
+        var errorState by remember { mutableStateOf<Throwable?>(null) }
+        if (errorState!=null) {
+            debugTiming("init app launchApplication errorState")
+            errorState!!.printStackTrace()
+            failed(errorState!!)
+        } else runCatching {
+            debugTiming("init app launchApplication runCatching")
+//            launch(IO) {
+//                debugTiming("IO coroutine")
+//                resources()
+//            }
+            debugTiming("readey to compose")
+            reacting(args)
+        }.onFailure { errorState = it }
+    }
+}
+
+@Composable
+fun reacting(args: Array<String>) {
+
+    debugTiming("reacting")
+    val context by context.collectAsState()
+    debugTiming("context go on")
+    if (true) {
+        debugTiming("go on $context")
+        Dialog(
+            onCloseRequest = { exitProcess(0) },
+            title = "正在加载中",
+            icon = Resources.also {
+                debugTiming("icon go on")
+            }.iconASTUglys,
+
+            ) {}
+    }
+}
+@Composable
+fun preLoad() {
+
+}
+@Composable
+fun failed(cuz:Throwable) {
+    // 加载失败窗口
+}
+//@Composable
+//suspend fun
 
 val context: MutableStateFlow<Context> =
     MutableStateFlow(Context.Ready)
 val isSystemDarkTheme by lazy {
     runCatching {
-        systemIsDarkTheme()
+//        systemIsDarkTheme()
+        false
     }.getOrDefault(false)
 }
 
@@ -383,7 +453,20 @@ val files = MutableStateFlow(listOf<File>())
 
 object Resources {
     operator fun get(name:String): URL? = this::class.java.classLoader.getResource(name)
+    val iconASTUglyImage = this["ic_ast_ugly.png"]?.let {
+        debugTiming("load ic_ast_ugly.png")
+        val img = ImageIO.read(it)
+        debugTiming("readed as awt image")
+        img
+    }
     val iconASTUgly = ImageIO.read(this["ic_ast_ugly.png"]!!).toPainter()
+
+    val iconASTUglys = iconASTUglyImage!!.let {
+        debugTiming("load ic_ast_ugly.png")
+        val painter = it.toPainter()
+        debugTiming("toPainter")
+        painter
+    }
 }
 
 
