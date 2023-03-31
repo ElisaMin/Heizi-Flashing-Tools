@@ -1,9 +1,18 @@
 package me.heizi.flashing_tool.sideloader
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import dev.kdrag0n.colorkt.conversion.ConversionGraph.convert
+import dev.kdrag0n.colorkt.rgb.Srgb
+import dev.kdrag0n.colorkt.ucs.lch.Oklch
+import me.heizi.apk.parser.ktx.color
+import me.heizi.kotlinx.compose.desktop.core.extractDominantColor
+import me.heizi.kotlinx.compose.desktop.core.sortByHSB
 import me.heizi.kotlinx.logger.println
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.bean.ApkIcon
 import java.io.File
+import javax.imageio.ImageIO
 
 
 class Install constructor(
@@ -100,6 +109,15 @@ sealed class SingleFileContext (
     open val packageName:String?=null
     open val version:String?=null
     open val icon: ApkIcon<*>?=null
+    open val color by lazy {
+        icon?.takeIf {when(it) {
+        is ApkIcon.Adaptive -> it.background !is ApkIcon.Vector
+        is ApkIcon.Vector -> false
+        else -> true
+    } }?.valid.also {
+        name.println("icon color","$it")
+    } }
+
     open val details = mapOf(
         "路径" to arrayOf(file.absolutePath),
         "大小" to arrayOf(file.size),
@@ -112,4 +130,76 @@ class Sideload constructor(file: File): SingleFileContext(file) {
     override val isApk: Boolean get() = false
     override fun toApkOrSideload(): SingleFileContext
             = Install(this.file)
+}
+
+private val Color.valid:Boolean
+    get() = Srgb(toArgb()).convert<Oklch>().run {
+        chroma in 0.05f..1f && lightness in 0.1f..0.9f
+    }
+private inline val <T:Any> ApkIcon<T>.valid: Color?
+    get() =  seekColor?.takeIf { it.valid }
+
+val <T:Any> ApkIcon<T>.seekColor: Color? get() {
+    return when(this) {
+        is ApkIcon.Color ->
+            color.takeIf { it.valid }
+        is ApkIcon.Raster -> runCatching { sequence {
+            val img = ImageIO.read(data.inputStream())
+            repeat(img.width) { x -> repeat(img.height) { y ->
+                yield(img.getRGB(x,y))
+            } }
+        }.map {
+            Color(it)
+        }.extractDominantColor()
+            .filter { it.valid }
+            .sortByHSB()
+//            .also {
+//            singleWindowApplication {
+//                //64x64 block display all it color
+//                Row  {
+//                    it.forEachIndexed { index, color ->
+//                        Box(Modifier.size(64.dp).background(color).border(1.dp,Color.Black))
+//                    }
+//                }
+//            }
+//            "Raster".debug("seekColor",it)
+//            }
+            .first() }.getOrNull()
+
+        is ApkIcon.Adaptive -> background.seekColor ?: foreground.seekColor
+
+        // fixme render android vector to bitmap
+
+        is ApkIcon.Vector -> runCatching {
+
+
+            return null
+//            data.toByteArray().inputStream().use {
+//                loadXmlImageVector(InputSource(it), Density(1f,1f))
+//            }
+
+
+
+//            "(\"#[a-fA-F0-9]+\")".toRegex().findAll(data).run {
+//                val size = count()
+//                // less the zero rerun null
+//                if (size <= 0) return null
+//                val colors = map { it.value }.map {
+//
+//                    it.trim('"').replace("#","0x").toInt(16)
+//                }
+//                when(size) {
+//                    // if only one color return it
+//                    1 -> Color(colors.first())
+//                    // if in 0..10 random one
+//                    in 0..10 -> colors.map { Color(it) }.filter { it.valid }.shuffled().first()
+//                    // if more than 10 return the most dominant color
+//                    else -> colors.map {
+//                        Color(it)
+//                    }.extractDominantColor().filter { it.valid }.sortByHSB().first()
+//                }
+//            }
+        }.getOrNull()
+        is ApkIcon.Empty -> null
+    }
 }

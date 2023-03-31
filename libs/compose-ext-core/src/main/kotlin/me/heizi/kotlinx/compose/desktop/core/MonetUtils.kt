@@ -2,7 +2,18 @@ package me.heizi.kotlinx.compose.desktop.core
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import java.awt.Component
+import java.awt.Container
 import kotlin.math.max
+
+
+fun Component.setAllBackground(color: java.awt.Color) {
+    background = color
+    if (this is Container) {
+        components.forEach { it.setAllBackground(color) }
+    }
+}
+
 
 private typealias RGB = Triple<Int, Int, Int>
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.heizi.compose.ext.monet.common.MonetWindow.Companion.isDark
 import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.current
@@ -22,12 +23,12 @@ import kotlin.system.exitProcess
 
 @Composable
 operator fun Context.Ready.invoke(
-    color: Color = colors.current.onBackground,
-    backgroundColor: Color = colors.current.background,
+    text: String = "正在加载中...",
 )  {
-    Box(Modifier.fillMaxSize().background(backgroundColor)) {
+    val color = if (isDark) Color.White else Color.Black
+    Box(Modifier.fillMaxSize()) {
         Text(
-            "正在加载中...",
+            text,
             color = color,
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.align(Alignment.Center)
