@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.colors
+import me.heizi.flashing_tool.sideloader.current
 import kotlin.system.exitProcess
 
 @Composable

@@ -10,8 +10,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.heizi.apk.parser.ktx.Image
-import me.heizi.apk.parser.ktx.color
 import me.heizi.flashing_tool.sideloader.colors
+import me.heizi.flashing_tool.sideloader.current
 import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import net.dongliu.apk.parser.bean.ApkIcon

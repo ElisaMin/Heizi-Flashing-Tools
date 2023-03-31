@@ -14,7 +14,7 @@ kotlin-ui-compose-decompose = "1.0.0-compose-experimental"
 ext-apk_parser = "0.0.1-alpha05"
 ext-khell = "0.0.0-alpha01"
 ext-color = "1.0.5"
-ext-monetKdrag0n = "0.0.1-alpha03"
+ext-monetKdrag0n = "0.0.1-alpha04"
 ext-windows10 = "0.3.2"
 
 gradle-shadowJar = "8.1.1"

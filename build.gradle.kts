@@ -31,6 +31,7 @@ allprojects {
         google()
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
         maven { url = uri("https://raw.githubusercontent.com/ElisaMin/Maven/master/")}
+        mavenLocal()
     }
 }
 // config shadow jar
