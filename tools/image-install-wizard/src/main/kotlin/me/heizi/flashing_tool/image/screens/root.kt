@@ -13,11 +13,9 @@ import me.heizi.flashing_tool.image.style
 
 @Composable
 inline fun RootComponent.RootVM.Container(crossinline content:@Composable ()->Unit) {
-    MaterialTheme {
-        Column(Modifier.fillMaxSize().padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.headlineSmall, modifier = style.padding.bottom)
-            Text(text = subtitle, modifier = style.padding.bottom)
-            content()
-        }
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        Text(text = title, style = MaterialTheme.typography.headlineSmall, modifier = style.padding.bottom)
+        Text(text = subtitle, modifier = style.padding.bottom)
+        content()
     }
 }

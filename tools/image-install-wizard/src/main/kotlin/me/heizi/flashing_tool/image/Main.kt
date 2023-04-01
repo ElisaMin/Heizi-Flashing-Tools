@@ -1,6 +1,10 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.image
 
+import androidx.compose.material.*
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toPainter
@@ -11,6 +15,11 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.mayakapps.compose.windowstyler.WindowBackdrop
+import dev.kdrag0n.colorkt.rgb.Srgb
+import dev.kdrag0n.monet.theme.ColorScheme
+import me.heizi.compose.ext.monet.common.Monet
+import me.heizi.compose.ext.monet.common.MonetWindow
 import java.io.File
 
 
@@ -44,6 +53,35 @@ fun startApplication(file: File){
         val lifecycle = remember { LifecycleRegistry() }
         val context = remember { DefaultComponentContext(lifecycle)}
         val component = remember { RootComponent(file,context) }
-        component.render()
+        Monet {
+            LaunchedEffect(color) {
+                val styler = windowStyler
+                styler.backdropType = WindowBackdrop.Tabbed
+            }
+            val scheme = androidx.compose.material3.MaterialTheme.colorScheme
+            CompositionLocalProvider(
+                LocalContentColor provides scheme.onSurface,
+                androidx.compose.material3.LocalContentColor provides scheme.onSurface,
+            ) {
+                MaterialTheme(MaterialTheme.colors.copy(
+                    isLight = !MonetWindow.isDark,
+                    primary = scheme.primary,
+                    primaryVariant = scheme.onPrimary,
+                    secondary = scheme.secondary,
+                    secondaryVariant = scheme.onSecondary,
+                    background = scheme.background,
+                    surface = scheme.surface,
+                    error = scheme.error,
+                    onPrimary = scheme.onPrimary,
+                    onSecondary = scheme.onSecondary,
+                    onBackground = scheme.onBackground,
+                    onSurface = scheme.onSurface,
+                    onError = scheme.onError,
+                )) {
+                    component.render()
+                }
+            }
+
+        }
     }
 }
