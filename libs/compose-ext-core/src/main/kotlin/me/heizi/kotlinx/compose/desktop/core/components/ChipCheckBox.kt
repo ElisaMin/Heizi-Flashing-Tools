@@ -24,7 +24,7 @@ fun ChipCheckBox (
     onCheck:(Boolean)->Unit = {},
 ) {
     val light = colors.isLight
-    val color = remember (colors,colors.isLight)  { if (light) Color.LightGray else Color.DarkGray }
+    val color =  if (light) Color.LightGray else colors.surface
 //    color = remember(colors,check,text,light) {
 //        if (light) color.copy(alpha = if (check) 1f else 0.3f)
 //        else color.copy(alpha = if (check) 1f else 0.7f)
@@ -32,7 +32,7 @@ fun ChipCheckBox (
 
     OutlinedButton(
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (!check) color else colors.primarySurface.copy(alpha = 0.3f),
+            containerColor = if (!check) color else if (light) colors.primarySurface.copy(alpha = 0.3f) else colors.onPrimary,
             contentColor = // if (enableState) Color.White else
                 colors.onSurface
         ),

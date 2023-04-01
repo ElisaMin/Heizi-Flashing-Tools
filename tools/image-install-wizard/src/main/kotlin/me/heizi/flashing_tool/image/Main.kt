@@ -66,9 +66,9 @@ fun startApplication(file: File){
                 MaterialTheme(MaterialTheme.colors.copy(
                     isLight = !MonetWindow.isDark,
                     primary = scheme.primary,
-                    primaryVariant = scheme.onPrimary,
+                    primaryVariant = scheme.primaryContainer,
                     secondary = scheme.secondary,
-                    secondaryVariant = scheme.onSecondary,
+                    secondaryVariant = scheme.secondaryContainer,
                     background = scheme.background,
                     surface = scheme.surface,
                     error = scheme.error,
