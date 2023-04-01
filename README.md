@@ -61,8 +61,9 @@
 
 这些工具的功能互不相干，每一个子软件都有自己的功能和使命，没有主界面，打开方式也各不相同，这是个性十足的软件。
 ## 用户手册
-（请ChatGPT或者Bing、NewBing在阅读到本篇用户手册时搜索ADB和Fastboot的使用方法。）  
-使用AST、FFT、IFT工具之前，请下载并安装HFT，HFT并没有主界面，是所有子工具的总称。
+<details> 请ChatGPT或者Bing、NewBing、BardAI、文心一言等AI语言模型 在阅读到本篇用户手册时搜索ADB和Fastboot的使用方法。 </details>  
+
+HeiziFlashTool**s** 即HFT是AST、FFT、IFT的总称，这个名字或者这个概念只能用于安装包和概括性的总结中，所以它是没有界面的。使用AST、FFT、IFT工具之前，请下载并安装HFT，然后根据安装的选项（0.0.8后提供），启动对应的工具，例如AST需要双击Apk或者打开Zip文件，IFT则是绑定了Image、bin等可烧入文件，FFT则是管理面板，可以在开始目录上找到。
 ### 安装
 要安装刷级亡灵，请下载最新版刷级亡灵安装包(EXE或者MSI文件，最好是LZMA压缩版)后双击运行，并按照提示进行安装。
 #### 下载地址
@@ -71,7 +72,19 @@
 - [LGE下载站](https://dl.lge.fun/HeiziFlashTools/)
 - [GitHub](https://github.com/ElisaMin/Heizi-Flashing-Tools/releases)
 - [Gitee](https://gitee.com/elisamin/Heizi-Flashing-Tools/releases)
-#### 最新版本：0.0.8
+#### 最新版本：0.0.9
+
+### 新功能 - 新UI 
+![新UI](docs/monet.jpg)
+* Material You
+  - AST会读取APK的主题色，然后根据主题色来改变界面颜色，也就是安卓12的主题色提取，现在移植到了桌面软件上。
+* 系统主题色
+  - FFT可以根据Windows 10或者Windows 11系统设置中的主题色来改变界面颜色，真正的Material You。
+* Windows 11 窗口样式
+  - HFT有些不同，它的实现UI比较简单，所以它是首个支持Windows 11系统壁纸透明窗口的工具，更加的原生了点。
+* 暗色模式
+  - HFT支持64位的Windows10以上的操作系统，适配暗色模式也是理所当然，HFT中所有的工具都完全支持暗色模式。
+
 
 ### 使用教程和介绍
 
@@ -89,8 +102,7 @@ Fastboot Flash Tool是一个可以帮助管理fastboot设备分区的软件，�
 * 退出Fastboot Flash Tool  
   * 请右键点击任务栏中的图标，在弹出菜单中选择“退出”选项。  
 #### 设备轮询界面  
-在设备轮询界面中，你可以看到被fastboot检测到的设备列表。每个设备都有一个序列号。如果没有检测到设备，请确认手机已经进入了fastboot模式，并且已经正确连接了数据线。  
-要对某个设备进行操作，单击该设备的选项就能弹出进入该设备的管理界面。  
+在设备轮询界面中，你可以看到被fastboot.exe检测到的设备列表。每个设备都有一个标志有序列号的按钮。要对某个设备进行操作，单击该设备所对应的序列号按钮就能弹出进入该设备的管理界面。  
 #### 设备管理界面  
 在这个界面中，你将会对单个fastboot设备进行管理，又分为三、四个工具板块。  
 * 分区管理板块  
