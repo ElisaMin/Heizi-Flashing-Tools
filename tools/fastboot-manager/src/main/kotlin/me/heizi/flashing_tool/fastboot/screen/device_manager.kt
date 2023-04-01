@@ -31,9 +31,11 @@ import androidx.compose.ui.window.WindowState
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
+import com.mayakapps.compose.windowstyler.WindowBackdrop
 import com.tunjid.me.core.ui.dragdrop.PlatformDropTargetModifier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import me.heizi.compose.ext.monet.common.Monet
 import me.heizi.flashing_tool.fastboot.extendableCard
 import me.heizi.flashing_tool.fastboot.fastbootIconBuffered
 import me.heizi.flashing_tool.fastboot.repositories.*
@@ -55,13 +57,22 @@ fun DeviceManagerWindow(
             position = WindowPosition.Aligned(Alignment.Center)
         )
     ) {
-        val density = LocalDensity.current.density
-        val drop = remember {
-            PlatformDropTargetModifier(
-                density,window
-            )
+        Monet {
+            // fixme maybe
+            // remove surface
+//            LaunchedEffect(this.color) {
+//                val styler = windowStyler
+//                styler.backdropType = WindowBackdrop.Tabbed
+//
+//            }
+            val density = LocalDensity.current.density
+            val drop = remember {
+                PlatformDropTargetModifier(
+                    density,window
+                )
+            }
+            viewModel.DeviceManagerScreen(drop)
         }
-        viewModel.DeviceManagerScreen(drop)
     }
 }
 
