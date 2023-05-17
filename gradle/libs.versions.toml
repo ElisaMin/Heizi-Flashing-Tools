@@ -6,10 +6,10 @@ heizi_flash_tools = "0.0.9"
 java-jna = "5.13.0"
 java-slf4j = "2.0.7"
 
-kotlin-lang = "1.8.21"
+kotlin-lang = "1.8.20"
 kotlin-coroutines = "1.7.1"
 kotlin-ui-compose = "1.4.0"
-kotlin-ui-compose-decompose = "1.0.0-compose-experimental"
+kotlin-ui-compose-decompose = "2.0.0-alpha-02"
 # @keep parser to 0.0.1-alpha05 because net.dongliu.apk.parser is not current version
 ext-apk_parser = "0.0.1-alpha05"
 ext-khell = "0.0.0-alpha01"
