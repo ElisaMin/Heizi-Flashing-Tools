@@ -29,3 +29,6 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn", "-Xcontext-receivers", "-Xskip-prerelease-check")
     }
 }
+kotlin {
+    jvmToolchain(19)
+}
