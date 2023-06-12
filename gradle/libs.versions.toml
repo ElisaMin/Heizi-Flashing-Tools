@@ -6,7 +6,7 @@ heizi_flash_tools = "0.0.9"
 java-jna = "5.13.0"
 java-slf4j = "2.0.7"
 
-kotlin-lang = "1.8.21"
+kotlin-lang = "1.8.22"
 kotlin-coroutines = "1.7.1"
 kotlin-ui-compose = "1.4.0"
 kotlin-ui-compose-decompose = "1.0.0-compose-experimental"
