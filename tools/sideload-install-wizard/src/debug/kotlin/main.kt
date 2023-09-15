@@ -1,21 +1,17 @@
 @file:JvmName("SideloadDebug")
 package debug.heizi.flashing_tool.sideloader
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.window.singleWindowApplication
 import kotlinx.coroutines.CoroutineScope
 import me.heizi.flashing_tool.adb.ADBDevice
-import me.heizi.flashing_tool.sideloader.Context
 import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.flashing_tool.sideloader.screens.AbstractHomeViewModel
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.shell.Shell
 import net.dongliu.apk.parser.bean.IconResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 val shell = Shell("echo hello world")

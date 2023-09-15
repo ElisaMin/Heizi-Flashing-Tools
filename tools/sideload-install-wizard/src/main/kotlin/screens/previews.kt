@@ -1,11 +1,12 @@
 package me.heizi.flashing_tool.sideloader.screens
 
-import androidx.compose.animation.core.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,14 +14,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.singleWindowApplication
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import me.heizi.compose.ext.monet.common.Monet
 import me.heizi.flashing_tool.sideloader.Resources
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import org.jetbrains.compose.splitpane.*
 import me.heizi.flashing_tool.sideloader.screens.Invoke as Invoking
+
 fun main() {
     singleWindowApplication(title = "AndroidInstallWizard", icon = Resources.iconASTUgly) {
+
 //        apk()
 //        zip()
 //        split()
@@ -37,7 +42,7 @@ fun Multiple() {
 @Preview
 @OptIn(ExperimentalMaterial3Api::class, InternalComposeApi::class)
 @Composable
-fun InvokePreview() = MaterialTheme {
+fun FrameWindowScope.InvokePreview() = Monet {
 
     var isDone by remember { mutableStateOf(false) }
     var text by remember { mutableStateOf("") }
