@@ -15,6 +15,8 @@ import me.heizi.flashing_tool.sideloader.current
 import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
 import net.dongliu.apk.parser.bean.ApkIcon
+import net.dongliu.apk.parser.bean.IconResource
+import net.dongliu.apk.parser.bean.IconTypes
 
 
 /**
@@ -31,7 +33,7 @@ fun TextEllipsisEnd(text:String, style:TextStyle= LocalTextStyle.current) =
 fun Info(
     modifier: Modifier = Modifier.defaultMinSize(minWidth = 372.dp).fillMaxHeight().fillMaxWidth(0.45f),
     packageDetail:Map<String,Array<String>>,
-    icon:ApkIcon<*>?=null,
+    icon:IconResource?=null,
     titleName:String,
     packageName:String?=null,
     version:String?=null,
@@ -68,40 +70,12 @@ fun Info(
 
 
 @Composable
-private fun IconCard(icon: IconResource) {
-    var displayIcon by remember { mutableStateOf(icon) }
-    // icon is adaptive icon then using foreground
-    if (icon is IconTypes.Adaptive) displayIcon = icon.foreground
-    // if icon is not empty then display it
-    if (displayIcon is IconTypes.Vector) {
-        val dIcon = displayIcon as IconTypes.Vector
-//        LaunchedEffect(displayIcon) {
-//            displayIcon = dIcon.copy(
-//                data = dIcon.data.replace(Regex("""android:fillType="(?!=(evenOdd|nonZero))""""), """android:fillType="evenOdd"""")
-//            )
-//        }
-    }
-
-
-    if (displayIcon !is IconTypes.Empty) {
+private fun IconCard(apkIcon: IconResource) {
+    if (apkIcon !is IconTypes.Empty) {
         Card(Modifier.size(126.dp),
 //            colors = CardDefaults.cardColors(background)
         ) {
-
-            // fixme spotify icon is not working
-            runCatching {
-                "icon".println(displayIcon.data)
-                Image(displayIcon, modifier = Modifier.fillMaxSize(),)
-            }.onFailure {
-                var isVisible: Boolean by remember { mutableStateOf(true) }
-                if (isVisible)
-                Dialog(onCloseRequest = {isVisible = false}) {
-                    Text("图标加载失败，请联系开发者\n${it.javaClass.simpleName}\n${it.message}")
-                }
-                "icon".println(displayIcon.data)
-                it.printStackTrace()
-            }
-
+            Image(apkIcon, modifier = Modifier.fillMaxSize())
         }
     }
 }
@@ -125,7 +99,7 @@ private fun AppTitle(
 }
 @Composable
 private fun AppTitleInner(
-    icon: ApkIcon<*>?,
+    icon: IconResource?,
     title:String,
     packageName: String?,
     version: String?,
