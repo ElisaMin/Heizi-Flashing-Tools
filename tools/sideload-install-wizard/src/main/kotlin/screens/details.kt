@@ -68,16 +68,40 @@ fun Info(
 
 
 @Composable
-private fun IconCard(icon: ApkIcon<*>) {
-    var displayIcon = icon
+private fun IconCard(icon: IconResource) {
+    var displayIcon by remember { mutableStateOf(icon) }
     // icon is adaptive icon then using foreground
-    if (icon is ApkIcon.Adaptive) displayIcon = icon.foreground
+    if (icon is IconTypes.Adaptive) displayIcon = icon.foreground
     // if icon is not empty then display it
-    if (displayIcon !is ApkIcon.Empty) {
+    if (displayIcon is IconTypes.Vector) {
+        val dIcon = displayIcon as IconTypes.Vector
+//        LaunchedEffect(displayIcon) {
+//            displayIcon = dIcon.copy(
+//                data = dIcon.data.replace(Regex("""android:fillType="(?!=(evenOdd|nonZero))""""), """android:fillType="evenOdd"""")
+//            )
+//        }
+    }
+
+
+    if (displayIcon !is IconTypes.Empty) {
         Card(Modifier.size(126.dp),
 //            colors = CardDefaults.cardColors(background)
         ) {
-            Image(displayIcon, modifier = Modifier.fillMaxSize(),)
+
+            // fixme spotify icon is not working
+            runCatching {
+                "icon".println(displayIcon.data)
+                Image(displayIcon, modifier = Modifier.fillMaxSize(),)
+            }.onFailure {
+                var isVisible: Boolean by remember { mutableStateOf(true) }
+                if (isVisible)
+                Dialog(onCloseRequest = {isVisible = false}) {
+                    Text("图标加载失败，请联系开发者\n${it.javaClass.simpleName}\n${it.message}")
+                }
+                "icon".println(displayIcon.data)
+                it.printStackTrace()
+            }
+
         }
     }
 }
