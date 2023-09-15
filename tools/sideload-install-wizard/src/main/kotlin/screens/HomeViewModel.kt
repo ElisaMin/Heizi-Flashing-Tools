@@ -10,6 +10,7 @@ import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.*
 import me.heizi.flashing_tool.sideloader.contexts.Context
 import me.heizi.flashing_tool.sideloader.contexts.Context.Companion.deviceFilter
+import me.heizi.flashing_tool.sideloader.contexts.Install
 import me.heizi.flashing_tool.sideloader.contexts.Sideload
 import me.heizi.flashing_tool.sideloader.contexts.SingleFileContext
 import me.heizi.kotlinx.logger.debug
@@ -26,6 +27,20 @@ operator fun SingleFileContext.invoke() {
         viewModel.onUpdateEffect()
     }
     viewModel()
+    LaunchedEffect((this as? Install)?.iconError ?:"icon error" ) {
+        if (this@invoke is Install) {
+            iconError?.let {
+                var msg = "图标解析失败，"
+                if (it == "404") {
+                    msg ="不可抗力的原因导致图标解析失败，请加群或者create issues向开发者告知后等通知。"
+                } else {
+                    msg += "Err:: $it。"
+                }
+                viewModel.snacks.showSnackbar(msg, actionLabel = "关闭", duration = SnackbarDuration.Long)
+            }
+
+        }
+    }
 }
 abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeViewModel() {
     var currentContext by mutableStateOf(initContext)
