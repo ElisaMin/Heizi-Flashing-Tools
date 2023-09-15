@@ -1,4 +1,4 @@
-package me.heizi.flashing_tool.sideloader
+package me.heizi.flashing_tool.sideloader.contexts
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.*
 import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.adb.install
+import me.heizi.flashing_tool.sideloader.*
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.ProcessingResults
 import me.heizi.kotlinx.shell.Shell
@@ -18,12 +19,12 @@ interface Context {
 
     val files:List<File>
 
-    object Ready:Context {
+    object Ready: Context {
         override val files: List<File>
             get() = emptyList()
     }
 
-    interface Invoke:Context {
+    interface Invoke: Context {
         val smallTitle:String
         val message:String
         val isSuccess:Boolean?
@@ -31,12 +32,12 @@ interface Context {
         fun start()
     }
 
-    interface Done:Invoke
+    interface Done: Invoke
 
      @OptIn(FlowPreview::class)
      class Invoking constructor(
          private val parent: Context
-     ) :Context by parent,Invoke {
+     ) : Context by parent, Invoke {
          override var smallTitle by mutableStateOf("正在预热中...")
              private set
          override var message by mutableStateOf("")
@@ -46,7 +47,7 @@ interface Context {
          override var isDone:Boolean? by mutableStateOf(null)
              private set
          private var current = 1
-         private val devices = Context.devices.filter {
+         private val devices = Companion.devices.filter {
              it.serial in selected && it.state.toContext() is InnerDeviceContextState.Connected
          }
 
@@ -129,7 +130,7 @@ interface Context {
                     append("。")
                 }
             }.let {
-                 context.value = object : Invoke by this@Invoking,Done {}
+                 context.value = object : Invoke by this@Invoking, Done {}
                  isDone = true
                  updateSubTitle(it)
             }

@@ -8,7 +8,10 @@ import kotlinx.coroutines.flow.*
 import me.heizi.flashing_tool.adb.ADB
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.*
-import me.heizi.flashing_tool.sideloader.Context.Companion.deviceFilter
+import me.heizi.flashing_tool.sideloader.contexts.Context
+import me.heizi.flashing_tool.sideloader.contexts.Context.Companion.deviceFilter
+import me.heizi.flashing_tool.sideloader.contexts.Sideload
+import me.heizi.flashing_tool.sideloader.contexts.SingleFileContext
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
 import net.dongliu.apk.parser.bean.IconResource
@@ -99,7 +102,7 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
 
 
     override fun onUpdateEffect() {
-        icon = currentContext.icon?.also { it.debug("image",it.data::class.simpleName) }
+        icon = currentContext.maintainIcon?.also { it.debug("image",it.data::class.simpleName) }
         version = currentContext.version
         packageName = currentContext.packageName
         titleName = currentContext.name
@@ -129,7 +132,7 @@ interface HomeViewModel {
 
 
     val packageDetails:Map<String,Array<String>>
-    val icon: ApkIcon<*>?
+    val icon: IconResource?
     val titleName:String
     val packageName:String?
     val version:String?

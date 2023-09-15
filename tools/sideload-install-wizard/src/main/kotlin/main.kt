@@ -296,7 +296,11 @@ suspend fun init(args: Array<String>,frame: JFrame) = Context.scope.launch {
     // init files
     launch(IO) {
         init_state.emit("正在初始化文件")
-        files.value = listOf(File(args[0]))
+        files.value = args.map {
+            File(it)
+        }.filter {
+            it.exists() && it.isFile
+        }
         init_state.emit("获取到文件：${files.value.size}个")
         files.value.filter { it.exists() && it.isFile }.getOrNull(0)?.let {
             Context(it)
@@ -304,11 +308,13 @@ suspend fun init(args: Array<String>,frame: JFrame) = Context.scope.launch {
             contextReady = true
             if ( ctx.isApk ) {
                 isSideload = false
-                init_state.emit("是APK")
-                ctx.color?.let {
+                init_state.emit("正在解析APK")
+                (ctx as? Install?)?.run {
+                    onPreLoad()
+                }.let {
                     colorJob.cancel()
                     colorJob.join()
-                    init_state.emit("获取到主题颜色：${it.toArgb()}")
+                    init_state.emit("获取到主题颜色：${it?.toArgb()}")
                 }
             } else {
                 isSideload = true

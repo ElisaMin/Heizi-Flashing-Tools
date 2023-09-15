@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.heizi.compose.ext.monet.common.MonetWindow.Companion.isDark
-import me.heizi.flashing_tool.sideloader.Context
+import me.heizi.flashing_tool.sideloader.contexts.Context
 import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.current
 import kotlin.system.exitProcess
