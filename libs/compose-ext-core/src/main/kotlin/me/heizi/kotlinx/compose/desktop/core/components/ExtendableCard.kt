@@ -1,9 +1,10 @@
+@file:Suppress("FunctionName")
+
 package me.heizi.kotlinx.compose.desktop.core.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
 @Composable
 fun ExtendableCard(
     initExtend: Boolean = false,
@@ -21,7 +23,6 @@ fun ExtendableCard(
 )  {
     ExtendableCard(mutableStateOf(initExtend),modifier, title, content)
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExtendableCard(
     states:MutableState<Boolean> = mutableStateOf(false),

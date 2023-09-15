@@ -15,7 +15,7 @@ object ADB {
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    @OptIn(FlowPreview::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val devices: Flow<ADBDevice> get() = execute("devices").takeWhile {
         if (it is ProcessingResults.CODE) require(it.code == 0) {
             "its not ready to collecting devices!"

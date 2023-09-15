@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package me.heizi.kotlinx.compose.desktop.core.components
 
 import androidx.compose.foundation.layout.*

@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package me.heizi.flashing_tool.sideloader.screens
 
 import androidx.compose.foundation.layout.*

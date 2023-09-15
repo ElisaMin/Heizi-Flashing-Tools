@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package org.jetbrains.compose.splitpane
 
 import androidx.compose.runtime.Composable
