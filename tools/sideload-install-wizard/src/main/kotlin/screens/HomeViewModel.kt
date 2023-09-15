@@ -11,7 +11,7 @@ import me.heizi.flashing_tool.sideloader.*
 import me.heizi.flashing_tool.sideloader.Context.Companion.deviceFilter
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.shell.CommandResult
-import net.dongliu.apk.parser.bean.ApkIcon
+import net.dongliu.apk.parser.bean.IconResource
 import java.nio.charset.Charset
 
 @Composable
@@ -63,7 +63,7 @@ abstract class StateHomeViewModel(initContext: SingleFileContext):AbstractHomeVi
 
     }
 
-    final override var icon: ApkIcon<*>? by mutableStateOf(null)
+    final override var icon: IconResource? by mutableStateOf(null)
         protected set
     final override var version: String? by mutableStateOf(null)
         protected set

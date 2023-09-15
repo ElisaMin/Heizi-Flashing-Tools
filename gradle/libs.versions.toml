@@ -11,7 +11,7 @@ kotlin-coroutines = "1.7.1"
 kotlin-ui-compose = "1.4.0"
 kotlin-ui-compose-decompose = "2.0.0-alpha-02"
 # @keep parser to 0.0.1-alpha05 because net.dongliu.apk.parser is not current version
-ext-apk_parser = "0.0.1-alpha05"
+ext-apk_parser = "0.0.1-alpha09"
 ext-khell = "0.0.0-alpha01"
 ext-color = "1.0.5"
 ext-monetKdrag0n = "0.0.1-alpha04"

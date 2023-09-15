@@ -13,7 +13,7 @@ import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.flashing_tool.sideloader.screens.AbstractHomeViewModel
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.shell.Shell
-import net.dongliu.apk.parser.bean.ApkIcon
+import net.dongliu.apk.parser.bean.IconResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -67,7 +67,7 @@ fun main() {
                 override var isWaiting: Boolean by mutableStateOf(false)
                 override val packageDetails: Map<String, Array<String>>
                     = mapOf("details" to arrayOf("test","test"))
-                override val icon: ApkIcon<*>? = null
+                override val icon: IconResource? = null
                 override val titleName: String = "名字"
                 override val packageName: String = "包名"
                 override val version: String = "版本名称"

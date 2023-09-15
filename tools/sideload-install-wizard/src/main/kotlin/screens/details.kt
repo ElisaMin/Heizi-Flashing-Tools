@@ -14,7 +14,6 @@ import me.heizi.flashing_tool.sideloader.colors
 import me.heizi.flashing_tool.sideloader.current
 import me.heizi.flashing_tool.sideloader.isSideload
 import me.heizi.kotlinx.compose.desktop.core.components.AboutExtendCard
-import net.dongliu.apk.parser.bean.ApkIcon
 import net.dongliu.apk.parser.bean.IconResource
 import net.dongliu.apk.parser.bean.IconTypes
 
@@ -81,7 +80,7 @@ private fun IconCard(apkIcon: IconResource) {
 }
 @Composable
 private fun AppTitle(
-    icon: ApkIcon<*>?,
+    icon: IconResource?,
     title:String,
     packageName: String?,
     version: String?,
