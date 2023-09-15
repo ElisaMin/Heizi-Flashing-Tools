@@ -1,15 +1,12 @@
 @file:JvmName("Main")
 package me.heizi.flashing_tool.sideloader
 
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -23,57 +20,46 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import me.heizi.compose.ext.monet.common.Monet
 import me.heizi.compose.ext.monet.common.MonetWindow
 import me.heizi.compose.ext.monet.common.getWindowFrame
 import me.heizi.flashing_tool.adb.ADB
-import me.heizi.flashing_tool.adb.ADBDevice
+import me.heizi.flashing_tool.sideloader.contexts.Context
+import me.heizi.flashing_tool.sideloader.contexts.Install
+import me.heizi.flashing_tool.sideloader.contexts.SingleFileContext
 import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.compose.desktop.core.setAllBackground
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.println
 import java.awt.Window
 import java.io.File
-import java.net.URL
-import javax.imageio.ImageIO
+import java.io.FileNotFoundException
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
-import kotlin.system.exitProcess
 
-
-val context: MutableStateFlow<Context?> =
-    MutableStateFlow(Context.Ready)
-
-val colors:ColorScheme
-    @Composable
-    get() {
-    return MaterialTheme.colorScheme
-}
-val ColorScheme.current get() = this
-
-var contextReady by mutableStateOf(false)
 
 fun main(args: Array<String>) {
     println("官网: dl.lge.fun 或 tools.lge.fun\nQQ群: 549674080")
+    //slash screen
+    val label = JLabel("正在加载中")
     val frame = JFrame("正在加载中").apply {
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        val label = JLabel("正在加载中")
-        add(JPanel().apply {
-            add(label)
-        })
+        add(JPanel().apply { add(label) })
         this.minimumSize = java.awt.Dimension(300, 100)
         setLocationRelativeTo(null)
         pack()
-        Context.scope.launch {
-            init_state
-                .takeWhile { it != null }
-                .collect { label.text = it }
-            cancel()
-        }
+        isVisible = true
     }
-    frame.isVisible = true
+    Context.scope.launch {
+        init_state
+            .takeWhile { it != null }
+            .collect {
+                label.text = it
+                "INIT".println("state",it)
+            }
+        cancel()
+    }
     Context.scope.launch {
         init_state.emit("初始化Compose")
         WindowsWindowStyleManager(frame).apply {
@@ -188,72 +174,10 @@ fun FrameWindowScope.ReadyToGo() = Monet {
     }
 }
 @Composable
-fun FrameWindowScope.app(currentContext:Context) {
+fun FrameWindowScope.app(currentContext: Context) {
     val mode = if (isSideload) "线刷模式" else "安装模式"
     when(val current = currentContext) {
         is SingleFileContext -> {
-
-//                    var theVector by remember {
-//                        current.takeIf { it.isApk }?.icon?.takeIf {
-//                            (it is ApkIcon.Adaptive && (it.background is ApkIcon.Vector || it.foreground is ApkIcon.Vector)) || it is ApkIcon.Vector
-//                        }?.let {
-//                            when(it) {
-//                                is ApkIcon.Vector -> it
-//                                is ApkIcon.Adaptive -> (it.background.takeIf { it is ApkIcon.Vector } ?: it.foreground) as ApkIcon.Vector
-//                                else -> null
-//                            }
-//                        }.let(::mutableStateOf)
-//                    }
-//
-//                    theVector?.run {
-//                        data.toByteArray().inputStream().use {
-//                            loadXmlImageVector(InputSource(it), LocalDensity.current)
-//                        }.run {
-//                            val painter = rememberVectorPainter(this)
-//                            val imageBitmap = with(LocalDensity.current) { ImageBitmap(defaultHeight.roundToPx(), defaultWidth.roundToPx()) }
-//                            CanvasDrawScope().apply {
-//
-//                                with(painter) {
-//                                    draw(size)
-//                                }
-//
-//                            }
-//                            Box(Modifier.size(this.defaultWidth,this.defaultHeight)) {
-//                                Canvas(Modifier.fillMaxSize().align(Alignment.Center,)) {
-//
-//                                    with(painter) {
-//                                        draw(size)
-//                                    }
-//                                    drawImage(imageBitmap)
-//
-//                                    imageBitmap.run {
-//                                        IntArray(width*height).apply {
-//                                            readPixels(this,0,0,0,0,width,height)
-//                                        }
-//                                    }.asSequence().forEach { kotlin.io.println(it) }
-//                                }
-//                            }
-//                            singleWindowApplication {
-////                                val painter = reme
-//                                Image(imageBitmap,"what")
-//                            }
-
-//                            Canvas()
-//                            with(LocalDensity.current) {
-//                                ImageBitmap(defaultHeight.roundToPx(),defaultWidth.roundToPx()).apply {
-//                                    Canvas(this).drawImage(this, Offset.Zero,painter).run {
-//                                        extractDominantColor().run {
-//                                            color = Kdrag0nMonetThemeColorScheme.Dynamic[convert<Oklch>(convert<Srgb>(this))]
-//                                                .run {
-//                                                    if (isSystemDarkTheme) darkM3Scheme() else lightM3Scheme()
-//                                                }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-
             window.title = "AST $mode ${current.name} 选择设备"
             current()
         }
@@ -328,32 +252,8 @@ suspend fun init(args: Array<String>,frame: JFrame) = Context.scope.launch {
             init_state.emit(null)
             context.emit(null)
             frame.isVisible = false
+            delay(1000)
+            throw FileNotFoundException("文件解析失败")
         }
     }
 }
-
-
-
-/**
- * false if apk parse success in initializing progress
- */
-var isSideload by mutableStateOf(false)
-
-val files = MutableStateFlow(listOf<File>())
-
-object Resources {
-    operator fun get(name:String): URL? = this::class.java.classLoader.getResource(name)
-    val iconASTUgly = ImageIO.read(this["ic_ast_ugly.png"]!!).toPainter()
-}
-
-
-fun requireAndStuck(b: Boolean, function: () -> String) = runBlocking {
-    if (!b) {
-        println(function())
-        delay(3000)
-        exitProcess(-1)
-    }
-}
-
-operator fun List<ADBDevice>.get(serial:String) = find { it.serial == serial }
-
