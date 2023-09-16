@@ -14,11 +14,11 @@ kotlin-ui-compose-decompose = "2.2.0-dev02"
 ext-apk_parser = "0.0.1-alpha09"
 ext-khell = "0.0.0-alpha01"
 ext-color = "1.0.5"
-ext-monetKdrag0n = "0.0.1-alpha04"
+ext-monetKdrag0n = "0.0.1-alpha05"
 ext-windows10 = "0.3.2"
 
 gradle-shadowJar = "8.1.1"
-gradle-versionCatalogUpdate = "0.8.0"
+gradle-versionCatalogUpdate = "0.8.1"
 
 [libraries]
 
