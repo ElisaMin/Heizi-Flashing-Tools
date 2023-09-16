@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.toPainter
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.heizi.flashing_tool.adb.ADBDevice
 import me.heizi.flashing_tool.sideloader.contexts.Context
+import java.awt.SplashScreen
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -43,4 +44,6 @@ object Resources {
 }
 
 operator fun List<ADBDevice>.get(serial:String) = find { it.serial == serial }
+
+val splashScreen: SplashScreen? get() = SplashScreen.getSplashScreen()?.takeIf { it.isVisible }
 

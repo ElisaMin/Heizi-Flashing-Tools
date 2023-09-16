@@ -31,7 +31,9 @@ import me.heizi.flashing_tool.sideloader.screens.invoke
 import me.heizi.kotlinx.compose.desktop.core.setAllBackground
 import me.heizi.kotlinx.logger.debug
 import me.heizi.kotlinx.logger.println
+import java.awt.Font
 import java.awt.Window
+import java.awt.font.TextAttribute
 import java.io.File
 import java.io.FileNotFoundException
 import javax.swing.JFrame
@@ -49,14 +51,32 @@ fun main(args: Array<String>) {
         this.minimumSize = java.awt.Dimension(300, 100)
         setLocationRelativeTo(null)
         pack()
-        isVisible = true
     }
     Context.scope.launch {
+        var last = ""
         init_state
             .takeWhile { it != null }
-            .collect {
-                label.text = it
-                "INIT".println("state",it)
+            .collect { s ->
+                runCatching{ splashScreen }.onFailure { it.printStackTrace() }
+                    .getOrNull()?.runCatching {
+//                    imageURL = Resources["ic_ast_ugly.png"]
+//                    update()
+                    createGraphics()?.apply {
+                        font = java.awt.Font(mapOf(
+                            TextAttribute.FAMILY to Font.MONOSPACED,
+                            TextAttribute.SIZE to 10,
+//                            TextAttribute.WEIGHT to TextAttribute.WEIGHT_REGULAR,
+                        ))
+                        paint = java.awt.Color(0xcfcfcf)
+                        this.drawString(last,60,380)
+                        paint = java.awt.Color.BLACK
+                        last = s!!+"..."
+                        this.drawString(last,60,380)
+                    }
+                    update()
+                }
+                label.text = s
+                "INIT".println("state",s)
             }
         cancel()
     }
