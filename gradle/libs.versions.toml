@@ -52,6 +52,6 @@ org-jetbrains-compose = { id ="org.jetbrains.compose", version.ref = "kotlin-ui-
 
 me-heizi-gradle-controller-version = { id ="me.heizi.gradle.controller-version", version.ref = "heizi_flash_tools" }
 nl-littlerobots-version-catalog-update = { id ="nl.littlerobots.version-catalog-update" ,version.ref = "gradle-versionCatalogUpdate" }
-com-github-ben_manes-versions = { id ="com.github.ben-manes.versions",version="0.48.0" }
+com-github-ben_manes-versions = { id ="com.github.ben-manes.versions",version="0.50.0" }
 
 
