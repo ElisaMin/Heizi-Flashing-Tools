@@ -9,7 +9,7 @@ java-slf4j = "2.0.9"
 kotlin-lang = "1.9.10"
 kotlin-coroutines = "1.7.3"
 kotlin-ui-compose = "1.5.1"
-kotlin-ui-compose-decompose = "2.2.0-dev02"
+kotlin-ui-compose-decompose = "2.2.0-compose-experimental-alpha05"
 # @keep parser to 0.0.1-alpha05 because net.dongliu.apk.parser is not current version
 ext-apk_parser = "0.0.1-alpha09"
 ext-khell = "0.0.0-alpha01"
